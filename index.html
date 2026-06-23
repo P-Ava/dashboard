@@ -24,54 +24,15 @@
         }
     </script>
 </head>
-    <!-- Sambungkan kembali Library Supabase yang valid -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
-    <script>
-        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Fungsi otomatis untuk mengambil data dari Supabase (Kolom: judul & deskripsi)
-        async function muatDataKategori() {
-            const { data, error } = await supabase
-                .from('catatan_keuangan')
-                .select('judul, deskripsi'); // Sesuai dengan kolom di Supabase Anda
-
-            if (error) {
-                console.error('Gagal memuat data:', error);
-                return;
-            }
-
-            // Petakan data ke elemen HTML masing-masing dengan konversi huruf kecil agar pasti cocok
-            data.forEach(item => {
-                const namaKategori = item.judul ? item.judul.toLowerCase().trim() : '';
-                
-                if (namaKategori === 'uang pribadi') {
-                    document.getElementById('nilai-pribadi').innerText = item.deskripsi;
-                } else if (namaKategori === 'saham') {
-                    document.getElementById('nilai-saham').innerText = item.deskripsi;
-                } else if (namaKategori === 'usaha') {
-                    document.getElementById('nilai-usaha').innerText = item.deskripsi;
-                }
-            });
-        }
-
-        // Jalankan fungsi saat halaman terbuka
-        window.addEventListener('DOMContentLoaded', muatDataKategori);
-        
-    </script>
-</body>
-</html>
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <!-- WRAPPER UTAMA -->
     <div class="max-w-4xl w-full flex flex-col gap-6">
         
-        <!-- BARIS ATAS: Judul (dengan Ikon Mata) & Pencarian Lokal -->
+        <!-- BARIS ATAS: Judul & Pencarian Lokal -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
             <div class="flex items-center gap-2">
                 <h1 class="font-serif text-xl font-bold text-brand">My Finance Hub</h1>
-                <!-- Ikon Mata untuk Sembunyikan Angka -->
                 <button class="text-stone-400 hover:text-brand transition p-1" title="Sembunyikan/Tampilkan Angka">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -80,7 +41,6 @@
                 </button>
             </div>
             
-            <!-- Kolom Pencarian -->
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center">
                 <div class="relative w-full sm:w-64">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -96,7 +56,7 @@
             </div>
         </div>
 
-        <!-- AREA TENGAH: AI Chat untuk Memasukkan Data -->
+        <!-- AREA TENGAH: AI Chat Input -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-3">
             <div class="flex items-center gap-2 text-brand">
                 <span class="text-xl">✨</span>
@@ -111,13 +71,12 @@
             </div>
         </div>
 
-        <!-- AREA: Riwayat Transaksi (3 Baris) -->
+        <!-- AREA: Riwayat Transaksi -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-serif font-semibold text-lg text-brand">Riwayat Transaksi</h3>
                 <span class="text-xs text-stone-400 font-medium">3 Transaksi Terakhir</span>
             </div>
-            
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-3">
@@ -129,7 +88,6 @@
                     </div>
                     <span class="text-sm font-bold text-emerald-600">+$3,500.00</span>
                 </div>
-
                 <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">☕</div>
@@ -140,7 +98,6 @@
                     </div>
                     <span class="text-sm font-bold text-red-600">-$12.50</span>
                 </div>
-
                 <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">🛒</div>
@@ -154,7 +111,7 @@
             </div>
         </div>
 
-        <!-- TATA LETAK 2 KOLOM YANG SEIMBANG -->
+        <!-- TATA LETAK 2 KOLOM -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             
             <!-- KOLOM KIRI: Financial Overview -->
@@ -189,7 +146,7 @@
                 </div>
             </div>
 
-            <!-- KOLOM KANAN: Financial Notes (Aman & Terkunci) -->
+            <!-- KOLOM KANAN: Financial Notes -->
             <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-center mb-4">
@@ -199,7 +156,7 @@
                         </button>
                     </div>
 
-                    <!-- KOTAK GRAFIK PIE (UKURAN DIKUNCI MATI AGAR TIDAK RAKSASA) -->
+                    <!-- KOTAK GRAFIK PIE -->
                     <div class="flex items-center gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-100 mb-4 h-24">
                         <div class="w-16 h-16 shrink-0 block">
                             <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
@@ -215,38 +172,32 @@
                         </div>
                     </div>
 
-                   <!-- DAFTAR FINANCIAL NOTES (SEMUA AKTIF JADI TOMBOL) -->
-                <!-- Bagian daftar di index.html Anda -->
-                <div class="flex flex-col gap-1.5">
-                    <!-- Tautan Uang Pribadi -->
-                    <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
-                        <div class="flex items-center gap-2">
-                    <span class="text-base group-hover:scale-110 transition">💼</span>
-                    <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Uang Pribadi</h4>
-                    </div>
-                    <!-- Tambahkan id="nilai-pribadi" di sini -->
-                    <span id="nilai-pribadi" class="text-sm font-bold text-stone-800">Rp--</span>
-                    </a>
-
-                        <!-- Tautan Saham -->
-                    <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
-                        <div class="flex items-center gap-2">
-                <span class="text-base group-hover:scale-110 transition">📈</span>
-                <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Saham</h4>
-                    </div>
-                    <!-- Tambahkan id="nilai-saham" di sini -->
-                        <span id="nilai-saham" class="text-sm font-bold text-stone-800">Rp--</span>
-                    </a>
-
-                    <!-- Tautan Usaha -->
-                <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
-                    <div class="flex items-center gap-2">
-                    <span class="text-base group-hover:scale-110 transition">🏪</span>
-                    <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Usaha</h4>
-                    </div>
-                        <!-- Tambahkan id="nilai-usaha" di sini -->
-                        <span id="nilai-usaha" class="text-sm font-bold text-stone-800">Rp--</span>
-                    </a>
+                    <!-- DAFTAR TOMBOL TAUTAN (Dihubungkan Berdasarkan Urutan Row JavaScript) -->
+                    <div class="flex flex-col gap-1.5">
+                        <!-- Tombol Row 1 -->
+                        <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base group-hover:scale-110 transition">💼</span>
+                                <h4 id="judul-row-1" class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Memuat...</h4>
+                            </div>
+                            <span id="nominal-row-1" class="text-sm font-bold text-stone-800">Rp--</span>
+                        </a>
+                        <!-- Tombol Row 2 -->
+                        <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base group-hover:scale-110 transition">📈</span>
+                                <h4 id="judul-row-2" class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Memuat...</h4>
+                            </div>
+                            <span id="nominal-row-2" class="text-sm font-bold text-stone-800">Rp--</span>
+                        </a>
+                        <!-- Tombol Row 3 -->
+                        <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base group-hover:scale-110 transition">🏪</span>
+                                <h4 id="judul-row-3" class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Memuat...</h4>
+                            </div>
+                            <span id="nominal-row-3" class="text-sm font-bold text-stone-800">Rp--</span>
+                        </a>
                     </div>
                 </div>
                 
@@ -258,5 +209,41 @@
         </div>
     </div>
 
+    <!-- LIBRARY SUPABASE CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function muatDataBerdasarkanUrutanRow() {
+            try {
+                // Ambil semua kolom secara berurutan
+                const { data, error } = await supabase
+                    .from('catatan_keuangan')
+                    .select('judul, deskripsi');
+
+                if (error) throw error;
+
+                if (data && data.length >= 3) {
+                    // Masukkan Row 1 ke komponen Uang Pribadi
+                    document.getElementById('judul-row-1').innerText = data[0].judul;
+                    document.getElementById('nominal-row-1').innerText = data[0].deskripsi;
+
+                    // Masukkan Row 2 ke komponen Saham
+                    document.getElementById('judul-row-2').innerText = data[1].judul;
+                    document.getElementById('nominal-row-2').innerText = data[1].deskripsi;
+
+                    // Masukkan Row 3 ke komponen Usaha
+                    document.getElementById('judul-row-3').innerText = data[2].judul;
+                    document.getElementById('nominal-row-3').innerText = data[2].deskripsi;
+                }
+            } catch (err) {
+                console.error('Gagal memuat baris data:', err.message);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', muatDataBerdasarkanUrutanRow);
+    </script>
 </body>
 </html>
