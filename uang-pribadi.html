@@ -53,7 +53,7 @@
         <!-- KARTU UTAMA: TABEL TRANSAKSI -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
             
-            <!-- BAGIAN ATAS TABEL: JUDUL & SATU KOLOM PENCARIAN GABUNGAN -->
+            <!-- BAGIAN ATAS TABEL -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
                 <div>
                     <h3 class="font-serif font-semibold text-lg text-brand">Daftar Pengeluaran & Pemasukan</h3>
@@ -139,14 +139,11 @@
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                const namaBarang = row['nama barang'] || 'Tanpa Nama';
+                // PERBAIKAN UTAMA: Memanggil langsung menggunakan nama properti kolom murni database
+                const namaBarang = row.nama_barang || 'Tanpa Nama';
                 const harga = row.harga || 0;
                 const jumlah = row.jumlah || 1;
-                
-                // PERBAIKAN: Menggunakan nama kolom 'tanggal' sesuai database Supabase Anda
                 const tanggal = row.tanggal || '-';
-                
-                // Boolean 'transaksi': TRUE = Pemasukan, FALSE = Pengeluaran
                 const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
@@ -179,7 +176,6 @@
                 tbody.appendChild(tr);
             });
 
-            // Set total saldo dinamis di bagian atas website
             document.getElementById('total-saldo-pribadi').innerText = new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
                 currency: 'IDR', 
@@ -189,13 +185,12 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} catatan ditemukan`;
         }
 
-        // FUNGSI PENCARIAN GABUNGAN PINTAR (Nama Barang ATAU Tanggal)
+        // FUNGSI PENCARIAN GABUNGAN
         document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
             const kataKunci = e.target.value.toLowerCase().trim();
             
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
-                const namaBarang = (row['nama barang'] || '').toLowerCase();
-                // PERBAIKAN: Menggunakan properti 'tanggal'
+                const namaBarang = (row.nama_barang || '').toLowerCase();
                 const tanggal = (row.tanggal || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
