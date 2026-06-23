@@ -24,16 +24,14 @@
         }
     </script>
     <!-- Library Resmi Supabase JS -->
+   <!-- Library Resmi Supabase JS Terbaru -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // URL Supabase Anda sudah otomatis terisi di bawah ini
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
         
-        // PENTING: Ganti teks di bawah dengan anon/public key dari menu Project Settings -> API di Supabase Anda
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqZXhneXFteXNrZ3Rnd3BudWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNjAwODIsImV4cCI6MjA5NzczNjA4Mn0.XkGT6Lka80KTAciRx-BA-KAYJx5r6KbDU9HH4c2j98A';
-        
-        // Inisialisasi Klien Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Menggunakan inisialisasi yang mendukung kunci baru
+        const supabase = supabase._createClient ? supabase._createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Ambil data otomatis saat website pertama kali dibuka
         window.addEventListener('load', function() {
