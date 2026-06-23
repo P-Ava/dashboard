@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rincian Investasi Saham</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brand: '#603010', brandBg: '#fbf5f0', cardBg: '#ffffff' },
+                    fontFamily: { serif: ['Georgia', 'serif'], sans: ['Inter', 'ui-sans-serif', 'system-ui'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
+    <div class="max-w-4xl w-full flex flex-col gap-6">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="font-serif text-xl font-bold text-brand">Investasi Saham</h1>
+                    <p class="text-xs text-stone-400">Rincian portofolio & emiten</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-stone-400 font-medium">Total Nilai</span>
+                <h2 class="text-lg font-bold text-brand font-serif">Rp15.000.000</h2>
+            </div>
+        </div>
+
+        <!-- TABEL -->
+        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
+            <h3 class="font-serif font-semibold text-lg text-brand">Komposisi Emiten</h3>
+            <div class="overflow-x-auto rounded-2xl border border-stone-100">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider border-b border-stone-100">
+                            <th class="p-4">Kode Emiten / Perusahaan</th>
+                            <th class="p-4">Sektor</th>
+                            <th class="p-4 text-right">Nilai Investasi</th>
+                            <th class="p-4">Alokasi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-100 text-sm text-stone-600">
+                        <tr class="hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800">BBCA (Bank Central Asia)</td>
+                            <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">Perbankan</span></td>
+                            <td class="p-4 text-right font-semibold">Rp7.500.000</td>
+                            <td class="p-4 text-stone-400 text-xs">50%</td>
+                        </tr>
+                        <tr class="hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800">TLKM (Telkom Indonesia)</td>
+                            <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">Telekomunikasi</span></td>
+                            <td class="p-4 text-right font-semibold">Rp4.500.000</td>
+                            <td class="p-4 text-stone-400 text-xs">30%</td>
+                        </tr>
+                        <tr class="hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800">ASII (Astra International)</td>
+                            <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">Otomotif</span></td>
+                            <td class="p-4 text-right font-semibold">Rp3.000.000</td>
+                            <td class="p-4 text-stone-400 text-xs">20%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
