@@ -216,23 +216,23 @@
     <script>
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // PERBAIKAN UTAMA: Menggunakan nama supaClient agar TIDAK tabrakan dengan fungsi bawaan CDN
+        const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function muatDataMurni() {
             try {
-                // Wajib pakai '*' agar lolos verifikasi Policy RLS Supabase
-                const { data, error } = await supabase
+                // Memanggil tabel menggunakan supaClient yang baru
+                const { data, error } = await supaClient
                     .from('catatan_keuangan')
                     .select('*');
 
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    // Menyisir semua baris secara otomatis
                     data.forEach(row => {
                         const namaJudul = row.judul ? row.judul.toLowerCase().trim() : '';
                         
-                        // Pasangkan langsung ke ID HTML yang sesuai berdasarkan nama judulnya
                         if (namaJudul === 'uang pribadi') {
                             document.getElementById('judul-row-1').innerText = row.judul;
                             document.getElementById('nominal-row-1').innerText = row.deskripsi;
@@ -244,16 +244,14 @@
                             document.getElementById('nominal-row-3').innerText = row.deskripsi;
                         }
                     });
-                    console.log("Koneksi RLS & Data Sukses Tembus!");
+                    console.log("Koneksi Sukses & Data Berhasil Tembus!");
                 }
             } catch (err) {
                 console.error('Terjadi kesalahan pada JavaScript:', err.message);
             }
         }
 
-        // Jalankan fungsi otomatis saat halaman siap
         window.addEventListener('DOMContentLoaded', muatDataMurni);
     </script>
 </body>
 </html>
- 
