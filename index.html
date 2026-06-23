@@ -23,72 +23,88 @@
             }
         }
     </script>
-    <!-- Library Google API untuk Login & Google Drive -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <!-- Library Resmi Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Konfigurasi API Google (Anda perlu membuat Client ID dan API Key di Google Cloud Console)
-        const CLIENT_ID = 'MASUKKAN_CLIENT_ID_ANDA_DI_SINI';
-        const API_KEY = 'MASUKKAN_API_KEY_ANDA_DI_SINI';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata'; // Akses khusus folder tersembunyi aplikasi
+        // URL Supabase Anda sudah otomatis terisi di bawah ini
+        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        
+        // PENTING: Ganti teks di bawah dengan anon/public key dari menu Project Settings -> API di Supabase Anda
+        const SUPABASE_ANON_KEY = 'MASUKKAN_ANON_KEY_SUPABASE_ANDA_DI_SINI';
+        
+        // Inisialisasi Klien Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let tokenClient;
-        let gapiInited = false;
-        let gsiInited = false;
-
-        // 1. Inisialisasi Google API Client & Google Identity Services
+        // Ambil data otomatis saat website pertama kali dibuka
         window.addEventListener('load', function() {
-            gapi.load('client', async () => {
-                await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
-                gapiInited = true;
-            });
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: (resp) => {
-                    if (resp.error !== undefined) throw resp;
-                    document.getElementById('btn-login').innerText = "✅ Connected";
-                    document.getElementById('btn-login').classList.add('bg-emerald-600');
-                    bacaDataDariDrive(); // Otomatis ambil data dari Drive setelah login sukses
-                },
-            });
+            ambilCatatanDariSupabase();
         });
 
-        function handleAuthClick() {
-            // Memicu jendela pop-up login Google akun pengguna
-            tokenClient.requestAccessToken({ prompt: 'consent' });
+        // 1. Fungsi Mengambil (Read) Data dari Supabase ke Layar
+        async function ambilCatatanDariSupabase() {
+            const wadah = document.getElementById("lokasi-catatan");
+            if (!wadah) return;
+            
+            // Ambil data dari tabel catatan_keuangan
+            const { data, error } = await supabase
+                .from('catatan_keuangan')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Gagal mengambil data:', error);
+                wadah.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error: ${error.message}</p>`;
+                return;
+            }
+
+            // Jika data kosong
+            if (!data || data.length === 0) {
+                wadah.innerHTML = `<p class="text-xs text-stone-400 text-center py-4">Belum ada catatan keuangan.</p>`;
+                return;
+            }
+
+            // Bersihkan list bawaan, lalu ganti dengan data dari Supabase
+            wadah.innerHTML = '';
+            data.forEach(item => {
+                const catatanBaru = document.createElement("div");
+                catatanBaru.className = "flex items-start gap-4 pb-3 border-b border-stone-100";
+                catatanBaru.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
+                    <div>
+                        <h4 class="font-sans font-semibold text-sm text-stone-800">${item.judul}</h4>
+                        <p class="text-xs text-stone-500">${item.deskripsi}</p>
+                    </div>
+                `;
+                wadah.appendChild(catatanBaru);
+            });
         }
 
-        // 2. Simulasi Fungsi Backend Baca & Simpan File di Google Drive User
-        async function bacaDataDariDrive() {
-            console.log("Mencari file database keuangan Anda di Google Drive...");
-            // Logika Drive API untuk mencari file bernama 'finance_data.json'
-        }
-
-        async function simpanDataKeDrive(dataBaru) {
-            console.log("Menyimpan data terbaru langsung ke Google Drive privat user...");
-        }
-
-        // 3. Fungsi Interaktif Tombol + untuk Menambah Catatan Baru di Layar
-        function tambahCatatan() {
+        // 2. Fungsi Menambah (Create/Insert) Data Baru ke Supabase
+        async function tambahCatatan() {
             const judul = prompt("Masukkan judul catatan baru:");
             if (!judul) return;
             
             const deskripsi = prompt("Masukkan deskripsi/detail catatan:");
             if (!deskripsi) return;
 
-            const wadah = document.getElementById("lokasi-catatan");
+            // Simpan ke tabel Supabase
+            const { error } = await supabase
+                .from('catatan_keuangan')
+                .insert([{ judul: judul, deskripsi: deskripsi }]);
 
-            const catatanBaru = document.createElement("div");
-            catatanBaru.className = "flex items-start gap-4 pb-3 border-b border-stone-100";
-            catatanBaru.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
-                <div>
-                    <h4 class="font-sans font-semibold text-sm text-stone-800">${judul}</h4>
-                    <p class="text-xs text-stone-500">${deskripsi}</p>
-                </div>
-            `;
-            wadah.appendChild(catatanBaru);
+            if (error) {
+                alert('Gagal menyimpan ke Supabase: ' + error.message);
+            } else {
+                // Refresh data di layar jika sukses
+                ambilCatatanDariSupabase();
+            }
+        }
+
+        // 3. Fungsi Koneksi Supabase
+        function handleSupabaseConnect() {
+            alert("Terhubung dengan konfigurasi Supabase!");
+            document.getElementById('btn-login').innerText = "⚡ Supabase Active";
+            document.getElementById('btn-login').classList.add('bg-emerald-600');
         }
     </script>
 </head>
@@ -105,20 +121,14 @@
                 <div class="relative w-full sm:w-64">
                     <input type="text" placeholder="Cari data lokal..." class="w-full text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
-                <!-- Tombol Login Google -->
-                <button id="btn-login" onclick="handleAuthClick()" class="w-full sm:w-auto bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition duration-200">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Connect Drive
+                <!-- Tombol Koneksi Supabase -->
+                <button id="btn-login" onclick="handleSupabaseConnect()" class="w-full sm:w-auto bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition duration-200">
+                    ⚡ Connect Supabase
                 </button>
             </div>
         </div>
 
-        <!-- AREA TENGAH: AI Chat untuk Memasukkan Data (Tepat di Atas Tabel/Grafik) -->
+        <!-- AREA TENGAH: AI Chat untuk Memasukkan Data -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-3">
             <div class="flex items-center gap-2 text-brand">
                 <span class="text-xl">✨</span>
@@ -133,18 +143,16 @@
             </div>
         </div>
 
-        <!-- AREA TABEL & GRAFIK: Container Utama Dashboard Anda -->
+        <!-- AREA TABEL & GRAFIK -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             
             <!-- KARTU 1: Financial Overview -->
             <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
                 <div>
-                    <!-- Header Kartu -->
                     <div class="flex justify-between items-start mb-6">
                         <h2 class="font-serif text-2xl font-semibold text-brand">Financial Overview</h2>
                         <span class="bg-orange-100 text-brand text-xs font-bold px-2.5 py-1 rounded-full">+45%</span>
                     </div>
-                    <!-- Area Grafik -->
                     <div class="relative w-full h-40 mb-6">
                         <svg viewBox="0 0 100 40" class="w-full h-full overflow-visible">
                             <defs>
@@ -155,41 +163,16 @@
                             </defs>
                             <path d="M 0 35 L 15 28 L 35 22 L 55 20 L 75 14 L 100 8 L 100 40 L 0 40 Z" fill="url(#grad)" />
                             <path d="M 0 35 L 15 28 L 35 22 L 55 20 L 75 14 L 100 8" fill="none" stroke="#603010" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            <circle cx="0" cy="35" r="1.5" fill="#603010" />
-                            <circle cx="15" cy="28" r="1.5" fill="#603010" />
-                            <circle cx="35" cy="22" r="1.5" fill="#603010" />
-                            <circle cx="55" cy="20" r="1.5" fill="#603010" />
-                            <circle cx="75" cy="14" r="1.5" fill="#603010" />
-                            <circle cx="100" cy="8" r="2" fill="#603010" />
                         </svg>
-                        <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-stone-400 font-medium pointer-events-none">
-                            <span>$40k</span>
-                            <span>$30k</span>
-                            <span>$20k</span>
-                            <span>$10k</span>
-                        </div>
-                        <div class="absolute bottom-0 left-0 w-full flex justify-between text-[10px] text-stone-400 font-medium px-1 translate-y-4">
-                            <span>Jan</span>
-                            <span>Mar</span>
-                            <span>Apr</span>
-                            <span>May</span>
-                            <span>Jun</span>
-                            <span>Jul</span>
-                        </div>
                     </div>
                 </div>
-                <!-- Informasi Income & Expenses -->
                 <div class="grid grid-cols-2 gap-4 mt-6">
                     <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
-                        <div class="flex items-center justify-center gap-1.5 text-xs text-stone-500 mb-1">
-                            <span class="text-brand">●</span> Income
-                        </div>
+                        <div class="text-xs text-stone-500 mb-1">● Income</div>
                         <div class="font-serif text-xl font-bold text-brand">$45,200</div>
                     </div>
                     <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
-                        <div class="flex items-center justify-center gap-1.5 text-xs text-stone-500 mb-1">
-                            <span class="text-stone-400">●</span> Expenses
-                        </div>
+                        <div class="text-xs text-stone-500 mb-1">● Expenses</div>
                         <div class="font-serif text-xl font-bold text-brand">$12,300</div>
                     </div>
                 </div>
@@ -198,43 +181,15 @@
             <!-- KARTU 2: Financial Notes -->
             <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
                 <div>
-                    <!-- Bagian Judul & Tombol Tambah (+) -->
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="font-serif text-2xl font-semibold text-brand">Financial Notes</h2>
                         <button onclick="tambahCatatan()" class="w-8 h-8 rounded-full bg-brandBg hover:bg-orange-100 text-brand font-bold text-lg flex items-center justify-center transition duration-200">
                             +
                         </button>
                     </div>
-                    <!-- Wadah List Catatan -->
+                    <!-- Wadah List Catatan dari Database -->
                     <div id="lokasi-catatan" class="space-y-4">
-                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
-                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">✓</div>
-                            <div>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800">Set a budget</h4>
-                                <p class="text-xs text-stone-500">Plan your monthly spending.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
-                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">⏰</div>
-                            <div>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800">Save regularly</h4>
-                                <p class="text-xs text-stone-500">Aim to save at least 20% of your income.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
-                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📊</div>
-                            <div>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800">Track expenses</h4>
-                                <p class="text-xs text-stone-500">Monitor your daily expenses.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">🎯</div>
-                            <div>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800">Invest wisely</h4>
-                                <p class="text-xs text-stone-500">Consider long-term investments.</p>
-                            </div>
-                        </div>
+                        <p class="text-xs text-stone-400 text-center py-4">Memuat data dari database...</p>
                     </div>
                 </div>
                 <button class="w-full bg-brand hover:bg-opacity-90 text-white text-sm font-semibold py-3.5 px-4 rounded-xl transition duration-200 mt-6">
@@ -244,6 +199,9 @@
 
         </div>
     </div>
+
+</body>
+</html>
 
 </body>
 </html>
