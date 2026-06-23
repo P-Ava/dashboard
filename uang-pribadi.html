@@ -43,6 +43,7 @@
                     <p class="text-xs text-stone-400">Rincian mutasi pencatatan lokal</p>
                 </div>
             </div>
+            
             <!-- Total Saldo -->
             <div class="text-right">
                 <span class="text-xs text-stone-400 font-medium">Total Saldo</span>
@@ -52,9 +53,23 @@
 
         <!-- KARTU UTAMA: TABEL TRANSAKSI -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
-            <div class="flex justify-between items-center">
-                <h3 class="font-serif font-semibold text-lg text-brand">Daftar Pengeluaran & Pemasukan</h3>
-                <span class="text-xs bg-orange-100 text-brand font-bold px-2.5 py-1 rounded-full">Pribadi</span>
+            
+            <!-- BAGIAN ATAS TABEL: JUDUL & KOLOM PENCARIAN (Mengikuti Gaya Supabase Filter) -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
+                <div>
+                    <h3 class="font-serif font-semibold text-lg text-brand">Daftar Pengeluaran & Pemasukan</h3>
+                    <p class="text-xs text-stone-400">Filter data berdasarkan nama barang</p>
+                </div>
+                
+                <!-- KOLOM PENCARIAN BARANG BARU -->
+                <div class="relative w-full sm:w-72">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </span>
+                    <input type="text" id="input-cari-barang" placeholder="Filter by nama barang..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
+                </div>
             </div>
 
             <!-- RESPONSIVE TABLE CONTAINER -->
@@ -68,10 +83,10 @@
                             <th class="p-4">Tanggal</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-stone-100 text-sm text-stone-600">
+                    <tbody id="tabel-body-transaksi" class="divide-y divide-stone-100 text-sm text-stone-600">
                         <!-- Baris 1 -->
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Gaji Bulanan</td>
+                        <tr class="baris-data hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800 nama-barang">Gaji Bulanan</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">Pemasukan</span>
                             </td>
@@ -79,8 +94,8 @@
                             <td class="p-4 text-stone-400 text-xs">23 Juni 2026</td>
                         </tr>
                         <!-- Baris 2 -->
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Kopi Latte & Croissant</td>
+                        <tr class="baris-data hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800 nama-barang">Kopi Latte & Croissant</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Konsumsi</span>
                             </td>
@@ -88,8 +103,8 @@
                             <td class="p-4 text-stone-400 text-xs">22 Juni 2026</td>
                         </tr>
                         <!-- Baris 3 -->
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Belanja Bulanan Supermarket</td>
+                        <tr class="baris-data hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800 nama-barang">Belanja Bulanan Supermarket</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Kebutuhan</span>
                             </td>
@@ -97,8 +112,8 @@
                             <td class="p-4 text-stone-400 text-xs">20 Juni 2026</td>
                         </tr>
                         <!-- Baris 4 -->
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Token Listrik Rumah</td>
+                        <tr class="baris-data hover:bg-stone-50/50 transition">
+                            <td class="p-4 font-medium text-stone-800 nama-barang">Token Listrik Rumah</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Utilitas</span>
                             </td>
@@ -111,15 +126,35 @@
 
             <!-- PAGINATION / KETERANGAN BAWAH -->
             <div class="flex justify-between items-center text-xs text-stone-400 mt-2">
-                <span>Menampilkan 4 transaksi terbaru</span>
+                <span id="keterangan-jumlah">Menampilkan 4 transaksi terbaru</span>
                 <div class="flex gap-2">
                     <button class="px-3 py-1 bg-stone-50 rounded-lg hover:bg-stone-100 transition">Sebelumnya</button>
                     <button class="px-3 py-1 bg-stone-50 rounded-lg hover:bg-stone-100 transition">Selanjutnya</button>
                 </div>
             </div>
         </div>
-
     </div>
 
+    <!-- SCRIPT LOGIK PENCARIAN REALTIME -->
+    <script>
+        document.getElementById('input-cari-barang').addEventListener('input', function(e) {
+            const kataKunci = e.target.value.toLowerCase().trim();
+            const semuaBaris = document.querySelectorAll('.baris-data');
+            let jumlahTerlihat = 0;
+
+            semuaBaris.forEach(baris => {
+                const teksBarang = baris.querySelector('.nama-barang').innerText.toLowerCase();
+                if (teksBarang.includes(kataKunci)) {
+                    baris.style.display = '';
+                    jumlahTerlihat++;
+                } else {
+                    baris.style.display = 'none';
+                }
+            });
+
+            // Update info baris yang tampil bawah tabel
+            document.getElementById('keterangan-jumlah').innerText = `Menampilkan ${jumlahTerlihat} transaksi ditemukan`;
+        });
+    </script>
 </body>
 </html>
