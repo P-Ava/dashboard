@@ -23,18 +23,77 @@
             }
         }
     </script>
+    <!-- Library Google API untuk Login & Google Drive -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    // Konfigurasi API Google (Anda perlu membuat Client ID dan API Key di Google Cloud Console)
+        const CLIENT_ID = 'MASUKKAN_CLIENT_ID_ANDA_DI_SINI';
+        const API_KEY = 'MASUKKAN_API_KEY_ANDA_DI_SINI';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata'; // Akses khusus folder tersembunyi aplikasi
+
+        let tokenClient;
+        let gapiInited = false;
+        let gsiInited = false;
+
+        // 1. Inisialisasi Google API Client & Google Identity Services
+        window.onload = function() {
+            gapi.load('client', async () => {
+                await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
+                gapiInited = true;
+            });
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: (resp) => {
+                    if (resp.error !== undefined) throw resp;
+                    document.getElementById('btn-login').innerText = "✅ Connected";
+                    document.getElementById('btn-login').classList.add('bg-emerald-600');
+                    bacaDataDariDrive(); // Otomatis ambil data dari Drive setelah login sukses
+                },
+            });
+        };
+
+        function handleAuthClick() {
+            // Memicu jendela pop-up login Google akun pengguna
+            tokenClient.requestAccessToken({ prompt: 'consent' });
+        }
+
+        // 2. Simulasi Fungsi Backend Baca & Simpan File di Google Drive User
+        async function bacaDataDariDrive() {
+            console.log("Mencari file database keuangan Anda di Google Drive...");
+            // Logika Drive API untuk mencari file bernama 'finance_data.json'
+            // Jika ada, perbarui data list dan angka dashboard di layar secara real-time!
+        }
+
+        async function simpanDataKeDrive(dataBaru) {
+            console.log("Menyimpan data terbaru langsung ke Google Drive privat user...");
+            // Logika Drive API untuk menimpa file json lama dengan data yang baru dimasukkan user
+        }
 </head>
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <!-- WRAPPER UTAMA -->
     <div class="max-w-4xl w-full flex flex-col gap-6">
         
-        <!-- BARIS ATAS: Judul & Pencarian Lokal (Pojok Kanan Atas) -->
+
+        <!-- BARIS ATAS: Judul & Pencarian Lokal + Tombol Login -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
             <h1 class="font-serif text-xl font-bold text-brand text-center sm:text-left">My Finance Hub</h1>
-            <!-- Kolom Pencarian Lokal -->
-            <div class="relative w-full sm:w-64">
-                <input type="text" placeholder="Cari data lokal..." class="w-full text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-4 py-2 focus:outline-none focus:border-brand transition">
+            <!-- Kolom Pencarian & Tombol Login -->
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" placeholder="Cari data lokal..." class="w-full text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-4 py-2 focus:outline-none focus:border-brand transition">
+                </div>
+                <!-- Tombol Login Google -->
+                <button id="btn-login" onclick="handleAuthClick()" class="w-full sm:w-auto bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition duration-200">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Connect Drive
+                </button>
             </div>
         </div>
 
