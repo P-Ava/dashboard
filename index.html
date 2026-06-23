@@ -24,6 +24,41 @@
         }
     </script>
 </head>
+    <!-- Sambungkan kembali Library Supabase yang valid -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Fungsi otomatis untuk mengambil data dari Supabase dan memperbarui halaman
+        async function muatDataKategori() {
+            const { data, error } = await supabase
+                .from('catatan_keuangan')
+                .select('judul, deskripsi');
+
+            if (error) {
+                console.error('Gagal memuat data:', error);
+                return;
+            }
+
+            // Petakan data ke elemen HTML masing-masing jika data ditemukan
+            data.forEach(item => {
+                if (item.judul === 'Uang Pribadi') {
+                    document.getElementById('nilai-pribadi').innerText = item.deskripsi;
+                } else if (item.judul === 'Saham') {
+                    document.getElementById('nilai-saham').innerText = item.deskripsi;
+                } else if (item.judul === 'Usaha') {
+                    document.getElementById('nilai-usaha').innerText = item.deskripsi;
+                }
+            });
+        }
+
+        // Jalankan fungsi saat halaman terbuka
+        window.addEventListener('DOMContentLoaded', muatDataKategori);
+    </script>
+</body>
+</html>
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <!-- WRAPPER UTAMA -->
@@ -178,31 +213,37 @@
                     </div>
 
                    <!-- DAFTAR FINANCIAL NOTES (SEMUA AKTIF JADI TOMBOL) -->
-                    <div class="flex flex-col gap-1.5">
-                        <!-- Tautan Uang Pribadi -->
-                        <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
-                            <div class="flex items-center gap-2">
-                                <span class="text-base group-hover:scale-110 transition">💼</span>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Uang Pribadi</h4>
-                            </div>
-                            <span class="text-sm font-bold text-stone-800">Rp25.000.000</span>
-                        </a>
+                <!-- Bagian daftar di index.html Anda -->
+                <div class="flex flex-col gap-1.5">
+                    <!-- Tautan Uang Pribadi -->
+                    <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
+                        <div class="flex items-center gap-2">
+                    <span class="text-base group-hover:scale-110 transition">💼</span>
+                    <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Uang Pribadi</h4>
+                    </div>
+                    <!-- Tambahkan id="nilai-pribadi" di sini -->
+                    <span id="nilai-pribadi" class="text-sm font-bold text-stone-800">Rp--</span>
+                    </a>
+
                         <!-- Tautan Saham -->
-                        <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
-                            <div class="flex items-center gap-2">
-                                <span class="text-base group-hover:scale-110 transition">📈</span>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Saham</h4>
-                            </div>
-                            <span class="text-sm font-bold text-stone-800">Rp15.000.000</span>
-                        </a>
-                        <!-- Tautan Usaha -->
-                        <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
-                            <div class="flex items-center gap-2">
-                                <span class="text-base group-hover:scale-110 transition">🏪</span>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Usaha</h4>
-                            </div>
-                            <span class="text-sm font-bold text-stone-800">Rp10.000.000</span>
-                        </a>
+                    <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
+                        <div class="flex items-center gap-2">
+                <span class="text-base group-hover:scale-110 transition">📈</span>
+                <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Saham</h4>
+                    </div>
+                    <!-- Tambahkan id="nilai-saham" di sini -->
+                        <span id="nilai-saham" class="text-sm font-bold text-stone-800">Rp--</span>
+                    </a>
+
+                    <!-- Tautan Usaha -->
+                <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:border-stone-200 hover:bg-stone-100/60 transition group">
+                    <div class="flex items-center gap-2">
+                    <span class="text-base group-hover:scale-110 transition">🏪</span>
+                    <h4 class="font-sans font-semibold text-sm text-stone-800 group-hover:text-brand transition">Usaha</h4>
+                    </div>
+                        <!-- Tambahkan id="nilai-usaha" di sini -->
+                        <span id="nilai-usaha" class="text-sm font-bold text-stone-800">Rp--</span>
+                    </a>
                     </div>
                 </div>
                 
