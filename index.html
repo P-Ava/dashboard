@@ -216,33 +216,31 @@
     <script>
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
-        
-        // Menggunakan 'Supabase' dengan S Kapital agar library mendeteksi fungsinya
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function muatDataMurni() {
             try {
-                // Tarik semua kolom tanpa filter kata
+                // Tarik semua kolom (judul & deskripsi)
                 const { data, error } = await supabase
                     .from('catatan_keuangan')
-                    .select('*');
+                    .select('judul, deskripsi');
 
                 if (error) throw error;
 
                 if (data && data.length >= 3) {
-                    // BARIS 1 -> Tombol Uang Pribadi
-                    document.getElementById('judul-row-1').innerText = data[0].judul || data[0].Kategori || 'Uang Pribadi';
-                    document.getElementById('nominal-row-1').innerText = data[0].deskripsi || data[0].Nominal || 'Rp--';
+                    // BARIS 1 (Index 0) -> Masukkan ke Tombol Uang Pribadi
+                    document.getElementById('judul-row-1').innerText = data[0].judul;
+                    document.getElementById('nominal-row-1').innerText = data[0].deskripsi;
 
-                    // BARIS 2 -> Tombol Saham
-                    document.getElementById('judul-row-2').innerText = data[1].judul || data[1].Kategori || 'Saham';
-                    document.getElementById('nominal-row-2').innerText = data[1].deskripsi || data[1].Nominal || 'Rp--';
+                    // BARIS 2 (Index 1) -> Masukkan ke Tombol Saham
+                    document.getElementById('judul-row-2').innerText = data[1].judul;
+                    document.getElementById('nominal-row-2').innerText = data[1].deskripsi;
 
-                    // BARIS 3 -> Tombol Usaha
-                    document.getElementById('judul-row-3').innerText = data[2].judul || data[2].Kategori || 'Usaha';
-                    document.getElementById('nominal-row-3').innerText = data[2].deskripsi || data[2].Nominal || 'Rp--';
+                    // BARIS 3 (Index 2) -> Masukkan ke Tombol Usaha
+                    document.getElementById('judul-row-3').innerText = data[2].judul;
+                    document.getElementById('nominal-row-3').innerText = data[2].deskripsi;
                     
-                    console.log("Data berhasil masuk ke HTML!");
+                    console.log("Koneksi Row & Column Sukses Tembus ke HTML!");
                 }
             } catch (err) {
                 console.error('Terjadi kesalahan pada JavaScript:', err.message);
@@ -252,6 +250,4 @@
         // Jalankan fungsi otomatis saat halaman siap
         window.addEventListener('DOMContentLoaded', muatDataMurni);
     </script>
-</body>
-</html>
  
