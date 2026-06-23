@@ -31,11 +31,11 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Fungsi otomatis untuk mengambil data dari Supabase dan memperbarui halaman
+       // Fungsi otomatis untuk mengambil data dari Supabase dan memperbarui halaman
         async function muatDataKategori() {
             const { data, error } = await supabase
                 .from('catatan_keuangan')
-                .select('judul, deskripsi');
+                .select('Kategori, Nominal'); // Menggunakan nama kolom asli Supabase
 
             if (error) {
                 console.error('Gagal memuat data:', error);
@@ -44,12 +44,12 @@
 
             // Petakan data ke elemen HTML masing-masing jika data ditemukan
             data.forEach(item => {
-                if (item.judul === 'Uang Pribadi') {
-                    document.getElementById('nilai-pribadi').innerText = item.deskripsi;
-                } else if (item.judul === 'Saham') {
-                    document.getElementById('nilai-saham').innerText = item.deskripsi;
-                } else if (item.judul === 'Usaha') {
-                    document.getElementById('nilai-usaha').innerText = item.deskripsi;
+                if (item.Kategori === 'Uang Pribadi') {
+                    document.getElementById('nilai-pribadi').innerText = item.Nominal;
+                } else if (item.Kategori === 'Saham') {
+                    document.getElementById('nilai-saham').innerText = item.Nominal;
+                } else if (item.Kategori === 'Usaha') {
+                    document.getElementById('nilai-usaha').innerText = item.Nominal;
                 }
             });
         }
