@@ -67,7 +67,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </span>
-                    <input type="text" id="input-cari-gabungan" placeholder="Cari nama barang atau tanggal (YYYY-MM-DD)..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
+                    <input type="text" id="input-cari-gabungan" placeholder="Cari nama barang atau tanggal..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
             </div>
 
@@ -104,7 +104,6 @@
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
         
-        // Menggunakan supaClient agar TIDAK tabrakan dengan object internal library 'supabase'
         const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let dataLokalUangPribadi = [];
@@ -143,9 +142,11 @@
                 const namaBarang = row['nama barang'] || 'Tanpa Nama';
                 const harga = row.harga || 0;
                 const jumlah = row.jumlah || 1;
-                const tanggal = row.date || '-';
                 
-                // Sinkronisasi boolean kolom 'transaksi' dari data Supabase Anda
+                // PERBAIKAN: Menggunakan nama kolom 'tanggal' sesuai database Supabase Anda
+                const tanggal = row.tanggal || '-';
+                
+                // Boolean 'transaksi': TRUE = Pemasukan, FALSE = Pengeluaran
                 const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
@@ -194,7 +195,8 @@
             
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
                 const namaBarang = (row['nama barang'] || '').toLowerCase();
-                const tanggal = (row.date || '').toLowerCase();
+                // PERBAIKAN: Menggunakan properti 'tanggal'
+                const tanggal = (row.tanggal || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
 
