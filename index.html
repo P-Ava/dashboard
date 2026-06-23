@@ -1,12 +1,157 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website Pertama Saya</title>
+    <title>Financial Dashboard Component</title>
+    <!-- Tailwind CSS untuk styling yang cepat dan rapi -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#603010',
+                        brandBg: '#fbf5f0',
+                        cardBg: '#ffffff',
+                    },
+                    fontFamily: {
+                        serif: ['Georgia', 'serif'],
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <h1>Halo Dunia!</h1>
-    <p>Ini adalah website pertama saya yang dibuat langsung melalui GitHub.</p>
+<body class="bg-brandBg min-h-screen flex items-center justify-center p-4 font-sans text-stone-700">
+
+    <!-- Container Utama (Bisa dipasang di Web maupun WebView APK Mobile) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+        
+        <!-- KARTU 1: Financial Overview -->
+        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
+            <div>
+                <!-- Header Kartu -->
+                <div class="flex justify-between items-start mb-6">
+                    <h2 class="font-serif text-2xl font-semibold text-brand">Financial Overview</h2>
+                    <span class="bg-orange-100 text-brand text-xs font-bold px-2.5 py-1 rounded-full">+45%</span>
+                </div>
+
+                <!-- Area Grafik (Simulasi SVG agar ringan dan tajam) -->
+                <div class="relative w-full h-40 mb-6">
+                    <svg viewBox="0 0 100 40" class="w-full h-full overflow-visible">
+                        <defs>
+                            <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#603010;stop-opacity:0.15" />
+                                <stop offset="100%" style="stop-color:#603010;stop-opacity:0.0" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Area di bawah garis -->
+                        <path d="M 0 35 L 15 28 L 35 22 L 55 20 L 75 14 L 100 8 L 100 40 L 0 40 Z" fill="url(#grad)" />
+                        <!-- Garis Grafik -->
+                        <path d="M 0 35 L 15 28 L 35 22 L 55 20 L 75 14 L 100 8" fill="none" stroke="#603010" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <!-- Titik-titik Koordinat -->
+                        <circle cx="0" cy="35" r="1.5" fill="#603010" />
+                        <circle cx="15" cy="28" r="1.5" fill="#603010" />
+                        <circle cx="35" cy="22" r="1.5" fill="#603010" />
+                        <circle cx="55" cy="20" r="1.5" fill="#603010" />
+                        <circle cx="75" cy="14" r="1.5" fill="#603010" />
+                        <circle cx="100" cy="8" r="2" fill="#603010" />
+                    </svg>
+                    <!-- Label Sumbu Y -->
+                    <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-stone-400 font-medium pointer-events-none">
+                        <span>$40k</span>
+                        <span>$30k</span>
+                        <span>$20k</span>
+                        <span>$10k</span>
+                    </div>
+                    <!-- Label Sumbu X -->
+                    <div class="absolute bottom-0 left-0 w-full flex justify-between text-[10px] text-stone-400 font-medium px-1 translate-y-4">
+                        <span>Jan</span>
+                        <span>Mar</span>
+                        <span>Apr</span>
+                        <span>May</span>
+                        <span>Jun</span>
+                        <span>Jul</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Income & Expenses -->
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
+                    <div class="flex items-center justify-center gap-1.5 text-xs text-stone-500 mb-1">
+                        <span class="text-brand">▲</span> Income
+                    </div>
+                    <div class="font-serif text-xl font-bold text-brand">$45,200</div>
+                </div>
+                <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
+                    <div class="flex items-center justify-center gap-1.5 text-xs text-stone-500 mb-1">
+                        <span class="text-stone-400">▼</span> Expenses
+                    </div>
+                    <div class="font-serif text-xl font-bold text-brand">$12,300</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KARTU 2: Financial Notes -->
+        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
+            <div>
+                <h2 class="font-serif text-2xl font-semibold text-brand mb-6">Financial Notes</h2>
+                
+                <!-- Daftar Catatan / Tips -->
+                <div class="space-y-4">
+                    <!-- Item 1 -->
+                    <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
+                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0">
+                            ✓
+                        </div>
+                        <div>
+                            <h4 class="font-sans font-semibold text-sm text-stone-800">Set a budget</h4>
+                            <p class="text-xs text-stone-500">Plan your monthly spending.</p>
+                        </div>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
+                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0">
+                            ⏰
+                        </div>
+                        <div>
+                            <h4 class="font-sans font-semibold text-sm text-stone-800">Save regularly</h4>
+                            <p class="text-xs text-stone-500">Aim to save at least 20% of your income.</p>
+                        </div>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
+                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0">
+                            📊
+                        </div>
+                        <div>
+                            <h4 class="font-sans font-semibold text-sm text-stone-800">Track expenses</h4>
+                            <p class="text-xs text-stone-500">Monitor your daily expenses.</p>
+                        </div>
+                    </div>
+                    <!-- Item 4 -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0">
+                            🎯
+                        </div>
+                        <div>
+                            <h4 class="font-sans font-semibold text-sm text-stone-800">Invest wisely</h4>
+                            <p class="text-xs text-stone-500">Consider long-term investments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <button class="w-full bg-brand hover:bg-opacity-90 text-white text-sm font-semibold py-3.5 px-4 rounded-xl transition duration-200 mt-6">
+                Learn income
+            </button>
+        </div>
+
+    </div>
+
 </body>
 </html>
