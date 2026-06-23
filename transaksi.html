@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+
+<input id="ket" placeholder="Keterangan">
+<input id="jumlah" type="number" placeholder="Jumlah">
+<button onclick="simpan()">Simpan</button>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://hjexgyqmyskgtgwpnufg.supabase.co",
+  "sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ"
+);
+
+async function simpan() {
+  const ket = document.getElementById("ket").value;
+  const jumlah = document.getElementById("jumlah").value;
+
+  const { data, error } = await supabase
+    .from("transaksi")
+    .insert([
+      { keterangan: ket, jumlah: jumlah }
+    ]);
+
+  if(error){
+    alert(error.message);
+  } else {
+    alert("Data tersimpan");
+  }
+}
+</script>
+
+</body>
+</html>
