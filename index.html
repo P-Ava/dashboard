@@ -220,27 +220,31 @@
 
         async function muatDataMurni() {
             try {
-                // Tarik semua kolom (judul & deskripsi)
+                // Wajib pakai '*' agar lolos verifikasi Policy RLS Supabase
                 const { data, error } = await supabase
                     .from('catatan_keuangan')
-                    .select('judul, deskripsi');
+                    .select('*');
 
                 if (error) throw error;
 
-                if (data && data.length >= 3) {
-                    // BARIS 1 (Index 0) -> Masukkan ke Tombol Uang Pribadi
-                    document.getElementById('judul-row-1').innerText = data[0].judul;
-                    document.getElementById('nominal-row-1').innerText = data[0].deskripsi;
-
-                    // BARIS 2 (Index 1) -> Masukkan ke Tombol Saham
-                    document.getElementById('judul-row-2').innerText = data[1].judul;
-                    document.getElementById('nominal-row-2').innerText = data[1].deskripsi;
-
-                    // BARIS 3 (Index 2) -> Masukkan ke Tombol Usaha
-                    document.getElementById('judul-row-3').innerText = data[2].judul;
-                    document.getElementById('nominal-row-3').innerText = data[2].deskripsi;
-                    
-                    console.log("Koneksi Row & Column Sukses Tembus ke HTML!");
+                if (data && data.length > 0) {
+                    // Menyisir semua baris secara otomatis
+                    data.forEach(row => {
+                        const namaJudul = row.judul ? row.judul.toLowerCase().trim() : '';
+                        
+                        // Pasangkan langsung ke ID HTML yang sesuai berdasarkan nama judulnya
+                        if (namaJudul === 'uang pribadi') {
+                            document.getElementById('judul-row-1').innerText = row.judul;
+                            document.getElementById('nominal-row-1').innerText = row.deskripsi;
+                        } else if (namaJudul === 'saham') {
+                            document.getElementById('judul-row-2').innerText = row.judul;
+                            document.getElementById('nominal-row-2').innerText = row.deskripsi;
+                        } else if (namaJudul === 'usaha') {
+                            document.getElementById('judul-row-3').innerText = row.judul;
+                            document.getElementById('nominal-row-3').innerText = row.deskripsi;
+                        }
+                    });
+                    console.log("Koneksi RLS & Data Sukses Tembus!");
                 }
             } catch (err) {
                 console.error('Terjadi kesalahan pada JavaScript:', err.message);
@@ -250,4 +254,6 @@
         // Jalankan fungsi otomatis saat halaman siap
         window.addEventListener('DOMContentLoaded', muatDataMurni);
     </script>
+</body>
+</html>
  
