@@ -32,7 +32,6 @@
         <!-- HEADER / NAVIGASI ATAS -->
         <div class="flex justify-between items-center bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
             <div class="flex items-center gap-3">
-                <!-- Tombol Kembali -->
                 <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition" title="Kembali ke Dashboard">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -40,35 +39,35 @@
                 </a>
                 <div>
                     <h1 class="font-serif text-xl font-bold text-brand">Uang Pribadi</h1>
-                    <p class="text-xs text-stone-400">Rincian mutasi pencatatan lokal</p>
+                    <p class="text-xs text-stone-400">Rincian mutasi langsung dari Supabase</p>
                 </div>
             </div>
             
-            <!-- Total Saldo -->
+            <!-- Total Saldo Dinamis -->
             <div class="text-right">
                 <span class="text-xs text-stone-400 font-medium">Total Saldo</span>
-                <h2 class="text-lg font-bold text-brand font-serif">Rp25.000.000</h2>
+                <h2 id="total-saldo-pribadi" class="text-lg font-bold text-brand font-serif">Rp0</h2>
             </div>
         </div>
 
         <!-- KARTU UTAMA: TABEL TRANSAKSI -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
             
-            <!-- BAGIAN ATAS TABEL: JUDUL & KOLOM PENCARIAN (Mengikuti Gaya Supabase Filter) -->
+            <!-- BAGIAN ATAS TABEL: JUDUL & SATU KOLOM PENCARIAN GABUNGAN -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
                 <div>
                     <h3 class="font-serif font-semibold text-lg text-brand">Daftar Pengeluaran & Pemasukan</h3>
-                    <p class="text-xs text-stone-400">Filter data berdasarkan nama barang</p>
+                    <p class="text-xs text-stone-400">Cari berdasarkan nama barang atau tanggal dalam satu kolom</p>
                 </div>
                 
-                <!-- KOLOM PENCARIAN BARANG BARU -->
-                <div class="relative w-full sm:w-72">
+                <!-- SATU INPUT PENCARIAN PINTAR (NAMA BARANG + TANGGAL) -->
+                <div class="relative w-full sm:w-80">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </span>
-                    <input type="text" id="input-cari-barang" placeholder="Filter by nama barang..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
+                    <input type="text" id="input-cari-gabungan" placeholder="Cari nama barang atau tanggal (YYYY-MM-DD)..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
             </div>
 
@@ -77,84 +76,134 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider border-b border-stone-100">
-                            <th class="p-4">Barang / Deskripsi</th>
+                            <th class="p-4">Nama Barang</th>
                             <th class="p-4">Jenis</th>
-                            <th class="p-4 text-right">Harga / Jumlah</th>
+                            <th class="p-4">Jumlah</th>
+                            <th class="p-4 text-right">Harga</th>
                             <th class="p-4">Tanggal</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-body-transaksi" class="divide-y divide-stone-100 text-sm text-stone-600">
-                        <!-- Baris 1 -->
-                        <tr class="baris-data hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800 nama-barang">Gaji Bulanan</td>
-                            <td class="p-4">
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">Pemasukan</span>
-                            </td>
-                            <td class="p-4 text-right font-semibold text-emerald-600">+Rp5.000.000</td>
-                            <td class="p-4 text-stone-400 text-xs">23 Juni 2026</td>
-                        </tr>
-                        <!-- Baris 2 -->
-                        <tr class="baris-data hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800 nama-barang">Kopi Latte & Croissant</td>
-                            <td class="p-4">
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Konsumsi</span>
-                            </td>
-                            <td class="p-4 text-right font-semibold text-red-600">-Rp65.000</td>
-                            <td class="p-4 text-stone-400 text-xs">22 Juni 2026</td>
-                        </tr>
-                        <!-- Baris 3 -->
-                        <tr class="baris-data hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800 nama-barang">Belanja Bulanan Supermarket</td>
-                            <td class="p-4">
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Kebutuhan</span>
-                            </td>
-                            <td class="p-4 text-right font-semibold text-red-600">-Rp1.200.000</td>
-                            <td class="p-4 text-stone-400 text-xs">20 Juni 2026</td>
-                        </tr>
-                        <!-- Baris 4 -->
-                        <tr class="baris-data hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800 nama-barang">Token Listrik Rumah</td>
-                            <td class="p-4">
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Utilitas</span>
-                            </td>
-                            <td class="p-4 text-right font-semibold text-red-600">-Rp250.000</td>
-                            <td class="p-4 text-stone-400 text-xs">18 Juni 2026</td>
+                    <tbody id="tabel-body-supa" class="divide-y divide-stone-100 text-sm text-stone-600">
+                        <tr>
+                            <td colspan="5" class="p-4 text-center text-stone-400 animate-pulse">Memuat data dari Supabase...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- PAGINATION / KETERANGAN BAWAH -->
+            <!-- KETERANGAN BAWAH -->
             <div class="flex justify-between items-center text-xs text-stone-400 mt-2">
-                <span id="keterangan-jumlah">Menampilkan 4 transaksi terbaru</span>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1 bg-stone-50 rounded-lg hover:bg-stone-100 transition">Sebelumnya</button>
-                    <button class="px-3 py-1 bg-stone-50 rounded-lg hover:bg-stone-100 transition">Selanjutnya</button>
-                </div>
+                <span id="keterangan-jumlah-supa">Menampilkan 0 catatan</span>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT LOGIK PENCARIAN REALTIME -->
+    <!-- PANGGIL LIBRARY & LOGIK SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <script>
-        document.getElementById('input-cari-barang').addEventListener('input', function(e) {
-            const kataKunci = e.target.value.toLowerCase().trim();
-            const semuaBaris = document.querySelectorAll('.baris-data');
-            let jumlahTerlihat = 0;
+        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
+        const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            semuaBaris.forEach(baris => {
-                const teksBarang = baris.querySelector('.nama-barang').innerText.toLowerCase();
-                if (teksBarang.includes(kataKunci)) {
-                    baris.style.display = '';
-                    jumlahTerlihat++;
-                } else {
-                    baris.style.display = 'none';
+        let dataLokalUangPribadi = []; // Menampung data murni dari database
+
+        async function ambilDataUangPribadi() {
+            try {
+                const { data, error } = await supaClient
+                    .from('uang_pribadi')
+                    .select('*');
+
+                if (error) throw error;
+
+                if (data) {
+                    dataLokalUangPribadi = data;
+                    renderTabel(dataLokalUangPribadi);
                 }
+            } catch (err) {
+                console.error('Gagal mengambil data:', err.message);
+                document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Gagal memuat: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderTabel(dataArray) {
+            const tbody = document.getElementById('tabel-body-supa');
+            tbody.innerHTML = '';
+            
+            if (dataArray.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-stone-400">Tidak ada data yang cocok</td></tr>';
+                document.getElementById('keterangan-jumlah-supa').innerText = 'Menampilkan 0 catatan';
+                return;
+            }
+
+            let akumulasiSaldo = 0;
+
+            dataArray.forEach(row => {
+                const namaBarang = row['nama barang'] || 'Tanpa Nama';
+                const harga = row.harga || 0;
+                const jumlah = row.jumlah || 1;
+                const tanggal = row.date || '-';
+                
+                // Membaca kolom boolean 'transaksi' dari Supabase Anda
+                // TRUE = Pemasukan, FALSE = Pengeluaran
+                const apakahPemasukan = row.transaksi === true;
+
+                // Kalkulasi total saldo riil
+                if (apakahPemasukan) {
+                    akumulasiSaldo += (harga * jumlah);
+                } else {
+                    akumulasiSaldo -= (harga * jumlah);
+                }
+
+                const formatHarga = new Intl.NumberFormat('id-ID', { 
+                    style: 'currency', 
+                    currency: 'IDR', 
+                    maximumFractionDigits: 0 
+                }).format(harga);
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-stone-50/50 transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-stone-800">${namaBarang}</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${apakahPemasukan ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
+                            ${apakahPemasukan ? 'Pemasukan' : 'Pengeluaran'}
+                        </span>
+                    </td>
+                    <td class="p-4 text-stone-500">${jumlah}x</td>
+                    <td class="p-4 text-right font-semibold ${apakahPemasukan ? 'text-emerald-600' : 'text-red-600'}">
+                        ${apakahPemasukan ? '+' : '-'}${formatHarga}
+                    </td>
+                    <td class="p-4 text-stone-400 text-xs">${tanggal}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            // Update info baris yang tampil bawah tabel
-            document.getElementById('keterangan-jumlah').innerText = `Menampilkan ${jumlahTerlihat} transaksi ditemukan`;
+            // Format dan pasang total saldo secara otomatis ke bagian atas website
+            document.getElementById('total-saldo-pribadi').innerText = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                maximumFractionDigits: 0 
+            }).format(akumulasiSaldo);
+
+            document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} catatan ditemukan`;
+        }
+
+        // FUNGSI PENCARIAN SATU KOLOM PINTAR (Nama Barang ATAU Tanggal)
+        document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
+            const kataKunci = e.target.value.toLowerCase().trim();
+            
+            const dataHasilFilter = dataLokalUangPribadi.filter(row => {
+                const namaBarang = (row['nama barang'] || '').toLowerCase();
+                const tanggal = (row.date || '').toLowerCase();
+                
+                // Baris lolos saringan jika kata kunci COCOK dengan nama barang ATAU tanggal
+                return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
+            });
+
+            renderTabel(dataHasilFilter);
         });
+
+        window.addEventListener('DOMContentLoaded', ambilDataUangPribadi);
     </script>
 </body>
 </html>
