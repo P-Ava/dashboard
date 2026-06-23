@@ -26,7 +26,8 @@
     <!-- Library Google API untuk Login & Google Drive -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
-    // Konfigurasi API Google (Anda perlu membuat Client ID dan API Key di Google Cloud Console)
+    <script>
+        // Konfigurasi API Google (Anda perlu membuat Client ID dan API Key di Google Cloud Console)
         const CLIENT_ID = 'MASUKKAN_CLIENT_ID_ANDA_DI_SINI';
         const API_KEY = 'MASUKKAN_API_KEY_ANDA_DI_SINI';
         const SCOPES = 'https://www.googleapis.com/auth/drive.appdata'; // Akses khusus folder tersembunyi aplikasi
@@ -36,7 +37,7 @@
         let gsiInited = false;
 
         // 1. Inisialisasi Google API Client & Google Identity Services
-        window.onload = function() {
+        window.addEventListener('load', function() {
             gapi.load('client', async () => {
                 await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
                 gapiInited = true;
@@ -51,7 +52,7 @@
                     bacaDataDariDrive(); // Otomatis ambil data dari Drive setelah login sukses
                 },
             });
-        };
+        });
 
         function handleAuthClick() {
             // Memicu jendela pop-up login Google akun pengguna
@@ -62,20 +63,40 @@
         async function bacaDataDariDrive() {
             console.log("Mencari file database keuangan Anda di Google Drive...");
             // Logika Drive API untuk mencari file bernama 'finance_data.json'
-            // Jika ada, perbarui data list dan angka dashboard di layar secara real-time!
         }
 
         async function simpanDataKeDrive(dataBaru) {
             console.log("Menyimpan data terbaru langsung ke Google Drive privat user...");
-            // Logika Drive API untuk menimpa file json lama dengan data yang baru dimasukkan user
         }
+
+        // 3. Fungsi Interaktif Tombol + untuk Menambah Catatan Baru di Layar
+        function tambahCatatan() {
+            const judul = prompt("Masukkan judul catatan baru:");
+            if (!judul) return;
+            
+            const deskripsi = prompt("Masukkan deskripsi/detail catatan:");
+            if (!deskripsi) return;
+
+            const wadah = document.getElementById("lokasi-catatan");
+
+            const catatanBaru = document.createElement("div");
+            catatanBaru.className = "flex items-start gap-4 pb-3 border-b border-stone-100";
+            catatanBaru.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
+                <div>
+                    <h4 class="font-sans font-semibold text-sm text-stone-800">${judul}</h4>
+                    <p class="text-xs text-stone-500">${deskripsi}</p>
+                </div>
+            `;
+            wadah.appendChild(catatanBaru);
+        }
+    </script>
 </head>
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <!-- WRAPPER UTAMA -->
     <div class="max-w-4xl w-full flex flex-col gap-6">
         
-
         <!-- BARIS ATAS: Judul & Pencarian Lokal + Tombol Login -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
             <h1 class="font-serif text-xl font-bold text-brand text-center sm:text-left">My Finance Hub</h1>
@@ -176,22 +197,23 @@
 
             <!-- KARTU 2: Financial Notes -->
             <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
-    <div>
-        <!-- Bagian Judul & Tombol Tambah (+) -->
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="font-serif text-2xl font-semibold text-brand">Financial Notes</h2>
-            <button class="w-8 h-8 rounded-full bg-brandBg hover:bg-orange-100 text-brand font-bold text-lg flex items-center justify-center transition duration-200">
-                +
-            </button>
-        </div>
-        <div class="space-y-4">
-            <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
-                <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">✓</div>
                 <div>
-                    <h4 class="font-sans font-semibold text-sm text-stone-800">Set a budget</h4>
-                    <p class="text-xs text-stone-500">Plan your monthly spending.</p>
-                </div>
-            </div>
+                    <!-- Bagian Judul & Tombol Tambah (+) -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-serif text-2xl font-semibold text-brand">Financial Notes</h2>
+                        <button onclick="tambahCatatan()" class="w-8 h-8 rounded-full bg-brandBg hover:bg-orange-100 text-brand font-bold text-lg flex items-center justify-center transition duration-200">
+                            +
+                        </button>
+                    </div>
+                    <!-- Wadah List Catatan -->
+                    <div id="lokasi-catatan" class="space-y-4">
+                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
+                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">✓</div>
+                            <div>
+                                <h4 class="font-sans font-semibold text-sm text-stone-800">Set a budget</h4>
+                                <p class="text-xs text-stone-500">Plan your monthly spending.</p>
+                            </div>
+                        </div>
                         <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
                             <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">⏰</div>
                             <div>
