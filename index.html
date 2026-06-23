@@ -31,31 +31,34 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-       // Fungsi otomatis untuk mengambil data dari Supabase dan memperbarui halaman
+// Fungsi otomatis untuk mengambil data dari Supabase (Kolom: judul & deskripsi)
         async function muatDataKategori() {
             const { data, error } = await supabase
                 .from('catatan_keuangan')
-                .select('Kategori, Nominal'); // Menggunakan nama kolom asli Supabase
+                .select('judul, deskripsi'); // Sesuai dengan kolom di Supabase Anda
 
             if (error) {
                 console.error('Gagal memuat data:', error);
                 return;
             }
 
-            // Petakan data ke elemen HTML masing-masing jika data ditemukan
+            // Petakan data ke elemen HTML masing-masing dengan konversi huruf kecil agar pasti cocok
             data.forEach(item => {
-                if (item.Kategori === 'Uang Pribadi') {
-                    document.getElementById('nilai-pribadi').innerText = item.Nominal;
-                } else if (item.Kategori === 'Saham') {
-                    document.getElementById('nilai-saham').innerText = item.Nominal;
-                } else if (item.Kategori === 'Usaha') {
-                    document.getElementById('nilai-usaha').innerText = item.Nominal;
+                const namaKategori = item.judul ? item.judul.toLowerCase().trim() : '';
+                
+                if (namaKategori === 'uang pribadi') {
+                    document.getElementById('nilai-pribadi').innerText = item.deskripsi;
+                } else if (namaKategori === 'saham') {
+                    document.getElementById('nilai-saham').innerText = item.deskripsi;
+                } else if (namaKategori === 'usaha') {
+                    document.getElementById('nilai-usaha').innerText = item.deskripsi;
                 }
             });
         }
 
         // Jalankan fungsi saat halaman terbuka
         window.addEventListener('DOMContentLoaded', muatDataKategori);
+        
     </script>
 </body>
 </html>
