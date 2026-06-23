@@ -23,89 +23,6 @@
             }
         }
     </script>
-    <!-- Library Resmi Supabase JS -->
-   <!-- Library Resmi Supabase JS Terbaru -->
-    <!-- Library Resmi Supabase JS Terbaru -->
-  <!-- GANTI DENGAN BLOK KODE BARU INI: -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
-    <script>
-        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
-        
-        // Inisialisasi menggunakan pustaka UMD terbaru
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // Ambil data otomatis saat website pertama kali dibuka
-        window.addEventListener('load', function() {
-            ambilCatatanDariSupabase();
-        });
-
-        // 1. Fungsi Mengambil (Read) Data dari Supabase ke Layar
-        async function ambilCatatanDariSupabase() {
-            const wadah = document.getElementById("lokasi-catatan");
-            if (!wadah) return;
-            
-            // Ambil data dari tabel catatan_keuangan
-            const { data, error } = await supabase
-                .from('catatan_keuangan')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Gagal mengambil data:', error);
-                wadah.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error: ${error.message}</p>`;
-                return;
-            }
-
-            // Jika data kosong
-            if (!data || data.length === 0) {
-                wadah.innerHTML = `<p class="text-xs text-stone-400 text-center py-4">Belum ada catatan keuangan.</p>`;
-                return;
-            }
-
-            // Bersihkan list bawaan, lalu ganti dengan data dari Supabase
-            wadah.innerHTML = '';
-            data.forEach(item => {
-                const catatanBaru = document.createElement("div");
-                catatanBaru.className = "flex items-start gap-4 pb-3 border-b border-stone-100";
-                catatanBaru.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
-                    <div>
-                        <h4 class="font-sans font-semibold text-sm text-stone-800">${item.judul}</h4>
-                        <p class="text-xs text-stone-500">${item.deskripsi}</p>
-                    </div>
-                `;
-                wadah.appendChild(catatanBaru);
-            });
-        }
-
-        // 2. Fungsi Menambah (Create/Insert) Data Baru ke Supabase
-        async function tambahCatatan() {
-            const judul = prompt("Masukkan judul catatan baru:");
-            if (!judul) return;
-            
-            const deskripsi = prompt("Masukkan deskripsi/detail catatan:");
-            if (!deskripsi) return;
-
-            // Simpan ke tabel Supabase
-            const { error } = await supabase
-                .from('catatan_keuangan')
-                .insert([{ judul: judul, deskripsi: deskripsi }]);
-
-            if (error) {
-                alert('Gagal menyimpan ke Supabase: ' + error.message);
-            } else {
-                // Refresh data di layar jika sukses
-                ambilCatatanDariSupabase();
-            }
-        }
-
-        // 3. Fungsi Koneksi Supabase
-        function handleSupabaseConnect() {
-            alert("Terhubung dengan konfigurasi Supabase!");
-            document.getElementById('btn-login').innerText = "⚡ Supabase Active";
-            document.getElementById('btn-login').classList.add('bg-emerald-600');
-        }
-    </script>
 </head>
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
@@ -117,12 +34,18 @@
             <h1 class="font-serif text-xl font-bold text-brand text-center sm:text-left">My Finance Hub</h1>
             <!-- Kolom Pencarian & Tombol Login -->
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center">
+                <!-- Kolom Pencarian dengan Ikon Kaca Pembesar -->
                 <div class="relative w-full sm:w-64">
-                    <input type="text" placeholder="Cari data lokal..." class="w-full text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-4 py-2 focus:outline-none focus:border-brand transition">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </span>
+                    <input type="text" placeholder="Cari data lokal..." class="w-full text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
                 <!-- Tombol Koneksi Supabase -->
-                <button id="btn-login" onclick="handleSupabaseConnect()" class="w-full sm:w-auto bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition duration-200">
-                    ⚡ Connect Supabase
+                <button id="btn-login" class="w-full sm:w-auto bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition duration-200">
+                    ⚡ Supabase Active
                 </button>
             </div>
         </div>
@@ -139,6 +62,52 @@
                 <button class="bg-brand hover:bg-opacity-90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition duration-200">
                     Kirim
                 </button>
+            </div>
+        </div>
+
+        <!-- KARTU BARU: Riwayat Transaksi (3 Baris) -->
+        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-serif font-semibold text-lg text-brand">Riwayat Transaksi</h3>
+                <span class="text-xs text-stone-400 font-medium">3 Transaksi Terakhir</span>
+            </div>
+            
+            <div class="flex flex-col gap-3">
+                <!-- Baris 1: Income -->
+                <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">💰</div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-stone-800">Gaji Bulanan</h4>
+                            <p class="text-xs text-stone-400">23 Juni 2026 • Transfer Bank</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-bold text-emerald-600">+$3,500.00</span>
+                </div>
+
+                <!-- Baris 2: Expense -->
+                <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">☕</div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-stone-800">Kopi & Camilan</h4>
+                            <p class="text-xs text-stone-400">22 Juni 2026 • Dompet Digital</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-bold text-red-600">-$12.50</span>
+                </div>
+
+                <!-- Baris 3: Expense -->
+                <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">🛒</div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-stone-800">Belanja Bulanan</h4>
+                            <p class="text-xs text-stone-400">20 Juni 2026 • Kartu Kredit</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-bold text-red-600">-$120.00</span>
+                </div>
             </div>
         </div>
 
@@ -182,13 +151,26 @@
                 <div>
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="font-serif text-2xl font-semibold text-brand">Financial Notes</h2>
-                        <button onclick="tambahCatatan()" class="w-8 h-8 rounded-full bg-brandBg hover:bg-orange-100 text-brand font-bold text-lg flex items-center justify-center transition duration-200">
+                        <button class="w-8 h-8 rounded-full bg-brandBg hover:bg-orange-100 text-brand font-bold text-lg flex items-center justify-center transition duration-200">
                             +
                         </button>
                     </div>
-                    <!-- Wadah List Catatan dari Database -->
+                    <!-- Wadah List Catatan -->
                     <div id="lokasi-catatan" class="space-y-4">
-                        <p class="text-xs text-stone-400 text-center py-4">Memuat data dari database...</p>
+                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
+                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
+                            <div>
+                                <h4 class="font-sans font-semibold text-sm text-stone-800">Rencana Anggaran Kuartal 3</h4>
+                                <p class="text-xs text-stone-500">Alokasikan 20% lebih banyak untuk dana darurat.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
+                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
+                            <div>
+                                <h4 class="font-sans font-semibold text-sm text-stone-800">Tagihan Listrik & WiFi</h4>
+                                <p class="text-xs text-stone-500">Jatuh tempo setiap tanggal 25, siapkan dana otomatis.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button class="w-full bg-brand hover:bg-opacity-90 text-white text-sm font-semibold py-3.5 px-4 rounded-xl transition duration-200 mt-6">
@@ -198,9 +180,6 @@
 
         </div>
     </div>
-
-</body>
-</html>
 
 </body>
 </html>
