@@ -25,14 +25,16 @@
     </script>
     <!-- Library Resmi Supabase JS -->
    <!-- Library Resmi Supabase JS Terbaru -->
+    <!-- Library Resmi Supabase JS Terbaru -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIHuSanm4yd09A_CwFbPXKj';
         
-        // Menggunakan inisialisasi yang mendukung kunci baru
-        const supabase = supabase._createClient ? supabase._createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        // Inisialisasi yang benar menggunakan library global 'supabase'
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Daftarkan ke variabel global agar fungsi di bawahnya tidak error
+        window.supabase = supabaseClient;
         // Ambil data otomatis saat website pertama kali dibuka
         window.addEventListener('load', function() {
             ambilCatatanDariSupabase();
