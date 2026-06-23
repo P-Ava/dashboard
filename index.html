@@ -208,48 +208,48 @@
 
         </div>
     </div>
-
-  <!-- LIBRARY SUPABASE CDN -->
+    <!-- 1. Muat Library Resmi Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
+    
+    <!-- 2. Ambil Data Murni Kolom & Baris -->
     <script>
-        // Menggunakan Publishable Key terbaru Anda yang sudah terpasang
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function muatDataBerdasarkanUrutanRow() {
+        async function koneksiMurniSupabase() {
             try {
-                // Memanggil semua kolom dari tabel catatan_keuangan
+                // Ambil seluruh data dari tabel tanpa filter kata
                 const { data, error } = await supabase
                     .from('catatan_keuangan')
                     .select('*');
 
                 if (error) throw error;
 
-                // Membaca data secara buta berdasarkan urutan baris (Row) yang masuk
                 if (data && data.length >= 3) {
-                    
-                    // Baris 1 (index 0) -> Tombol Uang Pribadi
-                    // Kita ambil kolom 'Kategori' atau 'judul', dan 'Nominal' atau 'deskripsi' mana yang tersedia
-                    document.getElementById('judul-row-1').innerText = data[0].Kategori || data[0].judul || 'Uang Pribadi';
-                    document.getElementById('nominal-row-1').innerText = data[0].Nominal || data[0].deskripsi || 'Rp--';
+                    // AMBIL BARIS 1 (Index 0) -> Masukkan ke Tombol 1
+                    document.getElementById('judul-row-1').innerText = data[0].judul || data[0].Kategori;
+                    document.getElementById('nominal-row-1').innerText = data[0].deskripsi || data[0].Nominal;
 
-                    // Baris 2 (index 1) -> Tombol Saham
-                    document.getElementById('judul-row-2').innerText = data[1].Kategori || data[1].judul || 'Saham';
-                    document.getElementById('nominal-row-2').innerText = data[1].Nominal || data[1].deskripsi || 'Rp--';
+                    // AMBIL BARIS 2 (Index 1) -> Masukkan ke Tombol 2
+                    document.getElementById('judul-row-2').innerText = data[1].judul || data[1].Kategori;
+                    document.getElementById('nominal-row-2').innerText = data[1].deskripsi || data[1].Nominal;
 
-                    // Baris 3 (index 2) -> Tombol Usaha
-                    document.getElementById('judul-row-3').innerText = data[2].Kategori || data[2].judul || 'Usaha';
-                    document.getElementById('nominal-row-3').innerText = data[2].Nominal || data[2].deskripsi || 'Rp--';
+                    // AMBIL BARIS 3 (Index 2) -> Masukkan ke Tombol 3
+                    document.getElementById('judul-row-3').innerText = data[2].judul || data[2].Kategori;
+                    document.getElementById('nominal-row-3').innerText = data[2].deskripsi || data[2].Nominal;
                     
-                    console.log("Data Supabase berhasil dimuat menggunakan Publishable Key!");
+                    console.log("Koneksi Row & Column Sukses!");
                 }
             } catch (err) {
-                console.error('Gagal menarik data Supabase:', err.message);
+                console.error('Koneksi terputus atau diblokir:', err.message);
             }
         }
 
-        window.addEventListener('DOMContentLoaded', muatDataBerdasarkanUrutanRow);
+        // Jalankan saat struktur HTML selesai dimuat
+        window.addEventListener('DOMContentLoaded', koneksiMurniSupabase);
     </script>
 </body>
 </html>
+
+ 
