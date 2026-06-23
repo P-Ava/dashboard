@@ -29,12 +29,21 @@
     <!-- WRAPPER UTAMA -->
     <div class="max-w-4xl w-full flex flex-col gap-6">
         
-        <!-- BARIS ATAS: Judul & Pencarian Lokal + Tombol Login -->
+        <!-- BARIS ATAS: Judul (dengan Ikon Mata) & Pencarian Lokal -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
-            <h1 class="font-serif text-xl font-bold text-brand text-center sm:text-left">My Finance Hub</h1>
-            <!-- Kolom Pencarian & Tombol Login -->
+            <div class="flex items-center gap-3">
+                <h1 class="font-serif text-xl font-bold text-brand text-center sm:text-left">My Finance Hub</h1>
+                <!-- Ikon Mata untuk Sembunyikan Angka -->
+                <button class="text-stone-400 hover:text-brand transition p-1" title="Sembunyikan/Tampilkan Angka">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Kolom Pencarian -->
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center">
-                <!-- Kolom Pencarian dengan Ikon Kaca Pembesar -->
                 <div class="relative w-full sm:w-64">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +52,6 @@
                     </span>
                     <input type="text" placeholder="Cari data lokal..." class="w-full text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
-                <!-- Tombol Koneksi Supabase -->
                 <button id="btn-login" class="w-full sm:w-auto bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition duration-200">
                     ⚡ Supabase Active
                 </button>
@@ -65,7 +73,7 @@
             </div>
         </div>
 
-        <!-- KARTU BARU: Riwayat Transaksi (3 Baris) -->
+        <!-- AREA: Riwayat Transaksi -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-serif font-semibold text-lg text-brand">Riwayat Transaksi</h3>
@@ -73,7 +81,6 @@
             </div>
             
             <div class="flex flex-col gap-3">
-                <!-- Baris 1: Income -->
                 <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">💰</div>
@@ -85,7 +92,6 @@
                     <span class="text-sm font-bold text-emerald-600">+$3,500.00</span>
                 </div>
 
-                <!-- Baris 2: Expense -->
                 <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">☕</div>
@@ -97,7 +103,6 @@
                     <span class="text-sm font-bold text-red-600">-$12.50</span>
                 </div>
 
-                <!-- Baris 3: Expense -->
                 <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">🛒</div>
@@ -111,17 +116,17 @@
             </div>
         </div>
 
-        <!-- AREA TABEL & GRAFIK -->
+        <!-- AREA STRUKTUR BARU: OVERVIEW & NOTES BERBENTUK DUA KOLOM LEBAR -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             
-            <!-- KARTU 1: Financial Overview -->
+            <!-- KARTU MELEBAR LEBIH LUAS: Financial Overview -->
             <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-start mb-6">
                         <h2 class="font-serif text-2xl font-semibold text-brand">Financial Overview</h2>
                         <span class="bg-orange-100 text-brand text-xs font-bold px-2.5 py-1 rounded-full">+45%</span>
                     </div>
-                    <div class="relative w-full h-40 mb-6">
+                    <div class="relative w-full h-44 mb-6">
                         <svg viewBox="0 0 100 40" class="w-full h-full overflow-visible">
                             <defs>
                                 <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -134,7 +139,7 @@
                         </svg>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4 mt-6">
+                <div class="grid grid-cols-2 gap-4 mt-2">
                     <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
                         <div class="text-xs text-stone-500 mb-1">● Income</div>
                         <div class="font-serif text-xl font-bold text-brand">$45,200</div>
@@ -146,34 +151,64 @@
                 </div>
             </div>
 
-            <!-- KARTU 2: Financial Notes -->
+            <!-- KARTU SEBALIKNYA: Financial Notes Dengan Grafik Lingkaran % -->
             <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
                 <div>
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex justify-between items-center mb-4">
                         <h2 class="font-serif text-2xl font-semibold text-brand">Financial Notes</h2>
                         <button class="w-8 h-8 rounded-full bg-brandBg hover:bg-orange-100 text-brand font-bold text-lg flex items-center justify-center transition duration-200">
                             +
                         </button>
                     </div>
-                    <!-- Wadah List Catatan -->
-                    <div id="lokasi-catatan" class="space-y-4">
-                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
-                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
-                            <div>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800">Rencana Anggaran Kuartal 3</h4>
-                                <p class="text-xs text-stone-500">Alokasikan 20% lebih banyak untuk dana darurat.</p>
-                            </div>
+
+                    <!-- AREA GRAFIK LINGKARAN & RINGKASAN PERSENTASE -->
+                    <div class="flex items-center gap-6 bg-stone-50 p-4 rounded-2xl border border-stone-100 mb-4">
+                        <!-- Komposisi Grafik Lingkaran SVG -->
+                        <div class="relative w-20 h-20 shrink-0">
+                            <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
+                                <!-- Uang Pribadi (50%) -->
+                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#603010" stroke-width="4" stroke-dasharray="50 100" stroke-dashoffset="0"></circle>
+                                <!-- Saham (30%) -->
+                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#d97706" stroke-width="4" stroke-dasharray="30 100" stroke-dashoffset="-50"></circle>
+                                <!-- Usaha (20%) -->
+                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="20 100" stroke-dashoffset="-80"></circle>
+                            </svg>
                         </div>
-                        <div class="flex items-start gap-4 pb-3 border-b border-stone-100">
-                            <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-brand shrink-0 text-xs">📌</div>
-                            <div>
-                                <h4 class="font-sans font-semibold text-sm text-stone-800">Tagihan Listrik & WiFi</h4>
-                                <p class="text-xs text-stone-500">Jatuh tempo setiap tanggal 25, siapkan dana otomatis.</p>
+                        <!-- Indikator % -->
+                        <div class="flex flex-col gap-1 text-xs">
+                            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-brand block"></span> Pribadi (50%)</div>
+                            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-600 block"></span> Saham (30%)</div>
+                            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 block"></span> Usaha (20%)</div>
+                        </div>
+                    </div>
+
+                    <!-- Wadah List Data Baru Anda -->
+                    <div id="lokasi-catatan" class="space-y-3">
+                        <div class="flex items-center justify-between pb-2.5 border-b border-stone-100">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm">💼</span>
+                                <h4 class="font-sans font-semibold text-sm text-stone-800">Uang Pribadi</h4>
                             </div>
+                            <span class="text-sm font-bold text-stone-800">Rp25.000.000</span>
+                        </div>
+                        <div class="flex items-center justify-between pb-2.5 border-b border-stone-100">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm">📈</span>
+                                <h4 class="font-sans font-semibold text-sm text-stone-800">Saham</h4>
+                            </div>
+                            <span class="text-sm font-bold text-stone-800">Rp15.000.000</span>
+                        </div>
+                        <div class="flex items-center justify-between pb-2.5">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm">🏪</span>
+                                <h4 class="font-sans font-semibold text-sm text-stone-800">Usaha</h4>
+                            </div>
+                            <span class="text-sm font-bold text-stone-800">Rp10.000.000</span>
                         </div>
                     </div>
                 </div>
-                <button class="w-full bg-brand hover:bg-opacity-90 text-white text-sm font-semibold py-3.5 px-4 rounded-xl transition duration-200 mt-6">
+                
+                <button class="w-full bg-brand hover:bg-opacity-90 text-white text-sm font-semibold py-3 px-4 rounded-xl transition duration-200 mt-4">
                     Learn income
                 </button>
             </div>
