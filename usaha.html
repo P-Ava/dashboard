@@ -19,7 +19,7 @@
     </script>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Fonts (Serif & Sans) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -45,7 +45,7 @@
     <!-- KONTEN UTAMA -->
     <main class="max-w-5xl mx-auto px-4 mt-8 flex flex-col gap-6">
         
-        <!-- HEADER & KARTU RINGKASAN ATAS -->
+        <!-- HEADER & RINGKASAN KAS -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="font-serif font-bold text-2xl text-brand">Keuangan Usaha</h1>
@@ -53,14 +53,13 @@
             </div>
 
             <!-- KARTU RINGKASAN KAS -->
-            <div class="flex items-center gap-4 bg-stone-50/80 px-4 py-2 rounded-xl border border-stone-100">
+            <div class="flex items-center gap-4 bg-stone-100/50 px-4 py-2 rounded-xl border border-stone-200/60">
                 <div>
                     <span class="text-[10px] text-stone-400 font-medium block uppercase tracking-wider">Kas Usaha</span>
                     <div class="flex items-center gap-1.5">
-                        <span id="saldo-kas-usaha" class="text-sm font-bold text-emerald-700">Rp0</span>
-                        <!-- Tombol Edit Kas Manual -->
+                        <span id="saldo-kas-usaha" class="text-sm font-bold text-stone-900">Rp0</span>
                         <button onclick="bukaModalKasUsaha()" class="text-stone-400 hover:text-brand transition" title="Edit Kas Dasar Manual">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                             </svg>
                         </button>
@@ -69,10 +68,10 @@
             </div>
         </div>
 
-        <!-- TOMBOL AKSI TAMBAH TRANSAKSI -->
+        <!-- TOMBOL AKSI -->
         <div class="flex justify-end">
             <button onclick="bukaModalTransaksi()" class="bg-brand text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Catat Transaksi
@@ -90,12 +89,11 @@
                             <th class="px-6 py-3.5">Jenis</th>
                             <th class="px-6 py-3.5 text-right">Harga Satuan</th>
                             <th class="px-6 py-3.5 text-center">Jumlah</th>
-                            <th class="px-6 py-3.5 text-right">Total</th>
+                            <th class="px-6 py-3.5 text-right">Total Harga</th>
                             <th class="px-6 py-3.5 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-body-usaha" class="divide-y divide-stone-100 text-stone-600 font-medium">
-                        <!-- Data diisi otomatis via JS -->
                         <tr>
                             <td colspan="7" class="px-6 py-8 text-center text-stone-400">Memuat data transaksi...</td>
                         </tr>
@@ -105,12 +103,12 @@
         </div>
     </main>
 
-    <!-- POPUP MODAL EDIT KAS USAHA MANUAl -->
+    <!-- POPUP MODAL EDIT KAS USAHA -->
     <div id="modal-kas-usaha" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4">
             <div class="border-b border-stone-100 pb-2">
                 <h3 class="font-serif font-bold text-base text-brand">Atur Ulang Kas Dasar</h3>
-                <p class="text-[11px] text-stone-400 mt-0.5">Atur modal awal atau kas dasar untuk pencatatan usaha Anda.</p>
+                <p class="text-[11px] text-stone-400 mt-0.5">Atur sisa saldo kas fisik/awal sebelum akumulasi mutasi.</p>
             </div>
             <div class="flex flex-col gap-1 text-xs">
                 <label class="font-medium text-stone-500">Nominal Kas Dasar (Rp)</label>
@@ -118,7 +116,7 @@
             </div>
             <div class="flex gap-2 justify-end text-xs pt-1">
                 <button type="button" onclick="tutupModalKasUsaha()" class="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 transition">Batal</button>
-                <button type="button" onclick="simpanKasUsahaManual()" class="px-3 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Perbarui</button>
+                <button type="button" onclick="simpanKasUsahaManual()" class="px-3 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition">Perbarui</button>
             </div>
         </div>
     </div>
@@ -136,7 +134,7 @@
                 </div>
                 <div class="flex flex-col gap-1">
                     <label class="font-medium text-stone-500">Nama Barang</label>
-                    <input type="text" id="form-nama" placeholder="Nama produk atau keperluan" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    <input type="text" id="form-nama" placeholder="Nama produk / keperluan" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
                 </div>
                 <div class="flex flex-col gap-1">
                     <label class="font-medium text-stone-500">Jenis Transaksi</label>
@@ -157,7 +155,7 @@
                 </div>
                 <div class="flex gap-2 justify-end pt-3 text-xs">
                     <button type="button" onclick="tutupModalTransaksi()" class="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 transition">Batal</button>
-                    <button type="submit" class="px-3 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Simpan</button>
+                    <button type="submit" class="px-3 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -165,18 +163,15 @@
 
     <!-- LOGIKA JAVASCRIPT & SUPABASE -->
     <script>
-        // Konfigurasi Supabase Anda (Ganti dengan Kunci & URL Asli Anda jika berbeda)
-        const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co"; 
-        const SUPABASE_KEY = "MASUKKAN_ANON_KEY_SUPABASE_ANDA_DI_SINI"; 
+        const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
+        const SUPABASE_KEY = "MASUKKAN_ANON_KEY_ANDA_DISINI"; 
         
-        const supabase = bootstrap ? null : supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // Jika Anda menggunakan pemanggilan script global eksternal:
+        // Inisialisasi Klien Supabase Aman
         const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-
         let dataLokalUsaha = [];
 
-        // Ambil Data dari Supabase saat Halaman Dimuat
         async function ambilDataUsaha() {
+            if (!_supabase) return;
             try {
                 const { data, error } = await _supabase
                     .from('usaha')
@@ -192,12 +187,11 @@
             } catch (err) {
                 console.error("Gagal memuat data:", err.message);
                 document.getElementById('tabel-body-usaha').innerHTML = `
-                    <tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal mengambil data dari database.</td></tr>
+                    <tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>
                 `;
             }
         }
 
-        // Render Data ke Dalam Tabel HTML
         function tampilkanTabelUsaha() {
             const tbody = document.getElementById('tabel-body-usaha');
             if (dataLokalUsaha.length === 0) {
@@ -207,7 +201,8 @@
 
             let html = "";
             dataLokalUsaha.forEach(row => {
-                const total = (row.harga || 0) * (row.jumlah || 0);
+                // Gunakan kolom total_harga dari DB, jika kosong hitung manual
+                const total = row.total_harga || ((row.harga || 0) * (row.jumlah || 0));
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
                 html += `
@@ -223,7 +218,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-center">${row.jumlah || 0}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right font-bold font-mono text-stone-800">${formatRupiah(total)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <button onclick="hapusTransaksi('${row.id}')" class="text-stone-400 hover:text-rose-600 transition" title="Hapus">
+                            <button onclick="hapusTransaksi('${row.id}')" class="text-stone-400 hover:text-rose-600 transition">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </td>
@@ -233,30 +228,25 @@
             tbody.innerHTML = html;
         }
 
-        // FUNGSI KALKULASI OTOMATIS KAS DENGAN LOCALSTORAGE
         function hitungDanTampilkanKasOtomatis() {
             const kasDasarUsaha = parseFloat(localStorage.getItem('base_usaha_balance') || '0');
             let totalMutasiUsaha = 0;
             
             dataLokalUsaha.forEach(row => {
-                const totalHarga = (row.jumlah || 0) * (row.harga || 0);
+                const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
                 if (row.transaksi === true) {
-                    totalMutasiUsaha += totalHarga; // Pendapatan menambah kas
+                    totalMutasiUsaha += totalHarga;
                 } else {
-                    totalMutasiUsaha -= totalHarga; // Pengeluaran mengurangi kas
+                    totalMutasiUsaha -= totalHarga;
                 }
             });
 
             const kasAkhirUsaha = kasDasarUsaha + totalMutasiUsaha;
-            
             document.getElementById('saldo-kas-usaha').innerText = new Intl.NumberFormat('id-ID', { 
-                style: 'currency', 
-                currency: 'IDR', 
-                maximumFractionDigits: 0 
+                style: 'currency', currency: 'IDR', maximumFractionDigits: 0 
             }).format(kasAkhirUsaha);
         }
 
-        // KONTROL MODAL KAS USAHA MANUAl
         function bukaModalKasUsaha() {
             document.getElementById('input-nominal-kas').value = localStorage.getItem('base_usaha_balance') || '0';
             document.getElementById('modal-kas-usaha').classList.remove('hidden');
@@ -273,7 +263,6 @@
             hitungDanTampilkanKasOtomatis();
         }
 
-        // KONTROL MODAL INPUT TRANSAKSI BARU
         function bukaModalTransaksi() {
             document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal-transaksi').classList.remove('hidden');
@@ -284,54 +273,47 @@
             document.getElementById('form-transaksi').reset();
         }
 
-        // KIRIM TRANSAKSI BARU KE SUPABASE
         async function simpanTransaksi(e) {
             e.preventDefault();
+            if (!_supabase) return;
+
             const date = document.getElementById('form-date').value;
             const nama_barang = document.getElementById('form-nama').value;
             const transaksi = document.getElementById('form-jenis').value === "true";
             const harga = parseFloat(document.getElementById('form-harga').value || '0');
             const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
+            
+            // Hitung total_harga agar sinkron saat masuk ke database
+            const total_harga = harga * jumlah;
 
             try {
                 const { error } = await _supabase
                     .from('usaha')
-                    .insert([{ date, nama_barang, transaksi, harga, jumlah }]);
+                    .insert([{ date, nama_barang, transaksi, harga, jumlah, total_harga }]);
 
                 if (error) throw error;
 
                 tutupModalTransaksi();
-                ambilDataUsaha(); // Muat ulang data & kalkulasi ulang saldo kas
+                ambilDataUsaha();
 
             } catch (err) {
                 alert("Gagal menyimpan transaksi: " + err.message);
             }
         }
 
-        // HAPUS TRANSAKSI DARI SUPABASE
         async function hapusTransaksi(id) {
-            if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) return;
+            if (!_supabase || !confirm("Hapus transaksi ini?")) return;
             try {
-                const { error } = await _supabase
-                    .from('usaha')
-                    .delete()
-                    .eq('id', id);
-
+                const { error } = await _supabase.from('usaha').delete().eq('id', id);
                 if (error) throw error;
-                ambilDataUsaha(); // Muat ulang data & kalkulasi ulang saldo kas
-
+                ambilDataUsaha();
             } catch (err) {
-                alert("Gagal menghapus data: " + err.message);
+                alert("Gagal menghapus: " + err.message);
             }
         }
 
-        // Pemicu Utama Saat Halaman Selesai Dimuat
         window.addEventListener('DOMContentLoaded', () => {
-            if (_supabase) {
-                ambilDataUsaha();
-            } else {
-                console.error("Supabase client tidak terdeteksi. Periksa konfigurasi!");
-            }
+            ambilDataUsaha();
         });
     </script>
 </body>
