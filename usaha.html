@@ -273,32 +273,45 @@
             document.getElementById('form-transaksi').reset();
         }
 
-        async function simpanTransaksi(e) {
-            e.preventDefault();
-            if (!_supabase) return;
+       async function simpanTransaksi(e) {
+    e.preventDefault();
+    if (!_supabase) return;
 
-            const date = document.getElementById('form-date').value;
-            const nama_barang = document.getElementById('form-nama').value;
-            const transaksi = document.getElementById('form-jenis').value === "true";
-            const harga = parseFloat(document.getElementById('form-harga').value || '0');
-            const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
-            
-            // Hitung total_harga agar sinkron saat masuk ke database
-            const total_harga = harga * jumlah;
+    const date = document.getElementById('form-date').value;
+    const nama_barang = document.getElementById('form-nama').value;
+    
+    // Mengambil nilai string "true"/"false" dari select HTML dan mengubahnya jadi Boolean murni
+    const transaksi = document.getElementById('form-jenis').value === "true"; 
+    
+    const harga = parseFloat(document.getElementById('form-harga').value || '0');
+    const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
+    const total_harga = harga * jumlah;
 
-            try {
-                const { error } = await _supabase
-                    .from('usaha')
-                    .insert([{ date, nama_barang, transaksi, harga, jumlah, total_harga }]);
+    // Menyusun data dengan struktur bersih tanpa menyertakan kolom ID agar diisi otomatis oleh Supabase
+    const dataBaru = { 
+        date, 
+        nama_barang, 
+        transaksi, 
+        harga, 
+        jumlah, 
+        total_harga 
+    };
 
-                if (error) throw error;
+    try {
+        const { error } = await _supabase
+            .from('usaha')
+            .insert([dataBaru]);
 
-                tutupModalTransaksi();
-                ambilDataUsaha();
+        if (error) throw error;
 
-            } catch (err) {
-                alert("Gagal menyimpan transaksi: " + err.message);
-            }
+        tutupModalTransaksi();
+        await ambilDataUsaha(); // Memuat ulang data terbaru ke tabel halaman web
+
+    } catch (err) {
+        console.error("Detail Error:", err.message);
+        alert("Gagal menyimpan transaksi: " + err.message);
+    }
+}
         }
 
         async function hapusTransaksi(id) {
