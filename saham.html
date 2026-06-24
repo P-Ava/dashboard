@@ -132,7 +132,7 @@
                     
                     <div class="flex items-center gap-1.5 shrink-0 ml-2">
                         <button onclick="bukaModalTambah()" class="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/xl"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             Tambah
                         </button>
                         
@@ -320,14 +320,13 @@
                 renderTabel(dataLokalSaham);
                 renderPortofolio();
                 hitungDanTampilkanPnlRingkas();
-                hitungDanTampilkanRdnOtomatis(); // Hitung akumulasi RDN
+                hitungDanTampilkanRdnOtomatis();
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
                 document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
             }
         }
 
-        // FUNGSI UTAMA KALKULASI PORTOFOLIO & PnL MENGGUNAKAN METODE RATA-RATA (AVERAGE)
         function hitungPnlSesuaiTransaksi() {
             const hasilSaham = {};
             const transaksiKronologis = [...dataLokalSaham].reverse();
@@ -367,26 +366,21 @@
             return hasilSaham;
         }
 
-        // LOGIKA BARU: OLEH-OLEH DARI STRUKTUR RDN & TRANSAKSI OTOMATIS
         function hitungDanTampilkanRdnOtomatis() {
-            // Mengambil nominal dasar dari localStorage (default 0 jika belum diset)
             const nominalDasarRDN = parseFloat(localStorage.getItem('base_rdn_balance') || '0');
             
             let totalMutasiTransaksi = 0;
             dataLokalSaham.forEach(row => {
                 const totalHarga = row.total_harga || ((row.jumlah_perlembar || 0) * (row.harga_perlembar || 0));
                 if (row.transaksi === true) {
-                    // Beli saham = RDN Berkurang
                     totalMutasiTransaksi -= totalHarga;
                 } else {
-                    // Jual saham = RDN Bertambah
                     totalMutasiTransaksi += totalHarga;
                 }
             });
 
             const saldoAkhirRDN = nominalDasarRDN + totalMutasiTransaksi;
             
-            // Render ke UI RDN
             document.getElementById('saldo-rdn').innerText = new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
                 currency: 'IDR', 
@@ -408,7 +402,7 @@
             const val = document.getElementById('input-nominal-rdn').value || '0';
             localStorage.setItem('base_rdn_balance', val);
             tutupModalRdn();
-            hitungDanTampilkanRdnOtomatis(); // recalculate
+            hitungDanTampilkanRdnOtomatis();
         }
 
         function hitungDanTampilkanPnlRingkas() {
@@ -455,7 +449,6 @@
             const dataPnl = hitungPnlSesuaiTransaksi();
             const emitenAktif = Object.keys(dataPnl).filter(kode => dataPnl[kode].lembarSisa > 0);
 
-            // Perbarui Counter Total Saham yang Dimiliki di bagian Header Atas
             document.getElementById('total-saham-dimiliki').innerText = `${emitenAktif.length} Emiten`;
 
             if (emitenAktif.length === 0) {
@@ -534,8 +527,9 @@
             document.getElementById('modal-pnl').classList.remove('hidden');
         }
 
-        function开ModalPnL() { tutupModalPnL(); }
-        function tutupModalPnL() { document.getElementById('modal-pnl').classList.add('hidden'); }
+        function tutupModalPnL() { 
+            document.getElementById('modal-pnl').classList.add('hidden'); 
+        }
 
         function renderTabel(dataArray) {
             const tbody = document.getElementById('tabel-body-supa');
