@@ -1,78 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rincian Kas Usaha</title>
+    <title>Rincian Usaha</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { brand: '#603010', brandBg: '#fbf5f0', cardBg: '#ffffff' },
-                    fontFamily: { serif: ['Georgia', 'serif'], sans: ['Inter', 'ui-sans-serif', 'system-ui'] }
-                }
-            }
-        }
-    </script>
 </head>
-<body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
-    <div class="max-w-4xl w-full flex flex-col gap-6">
-        <!-- HEADER -->
-        <div class="flex justify-between items-center bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                </a>
-                <div>
-                    <h1 class="font-serif text-xl font-bold text-brand">Kas Usaha / Bisnis</h1>
-                    <p class="text-xs text-stone-400">Arus kas operasional unit bisnis</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <span class="text-xs text-stone-400 font-medium">Modal Aktif</span>
-                <h2 class="text-lg font-bold text-brand font-serif">Rp10.000.000</h2>
-            </div>
+<body class="bg-[#FBF7F4] text-amber-950 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-amber-100">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-amber-900">💼 Catatan Keuangan Usaha</h1>
+            <button onclick="window.location.href='index.html'" class="text-sm bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-xl transition">Kembali ke Dashboard</button>
         </div>
 
-        <!-- TABEL -->
-        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
-            <h3 class="font-serif font-semibold text-lg text-brand">Aliran Kas Operasional</h3>
-            <div class="overflow-x-auto rounded-2xl border border-stone-100">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider border-b border-stone-100">
-                            <th class="p-4">Keterangan Operasional</th>
-                            <th class="p-4">Jenis</th>
-                            <th class="p-4 text-right">Jumlah Dana</th>
-                            <th class="p-4">Tanggal</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-100 text-sm text-stone-600">
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Pendapatan Penjualan Bersih</td>
-                            <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">Masuk</span></td>
-                            <td class="p-4 text-right font-semibold text-emerald-600">+Rp4.200.000</td>
-                            <td class="p-4 text-stone-400 text-xs">22 Juni 2026</td>
-                        </tr>
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Restock Bahan Baku Produksi</td>
-                            <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Keluar</span></td>
-                            <td class="p-4 text-right font-semibold text-red-600">-Rp1.500.000</td>
-                            <td class="p-4 text-stone-400 text-xs">21 Juni 2026</td>
-                        </tr>
-                        <tr class="hover:bg-stone-50/50 transition">
-                            <td class="p-4 font-medium text-stone-800">Biaya Iklan & Marketing Medsos</td>
-                            <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Keluar</span></td>
-                            <td class="p-4 text-right font-semibold text-red-600">-Rp350.000</td>
-                            <td class="p-4 text-stone-400 text-xs">19 Juni 2026</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Tabel Data -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-amber-200 text-amber-800 bg-amber-50/50">
+                        <th class="p-3">Tanggal</th>
+                        <th class="p-3">Nama Kebutuhan / Barang</th>
+                        <th class="p-3">Jenis Aliran</th>
+                        <th class="p-3">Kuantitas</th>
+                        <th class="p-3">Nominal Satuan</th>
+                        <th class="p-3 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-usaha">
+                    <tr><td colspan="6" class="p-4 text-center text-amber-600">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div id="modal-edit" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md border border-amber-100">
+            <h3 class="text-lg font-bold text-amber-950 mb-4">Edit Data Usaha</h3>
+            <input type="hidden" id="edit-id">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-amber-800">Nama Barang/Keperluan</label>
+                    <input type="text" id="edit-nama" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-amber-800">Jenis Transaksi</label>
+                    <select id="edit-transaksi" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="Pemasukan">Pemasukan</option>
+                        <option value="Pengeluaran">Pengeluaran</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-amber-800">Kuantitas</label>
+                        <input type="number" id="edit-jumlah" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-amber-800">Harga Satuan</label>
+                        <input type="number" id="edit-harga" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-amber-800">Tanggal</label>
+                    <input type="date" id="edit-date" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="tutupModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">Batal</button>
+                <button onclick="simpanEdit()" class="px-4 py-2 bg-amber-900 text-white rounded-xl hover:bg-amber-800">Simpan Data</button>
             </div>
         </div>
     </div>
+
+    <script>
+        // Konfigurasi Supabase Anda
+        const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
+        const SUPABASE_KEY = "Ganti_Dengan_Anon_Key_Supabase_Anda"; 
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let dataLokalUsaha = [];
+
+        async function muatData() {
+            const { data, error } = await supabase.from('usaha').select('*').order('date', { ascending: false });
+            if (error) return console.error(error);
+            
+            dataLokalUsaha = data;
+            const tbody = document.getElementById('tabel-usaha');
+            tbody.innerHTML = data.map(row => `
+                <tr class="border-b border-amber-100 hover:bg-amber-50/30 transition">
+                    <td class="p-3 text-sm">${row.date}</td>
+                    <td class="p-3 font-semibold text-amber-950">${row.nama_barang}</td>
+                    <td class="p-3 text-sm"><span class="px-2 py-0.5 rounded-md ${row.transaksi === 'Pemasukan' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${row.transaksi}</span></td>
+                    <td class="p-3 text-sm">${Number(row.jumlah).toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-sm">Rp ${Number(row.harga).toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="bukaModal(${row.id})" class="text-sm bg-amber-900 hover:bg-amber-800 text-white px-3 py-1 rounded-lg transition">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function bukaModal(id) {
+            const row = dataLokalUsaha.find(r => r.id === id);
+            if (!row) return;
+
+            document.getElementById('edit-id').value = row.id;
+            document.getElementById('edit-nama').value = row.nama_barang;
+            document.getElementById('edit-transaksi').value = row.transaksi;
+            document.getElementById('edit-jumlah').value = row.jumlah;
+            document.getElementById('edit-harga').value = row.harga;
+            document.getElementById('edit-date').value = row.date;
+            document.getElementById('modal-edit').classList.remove('hidden');
+        }
+
+        function tutupModal() {
+            document.getElementById('modal-edit').classList.add('hidden');
+        }
+
+        async function simpanEdit() {
+            const id = document.getElementById('edit-id').value;
+            const payload = {
+                nama_barang: document.getElementById('edit-nama').value,
+                transaksi: document.getElementById('edit-transaksi').value,
+                jumlah: parseInt(document.getElementById('edit-jumlah').value),
+                harga: parseInt(document.getElementById('edit-harga').value),
+                date: document.getElementById('edit-date').value
+            };
+
+            const { error } = await supabase.from('usaha').update(payload).eq('id', id);
+            if (error) {
+                alert("Gagal mengedit data: " + error.message);
+            } else {
+                tutupModal();
+                muatData();
+            }
+        }
+
+        muatData();
+    </script>
 </body>
 </html>
