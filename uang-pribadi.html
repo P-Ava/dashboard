@@ -77,7 +77,7 @@
                     <thead>
                         <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider border-b border-stone-100">
                             <th class="p-4">Nama Barang</th>
-                            <th class="p-4">Jenis</th>
+                            <th class="p-4">Transaksi</th>
                             <th class="p-4">Jumlah</th>
                             <th class="p-4 text-right">Harga</th>
                             <th class="p-4">Tanggal</th>
@@ -139,13 +139,12 @@
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                // SINKRONISASI KOLOM: Menggunakan penamaan persis dari Supabase Table Editor
                 const namaBarang = row['nama barang'] || 'Tanpa Nama';
                 const harga = row.harga || 0;
                 const jumlah = row.jumlah || 1;
                 const tanggal = row.date || '-';
                 
-                // KONDISI TRANSAKSI: true = Pemasukan, false = Penjualan/Pengeluaran
+                // true = Pemasukan, false = Penjualan
                 const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
@@ -187,7 +186,7 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} catatan ditemukan`;
         }
 
-        // FUNGSI PENCARIAN GABUNGAN SINKRON
+        // FUNGSI PENCARIAN GABUNGAN
         document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
             const kataKunci = e.target.value.toLowerCase().trim();
             
