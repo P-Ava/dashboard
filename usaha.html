@@ -164,7 +164,7 @@
     <!-- LOGIKA JAVASCRIPT & SUPABASE -->
     <script>
         const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ"; 
+        const SUPABASE_KEY = "MASUKKAN_ANON_KEY_ANDA_DISINI"; // Ganti dengan anon public key asli Anda
         
         // Inisialisasi Klien Supabase Aman
         const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -201,7 +201,6 @@
 
             let html = "";
             dataLokalUsaha.forEach(row => {
-                // Gunakan kolom total_harga dari DB, jika kosong hitung manual
                 const total = row.total_harga || ((row.harga || 0) * (row.jumlah || 0));
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
@@ -273,45 +272,33 @@
             document.getElementById('form-transaksi').reset();
         }
 
-       async function simpanTransaksi(e) {
-    e.preventDefault();
-    if (!_supabase) return;
+        async function simpanTransaksi(e) {
+            e.preventDefault();
+            if (!_supabase) return;
 
-    const date = document.getElementById('form-date').value;
-    const nama_barang = document.getElementById('form-nama').value;
-    
-    // Mengambil nilai string "true"/"false" dari select HTML dan mengubahnya jadi Boolean murni
-    const transaksi = document.getElementById('form-jenis').value === "true"; 
-    
-    const harga = parseFloat(document.getElementById('form-harga').value || '0');
-    const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
-    const total_harga = harga * jumlah;
+            const date = document.getElementById('form-date').value;
+            const nama_barang = document.getElementById('form-nama').value;
+            const transaksi = document.getElementById('form-jenis').value === "true"; 
+            const harga = parseFloat(document.getElementById('form-harga').value || '0');
+            const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
+            const total_harga = harga * jumlah;
 
-    // Menyusun data dengan struktur bersih tanpa menyertakan kolom ID agar diisi otomatis oleh Supabase
-    const dataBaru = { 
-        date, 
-        nama_barang, 
-        transaksi, 
-        harga, 
-        jumlah, 
-        total_harga 
-    };
+            const dataBaru = { date, nama_barang, transaksi, harga, jumlah, total_harga };
 
-    try {
-        const { error } = await _supabase
-            .from('usaha')
-            .insert([dataBaru]);
+            try {
+                const { error } = await _supabase
+                    .from('usaha')
+                    .insert([dataBaru]);
 
-        if (error) throw error;
+                if (error) throw error;
 
-        tutupModalTransaksi();
-        await ambilDataUsaha(); // Memuat ulang data terbaru ke tabel halaman web
+                tutupModalTransaksi();
+                await ambilDataUsaha();
 
-    } catch (err) {
-        console.error("Detail Error:", err.message);
-        alert("Gagal menyimpan transaksi: " + err.message);
-    }
-}
+            } catch (err) {
+                console.error("Detail Error:", err.message);
+                alert("Gagal menyimpan transaksi: " + err.message);
+            }
         }
 
         async function hapusTransaksi(id) {
@@ -319,7 +306,7 @@
             try {
                 const { error } = await _supabase.from('usaha').delete().eq('id', id);
                 if (error) throw error;
-                ambilDataUsaha();
+                await ambilDataUsaha();
             } catch (err) {
                 alert("Gagal menghapus: " + err.message);
             }
