@@ -129,7 +129,7 @@
                             <th class="p-4 text-right">Harga per Lembar</th>
                             <th class="p-4 text-right">Total Harga</th>
                             <th class="p-4">Tanggal</th>
-                            <th id="th-aksi" class="p-4 text-center hidden w-20">Aksi</th>
+                            <th id="th-aksi" class="p-4 text-center hidden w-24">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-body-supa" class="divide-y divide-stone-100 text-sm text-stone-600">
@@ -206,7 +206,6 @@
                 </button>
             </div>
             
-            <!-- Tabel Konten PnL Sesuai Request -->
             <div class="overflow-x-auto rounded-xl border border-stone-100 custom-scrollbar max-h-96">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -217,13 +216,32 @@
                         </tr>
                     </thead>
                     <tbody id="tabel-body-pnl" class="divide-y divide-stone-100 text-stone-600 font-semibold">
-                        <!-- Di-generate otomatis dari JS -->
                     </tbody>
                 </table>
             </div>
             
             <div class="flex justify-end pt-2 border-t border-stone-100">
                 <button type="button" onclick="tutupModalPnL()" class="px-4 py-2 text-xs rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL KONFIRMASI HAPUS (DELETE CONFIRMATION) -->
+    <div id="modal-hapus" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 text-center animate-in fade-in zoom-in-95 duration-150">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-50 text-red-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-serif font-bold text-lg text-brand">Hapus Transaksi?</h3>
+                <p class="text-xs text-stone-400 mt-1">Apakah Anda yakin ingin menghapus catatan transaksi ini secara permanen?</p>
+            </div>
+            <input type="hidden" id="hapus-id">
+            <div class="flex gap-2 justify-center pt-2 text-xs">
+                <button type="button" onclick="tutupModalHapus()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition w-24">Batal</button>
+                <button type="button" onclick="eksekusiHapusData()" class="px-4 py-2 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition shadow-sm w-24">Hapus</button>
             </div>
         </div>
     </div>
@@ -257,7 +275,6 @@
             }
         }
 
-        // FUNGSI UTAMA: MENGKALKULASI MAP PORTOFOLIO & PnL
         function dapatkanKalkulasiPortofolio() {
             const portofolioMap = {};
             const transaksiKronologis = [...dataLokalSaham].reverse();
@@ -326,7 +343,6 @@
             });
         }
 
-        // POPUP MODAL PnL CONTROL (DISESUAIKAN DENGAN REQUEST BARU)
         function bukaModalPnL() {
             const tbodyPnL = document.getElementById('tabel-body-pnl');
             tbodyPnL.innerHTML = '';
@@ -343,7 +359,6 @@
             emitenAktif.forEach(kode => {
                 const item = portofolioMap[kode];
                 
-                // Kalkulasi data PnL
                 const avgPrice = item.totalBeliLembar > 0 ? (item.totalBeliDana / item.totalBeliLembar) : 0;
                 const currentPrice = item.hargaTerakhir;
                 const totalUangPerSaham = item.lembar * currentPrice;
@@ -426,9 +441,12 @@
                 let kolomAksiHtml = '';
                 if (modeEditAktif) {
                     kolomAksiHtml = `
-                        <td class="p-4 text-center">
+                        <td class="p-4 flex items-center justify-center gap-2">
                             <button type="button" onclick="bukaModalEdit('${idRow}')" class="p-1 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Edit Data Ini">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12 14.036H9v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button type="button" onclick="bukaModalHapus('${idRow}')" class="p-1 text-red-600 hover:bg-red-50 rounded-lg transition" title="Hapus Data Ini">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </td>
                     `;
@@ -492,6 +510,36 @@
         function tutupModal() {
             document.getElementById('form-tambah-supa').reset();
             document.getElementById('modal-transaksi').classList.add('hidden');
+        }
+
+        // FUNGSI POPUP MODAL HAPUS
+        function bukaModalHapus(id) {
+            document.getElementById('hapus-id').value = id;
+            document.getElementById('modal-hapus').classList.remove('hidden');
+        }
+
+        function tutupModalHapus() {
+            document.getElementById('modal-hapus').classList.add('hidden');
+            document.getElementById('hapus-id').value = '';
+        }
+
+        async function eksekusiHapusData() {
+            const id = document.getElementById('hapus-id').value;
+            if (!id) return;
+
+            try {
+                const { error } = await supaClient
+                    .from('saham')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                tutupModalHapus();
+                ambilDataSaham();
+            } catch (err) {
+                alert('Gagal menghapus data dari Supabase: ' + err.message);
+            }
         }
 
         document.getElementById('form-tambah-supa').addEventListener('submit', async function(e) {
