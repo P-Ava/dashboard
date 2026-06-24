@@ -321,7 +321,7 @@
 
         // POPUP PEMICU FORM EDIT (MENGISI FORM DENGAN DATA LAMA)
         function bukaModalEdit(id) {
-            const dataRow = dataLokalUangPribadi.find(row => String(row.id) === String(id));
+            const dataRow = dataLokalUangPribadi.find(row => String(row.ID) === String(id));
             if (!dataRow) {
                 console.error("Data ID tidak ditemukan lokal:", id);
                 return;
