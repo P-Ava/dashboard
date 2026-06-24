@@ -139,14 +139,14 @@
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                // LOGIKA DETEKSI OTOMATIS: Mendukung variasi penamaan kolom Supabase Anda
-                const namaBarang = row['nama barang'] || row.nama_barang || row.nama || 'Tanpa Nama';
+                // SINKRONISASI KOLOM: Menggunakan penamaan persis dari Supabase Table Editor
+                const namaBarang = row['nama barang'] || 'Tanpa Nama';
                 const harga = row.harga || 0;
                 const jumlah = row.jumlah || 1;
-                const tanggal = row.tanggal || row.date || row.created_at || '-';
+                const tanggal = row.date || '-';
                 
-                // Mendeteksi status transaksi (Boolean atau teks)
-                const apakahPemasukan = row.transaksi === true || String(row.transaksi).toLowerCase() === 'true';
+                // KONDISI TRANSAKSI: true = Pemasukan, false = Penjualan/Pengeluaran
+                const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
                     akumulasiSaldo += (harga * jumlah);
@@ -166,7 +166,7 @@
                     <td class="p-4 font-medium text-stone-800">${namaBarang}</td>
                     <td class="p-4">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${apakahPemasukan ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
-                            ${apakahPemasukan ? 'Pemasukan' : 'Pengeluaran'}
+                            ${apakahPemasukan ? 'Pemasukan' : 'Penjualan'}
                         </span>
                     </td>
                     <td class="p-4 text-stone-500">${jumlah}x</td>
@@ -187,13 +187,13 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} catatan ditemukan`;
         }
 
-        // FUNGSI PENCARIAN GABUNGAN AMAN
+        // FUNGSI PENCARIAN GABUNGAN SINKRON
         document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
             const kataKunci = e.target.value.toLowerCase().trim();
             
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
-                const namaBarang = String(row['nama barang'] || row.nama_barang || row.nama || '').toLowerCase();
-                const tanggal = String(row.tanggal || row.date || row.created_at || '').toLowerCase();
+                const namaBarang = (row['nama barang'] || '').toLowerCase();
+                const tanggal = (row.date || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
 
