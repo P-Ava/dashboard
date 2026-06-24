@@ -55,19 +55,24 @@
             
             <!-- BAGIAN ATAS TABEL -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
-                <div>
-                    <h3 class="font-serif font-semibold text-lg text-brand">Daftar Pengeluaran & Pemasukan</h3>
-                    <p class="text-xs text-stone-400">Cari berdasarkan nama barang atau tanggal dalam satu kolom</p>
+                <div class="flex items-center gap-3">
+                    <div>
+                        <h3 class="font-serif font-semibold text-lg text-brand inline-block">Daftar Pengeluaran & Pemasukan</h3>
+                        <p class="text-xs text-stone-400">Cari berdasarkan nama barang atau tanggal dalam satu kolom</p>
+                    </div>
+                    <!-- TOMBOL TAMBAH TRANSAKSI KECIL -->
+                    <button onclick="bukaModal()" class="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1 shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                        Tambah
+                    </button>
                 </div>
                 
                 <!-- INPUT PENCARIAN GABUNGAN -->
-                <div class="relative w-full sm:w-80">
+                <div class="relative w-full sm:w-64">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </span>
-                    <input type="text" id="input-cari-gabungan" placeholder="Cari nama barang atau tanggal..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
+                    <input type="text" id="input-cari-gabungan" placeholder="Cari barang atau tanggal..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
             </div>
 
@@ -98,34 +103,85 @@
         </div>
     </div>
 
-    <!-- PANGGIL LIBRARY & LOGIK SUPABASE MURNI -->
+    <!-- POPUP FORM MODAL (TAMBAH TRANSAKSI) -->
+    <div id="modal-transaksi" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                <h3 class="font-serif font-bold text-lg text-brand">Tambah Transaksi Baru</h3>
+                <button onclick="tutupModal()" class="text-stone-400 hover:text-stone-600 p-1 rounded-lg hover:bg-stone-50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="form-tambah-supa" class="flex flex-col gap-3.5 text-xs text-stone-600">
+                <div class="flex flex-col gap-1">
+                    <label class="font-medium text-stone-500">Nama Barang</label>
+                    <input type="text" id="form-nama" required placeholder="Contoh: Gaji Bulanan, Kopi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Jumlah</label>
+                        <input type="number" id="form-jumlah" min="1" value="1" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Jenis Transaksi</label>
+                        <select id="form-transaksi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-medium">
+                            <option value="true" class="text-emerald-600 font-medium">Pemasukan (+)</option>
+                            <option value="false" class="text-red-600 font-medium">Penjualan (-)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Harga (Rp)</label>
+                        <input type="number" id="form-harga" min="0" required placeholder="0" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Tanggal</label>
+                        <input type="date" id="form-date" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    </div>
+                </div>
+
+                <div class="flex gap-2 justify-end pt-2 border-t border-stone-100 mt-2">
+                    <button type="button" onclick="tutupModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LIBRARY & LOGIK SUPABASE MURNI -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <script>
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
         
+        // Perbaikan Inisialisasi Klien Global agar CDN berjalan sempurna
         const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let dataLokalUangPribadi = [];
 
+        // FUNGSI UTAMA: AMBIL DATA
         async function ambilDataUangPribadi() {
             try {
                 const { data, error } = await supaClient
                     .from('uang_pribadi')
-                    .select('*');
+                    .select('*')
+                    .order('date', { ascending: false });
 
                 if (error) throw error;
 
-                if (data) {
-                    dataLokalUangPribadi = data;
-                    renderTabel(dataLokalUangPribadi);
-                }
+                dataLokalUangPribadi = data || [];
+                renderTabel(dataLokalUangPribadi);
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
-                document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>`;
+                document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal: ${err.message}</td></tr>`;
             }
         }
 
+        // FUNGSI RENDER TABEL
         function renderTabel(dataArray) {
             const tbody = document.getElementById('tabel-body-supa');
             tbody.innerHTML = '';
@@ -133,19 +189,17 @@
             if (dataArray.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-stone-400">Tidak ada data yang cocok</td></tr>';
                 document.getElementById('keterangan-jumlah-supa').innerText = 'Menampilkan 0 catatan';
+                document.getElementById('total-saldo-pribadi').innerText = 'Rp0';
                 return;
             }
 
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                // SINKRONISASI KOLOM SUPABASE
                 const namaBarang = row.nama_barang || 'Tanpa Nama';
                 const jumlah = row.jumlah || 1;
                 const harga = row.harga || 0;
                 const tanggal = row.date || '-';
-                
-                // TRUE = Pemasukan (+), FALSE = Penjualan (-)
                 const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
@@ -162,13 +216,11 @@
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-stone-50/50 transition';
-                
-                // URUTAN KOLOM WEB: nama barang -> jumlah -> transaksi -> harga -> tanggal
                 tr.innerHTML = `
                     <td class="p-4 font-medium text-stone-800">${namaBarang}</td>
                     <td class="p-4 text-stone-500">${jumlah}x</td>
                     <td class="p-4">
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${apakahPemasukan ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${apakahPemasukan ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
                             ${apakahPemasukan ? 'Pemasukan' : 'Penjualan'}
                         </span>
                     </td>
@@ -189,16 +241,49 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} catatan ditemukan`;
         }
 
-        // FUNGSI PENCARIAN GABUNGAN
+        // KONTROL MODAL / POPUP
+        function bukaModal() {
+            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-transaksi').classList.remove('hidden');
+        }
+
+        function tutupModal() {
+            document.getElementById('form-tambah-supa').reset();
+            document.getElementById('modal-transaksi').classList.add('hidden');
+        }
+
+        // FUNGSI SUBMIT INPUT DATA KE SUPABASE
+        document.getElementById('form-tambah-supa').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nama_barang = document.getElementById('form-nama').value.trim();
+            const jumlah = parseInt(document.getElementById('form-jumlah').value);
+            const transaksi = document.getElementById('form-transaksi').value === 'true';
+            const harga = parseFloat(document.getElementById('form-harga').value);
+            const date = document.getElementById('form-date').value;
+
+            try {
+                const { error } = await supaClient
+                    .from('uang_pribadi')
+                    .insert([{ nama_barang, jumlah, transaksi, harga, date }]);
+
+                if (error) throw error;
+
+                tutupModal();
+                ambilDataUangPribadi(); // Muat ulang data tabel secara instan
+            } catch (err) {
+                alert('Gagal menyimpan ke Supabase: ' + err.message);
+            }
+        });
+
+        // FILTER PENCARIAN GABUNGAN
         document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
             const kataKunci = e.target.value.toLowerCase().trim();
-            
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
                 const namaBarang = (row.nama_barang || '').toLowerCase();
                 const tanggal = (row.date || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
-
             renderTabel(dataHasilFilter);
         });
 
