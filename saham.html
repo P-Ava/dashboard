@@ -59,7 +59,6 @@
                 </div>
             </div>
             
-            <!-- Total Nilai / Estimasi Dinamis (Bisa disesuaikan pengukurannya) -->
             <div class="text-right">
                 <span class="text-xs text-stone-400 font-medium">Total Catatan</span>
                 <h2 id="total-estimasi-saham" class="text-lg font-bold text-brand font-serif">0 Transaksi</h2>
@@ -107,16 +106,17 @@
                     <thead class="sticky top-0 bg-white z-10 shadow-[0_1px_0_0_rgba(231,229,228,1)]">
                         <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider">
                             <th class="p-4">Nama Saham</th>
-                            <th class="p-4">Jumlah (Lot/Lembar)</th>
+                            <th class="p-4">Jumlah (Lembar)</th>
                             <th class="p-4">Transaksi</th>
-                            <th class="p-4 text-right">Harga Satuan</th>
+                            <th class="p-4 text-right">Harga per Lembar</th>
+                            <th class="p-4 text-right">Total Harga</th>
                             <th class="p-4">Tanggal</th>
                             <th id="th-aksi" class="p-4 text-center hidden w-20">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-body-supa" class="divide-y divide-stone-100 text-sm text-stone-600">
                         <tr>
-                            <td colspan="5" class="p-4 text-center text-stone-400 animate-pulse">Memuat data dari Supabase...</td>
+                            <td colspan="6" class="p-4 text-center text-stone-400 animate-pulse">Memuat data dari Supabase...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -149,21 +149,21 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Jumlah Lembar/Lot</label>
+                        <label class="font-medium text-stone-500">Jumlah Lembar</label>
                         <input type="number" id="form-jumlah" min="1" value="1" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="font-medium text-stone-500">Jenis Transaksi</label>
                         <select id="form-transaksi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-medium">
-                            <option value="Beli" class="text-emerald-600 font-medium">Beli</option>
-                            <option value="Jual" class="text-red-600 font-medium">Jual</option>
+                            <option value="true" class="text-emerald-600 font-medium">Beli (+)</option>
+                            <option value="false" class="text-red-600 font-medium">Jual (-)</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Harga Satuan (Rp)</label>
+                        <label class="font-medium text-stone-500">Harga per Lembar (Rp)</label>
                         <input type="number" id="form-harga" min="0" required placeholder="0" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
                     </div>
                     <div class="flex flex-col gap-1">
@@ -184,7 +184,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <script>
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ'; // Memakai Key Asli Anda
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
         
         const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -204,7 +204,7 @@
                 renderTabel(dataLokalSaham);
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
-                document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
+                document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
             }
         }
 
@@ -212,8 +212,7 @@
             const tbody = document.getElementById('tabel-body-supa');
             tbody.innerHTML = '';
             
-            // Tampilkan jumlah transaksi di header kanan
-            document.getElementById('total-estimasi-saham').innerText = `${dataLokalSaham.length} Catatan`;
+            document.getElementById('total-estimasi-saham').innerText = `${dataLokalSaham.length} Transaksi`;
 
             const thAksi = document.getElementById('th-aksi');
             if (modeEditAktif) {
@@ -223,24 +222,22 @@
             }
 
             if (dataArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${modeEditAktif ? '6' : '5'}" class="p-4 text-center text-stone-400">Tidak ada data saham yang cocok</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${modeEditAktif ? '7' : '6'}" class="p-4 text-center text-stone-400">Tidak ada data saham yang cocok</td></tr>`;
                 document.getElementById('keterangan-jumlah-supa').innerText = 'Menampilkan 0 catatan';
                 return;
             }
 
             dataArray.forEach((row, index) => {
                 const idRow = row.id; 
-                const namaSaham = row.nama_sahams || row.nama_sahamm || row.nama_saham || row.nama_barang || 'Tanpa Nama';
-                const jumlah = row.jumlah || 0;
-                const harga = row.harga || 0;
+                const namaSaham = row.nama_saham || 'Tanpa Nama';
+                const jumlahPerlembar = row.jumlah_perlembar || 0;
+                const hargaPerlembar = row.harga_perlembar || 0;
+                const totalHarga = row.total_harga || (jumlahPerlembar * hargaPerlembar);
                 const tanggal = row.date || '-';
-                const apakahBeli = row.transaksi === 'Beli';
+                const apakahBeli = row.transaksi === true;
 
-                const formatHarga = new Intl.NumberFormat('id-ID', { 
-                    style: 'currency', 
-                    currency: 'IDR', 
-                    maximumFractionDigits: 0 
-                }).format(harga);
+                const formatHargaLembar = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(hargaPerlembar);
+                const formatTotalHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalHarga);
 
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-stone-50/50 transition ${index >= 10 ? 'hidden' : ''}`;
@@ -258,15 +255,14 @@
 
                 tr.innerHTML = `
                     <td class="p-4 font-medium text-stone-800 uppercase tracking-wide">${namaSaham}</td>
-                    <td class="p-4 text-stone-500">${Number(jumlah).toLocaleString('id-ID')} Lot</td>
+                    <td class="p-4 text-stone-500">${Number(jumlahPerlembar).toLocaleString('id-ID')} lembar</td>
                     <td class="p-4">
                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${apakahBeli ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
                             ${apakahBeli ? 'Beli' : 'Jual'}
                         </span>
                     </td>
-                    <td class="p-4 text-right font-semibold text-stone-800">
-                        ${formatHarga}
-                    </td>
+                    <td class="p-4 text-right text-stone-600">${formatHargaLembar}</td>
+                    <td class="p-4 text-right font-semibold text-stone-800">${formatTotalHarga}</td>
                     <td class="p-4 text-stone-400 text-xs">${tanggal}</td>
                     ${kolomAksiHtml}
                 `;
@@ -304,14 +300,12 @@
                 return;
             }
 
-            const namaSaham = dataRow.nama_sahams || dataRow.nama_sahamm || dataRow.nama_saham || dataRow.nama_barang || '';
-
             document.getElementById('form-id').value = dataRow.id;
             document.getElementById('modal-judul').innerText = 'Edit Mutasi Saham';
-            document.getElementById('form-nama').value = namaSaham;
-            document.getElementById('form-jumlah').value = dataRow.jumlah || 0;
-            document.getElementById('form-transaksi').value = dataRow.transaksi || 'Beli';
-            document.getElementById('form-harga').value = dataRow.harga || 0;
+            document.getElementById('form-nama').value = dataRow.nama_saham || '';
+            document.getElementById('form-jumlah').value = dataRow.jumlah_perlembar || 0;
+            document.getElementById('form-transaksi').value = dataRow.transaksi === true ? 'true' : 'false';
+            document.getElementById('form-harga').value = dataRow.harga_perlembar || 0;
             document.getElementById('form-date').value = dataRow.date || '';
             
             document.getElementById('modal-transaksi').classList.remove('hidden');
@@ -326,19 +320,19 @@
             e.preventDefault();
             
             const id = document.getElementById('form-id').value;
-            const namaInput = document.getElementById('form-nama').value.trim();
-            const jumlah = parseInt(document.getElementById('form-jumlah').value);
-            const transaksi = document.getElementById('form-transaksi').value;
-            const harga = parseFloat(document.getElementById('form-harga').value);
+            const nama_saham = document.getElementById('form-nama').value.trim();
+            const jumlah_perlembar = parseInt(document.getElementById('form-jumlah').value);
+            const transaksi = document.getElementById('form-transaksi').value === 'true';
+            const harga_perlembar = parseFloat(document.getElementById('form-harga').value);
+            const total_harga = jumlah_perlembar * harga_perlembar;
             const date = document.getElementById('form-date').value;
 
-            // Menyesuaikan payload ke kolom nama yang ada di tabel Supabase Anda (nama_sahams / nama_barang)
             const payload = { 
-                nama_barang: namaInput, 
-                nama_saham: namaInput,
-                jumlah, 
+                nama_saham, 
+                jumlah_perlembar, 
                 transaksi, 
-                harga, 
+                harga_perlembar, 
+                total_harga,
                 date 
             };
 
@@ -369,7 +363,7 @@
         document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
             const kataKunci = e.target.value.toLowerCase().trim();
             const dataHasilFilter = dataLokalSaham.filter(row => {
-                const namaSaham = (row.nama_sahams || row.nama_sahamm || row.nama_saham || row.nama_barang || '').toLowerCase();
+                const namaSaham = (row.nama_saham || '').toLowerCase();
                 const tanggal = (row.date || '').toLowerCase();
                 return namaSaham.includes(kataKunci) || tanggal.includes(kataKunci);
             });
