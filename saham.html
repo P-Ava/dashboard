@@ -59,9 +59,10 @@
                 </div>
             </div>
             
+            <!-- Mengubah Total Transaksi Menjadi Total Uang Saham Dinamis -->
             <div class="text-right">
-                <span class="text-xs text-stone-400 font-medium">Total Catatan</span>
-                <h2 id="total-estimasi-saham" class="text-lg font-bold text-brand font-serif">0 Transaksi</h2>
+                <span class="text-xs text-stone-400 font-medium">Total Uang Saham</span>
+                <h2 id="total-uang-saham" class="text-lg font-bold text-brand font-serif">Rp0</h2>
             </div>
         </div>
 
@@ -212,7 +213,22 @@
             const tbody = document.getElementById('tabel-body-supa');
             tbody.innerHTML = '';
             
-            document.getElementById('total-estimasi-saham').innerText = `${dataLokalSaham.length} Transaksi`;
+            // LOGIKA HITUNG TOTAL UANG SAHAM (DINAMIS)
+            let akumulasiUangSaham = 0;
+            dataLokalSaham.forEach(row => {
+                const totalHarga = row.total_harga || ((row.jumlah_perlembar || 0) * (row.harga_perlembar || 0));
+                if (row.transaksi === true) {
+                    akumulasiUangSaham += totalHarga; // Beli menambah aset
+                } else {
+                    akumulasiUangSaham -= totalHarga; // Jual mengurangi aset
+                }
+            });
+
+            document.getElementById('total-uang-saham').innerText = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                maximumFractionDigits: 0 
+            }).format(akumulasiUangSaham);
 
             const thAksi = document.getElementById('th-aksi');
             if (modeEditAktif) {
