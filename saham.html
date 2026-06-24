@@ -72,7 +72,7 @@
                     <h3 class="font-serif font-semibold text-lg text-brand">Portofolio Saham Anda</h3>
                     <p class="text-xs text-stone-400">Daftar saham yang saat ini Anda miliki (aset aktif)</p>
                 </div>
-                <!-- Tombol PnL Aktif -->
+                <!-- Tombol PnL -->
                 <button onclick="bukaModalPnL()" class="px-3 py-1.5 bg-amber-700 text-white text-xs font-semibold rounded-xl hover:bg-amber-800 transition shadow-sm flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -193,40 +193,37 @@
         </div>
     </div>
 
-    <!-- POPUP MODAL REAL-TIME PnL (PROFIT & LOSS) -->
+    <!-- POPUP MODAL PnL (PROFIT & LOSS) -->
     <div id="modal-pnl" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex justify-between items-center border-b border-stone-100 pb-3">
                 <div>
-                    <h3 class="font-serif font-bold text-lg text-brand">Realized & UnRealized PnL</h3>
-                    <p class="text-xs text-stone-400">Analisis estimasi keuntungan/kerugian berdasarkan harga transaksi terakhir</p>
+                    <h3 class="font-serif font-bold text-lg text-brand">Ringkasan PnL Saham</h3>
+                    <p class="text-xs text-stone-400">Total akumulasi uang per saham beserta persentase performa</p>
                 </div>
                 <button type="button" onclick="tutupModalPnL()" class="text-stone-400 hover:text-stone-600 p-1 rounded-lg hover:bg-stone-50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             
-            <!-- Tabel Konten PnL -->
+            <!-- Tabel Konten PnL Sesuai Request -->
             <div class="overflow-x-auto rounded-xl border border-stone-100 custom-scrollbar max-h-96">
-                <table class="w-full text-left border-collapse min-w-[600px] text-xs">
+                <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-stone-50 text-stone-500 font-semibold uppercase tracking-wider border-b border-stone-100">
-                            <th class="p-3">Saham</th>
-                            <th class="p-3">Posisi Aset</th>
-                            <th class="p-3 text-right">Avg Price (Beli)</th>
-                            <th class="p-3 text-right">Current Price</th>
-                            <th class="p-3 text-right">Estimasi PnL (Rp)</th>
-                            <th class="p-3 text-center">PnL (%)</th>
+                            <th class="p-4">Nama Saham</th>
+                            <th class="p-4 text-right">Total Uang Per Saham</th>
+                            <th class="p-4 text-center">Persentase PnL</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-body-pnl" class="divide-y divide-stone-100 text-stone-600 font-medium">
+                    <tbody id="tabel-body-pnl" class="divide-y divide-stone-100 text-stone-600 font-semibold">
                         <!-- Di-generate otomatis dari JS -->
                     </tbody>
                 </table>
             </div>
             
             <div class="flex justify-end pt-2 border-t border-stone-100">
-                <button type="button" onclick="tutupModalPnL()" class="px-4 py-2 text-xs rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition">Tutup Window</button>
+                <button type="button" onclick="tutupModalPnL()" class="px-4 py-2 text-xs rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition">Tutup</button>
             </div>
         </div>
     </div>
@@ -263,8 +260,6 @@
         // FUNGSI UTAMA: MENGKALKULASI MAP PORTOFOLIO & PnL
         function dapatkanKalkulasiPortofolio() {
             const portofolioMap = {};
-            
-            // Mengurutkan kronologis terlama ke terbaru (Bottom-up) agar logika avg & sisa lot seimbang
             const transaksiKronologis = [...dataLokalSaham].reverse();
 
             transaksiKronologis.forEach(row => {
@@ -284,7 +279,6 @@
                     };
                 }
 
-                // Simpan harga transaksi paling baru sebagai acuan 'Current Price'
                 portofolioMap[kode].hargaTerakhir = harga;
 
                 if (apakahBeli) {
@@ -313,7 +307,6 @@
 
             emitenAktif.forEach(kode => {
                 const item = portofolioMap[kode];
-                const avgPrice = item.totalBeliLembar > 0 ? (item.totalBeliDana / item.totalBeliLembar) : 0;
                 const perkiraanValue = item.lembar * item.hargaTerakhir;
 
                 const card = document.createElement('div');
@@ -333,7 +326,7 @@
             });
         }
 
-        // POPUP MODAL PnL CONTROL
+        // POPUP MODAL PnL CONTROL (DISESUAIKAN DENGAN REQUEST BARU)
         function bukaModalPnL() {
             const tbodyPnL = document.getElementById('tabel-body-pnl');
             tbodyPnL.innerHTML = '';
@@ -342,7 +335,7 @@
             const emitenAktif = Object.keys(portofolioMap).filter(kode => portofolioMap[kode].lembar > 0);
 
             if (emitenAktif.length === 0) {
-                tbodyPnL.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-stone-400">Tidak ada aset portofolio aktif saat ini untuk kalkulasi PnL.</td></tr>`;
+                tbodyPnL.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-stone-400">Tidak ada aset portofolio aktif.</td></tr>`;
                 document.getElementById('modal-pnl').classList.remove('hidden');
                 return;
             }
@@ -350,28 +343,24 @@
             emitenAktif.forEach(kode => {
                 const item = portofolioMap[kode];
                 
-                // Perhitungan Harga Rata-Rata Beli (Avg Price)
+                // Kalkulasi data PnL
                 const avgPrice = item.totalBeliLembar > 0 ? (item.totalBeliDana / item.totalBeliLembar) : 0;
                 const currentPrice = item.hargaTerakhir;
+                const totalUangPerSaham = item.lembar * currentPrice;
                 
-                // Kalkulasi PnL Nomimal dan Persentase
                 const pnlNominal = (currentPrice - avgPrice) * item.lembar;
                 const pnlPersen = avgPrice > 0 ? ((currentPrice - avgPrice) / avgPrice) * 100 : 0;
 
-                const statusWarnaText = pnlNominal >= 0 ? 'text-emerald-600' : 'text-red-600';
                 const statusWarnaBg = pnlNominal >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700';
                 const tandaPlus = pnlNominal > 0 ? '+' : '';
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-stone-50/70 transition";
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-stone-800 tracking-wide uppercase">${kode}</td>
-                    <td class="p-3 text-stone-500">${item.lembar.toLocaleString('id-ID')} lbr</td>
-                    <td class="p-3 text-right text-stone-600">Rp${Math.round(avgPrice).toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-right font-semibold text-stone-700">Rp${currentPrice.toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-right font-bold ${statusWarnaText}">${tandaPlus}Rp${Math.round(pnlNominal).toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-center">
-                        <span class="px-2 py-0.5 rounded-md font-bold text-[11px] ${statusWarnaBg}">
+                    <td class="p-4 font-bold text-stone-800 tracking-wide uppercase text-sm">${kode}</td>
+                    <td class="p-4 text-right text-stone-700 font-bold">Rp${Math.round(totalUangPerSaham).toLocaleString('id-ID')}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-1 rounded-md font-bold text-[11px] ${statusWarnaBg}">
                             ${tandaPlus}${pnlPersen.toFixed(2)}%
                         </span>
                     </td>
