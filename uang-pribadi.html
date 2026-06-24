@@ -139,11 +139,11 @@
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                // PERBAIKAN UTAMA: Memanggil langsung menggunakan nama properti kolom murni database
-                const namaBarang = row.nama_barang || 'Tanpa Nama';
+                // PENYESUAIAN: Memanggil nama kolom string bawaan Supabase Anda
+                const namaBarang = row['nama barang'] || 'Tanpa Nama';
                 const harga = row.harga || 0;
                 const jumlah = row.jumlah || 1;
-                const tanggal = row.tanggal || '-';
+                const tanggal = row.date || '-';
                 const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
@@ -190,8 +190,8 @@
             const kataKunci = e.target.value.toLowerCase().trim();
             
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
-                const namaBarang = (row.nama_barang || '').toLowerCase();
-                const tanggal = (row.tanggal || '').toLowerCase();
+                const namaBarang = (row['nama barang'] || '').toLowerCase();
+                const tanggal = (row.date || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
 
