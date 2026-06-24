@@ -1,143 +1,382 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rincian Saham</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#FBF7F4] text-amber-950 min-h-screen p-6">
-    <div class="max-w-4xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-amber-100">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-amber-900">📈 Catatan Investasi Saham</h1>
-            <button onclick="window.location.href='index.html'" class="text-sm bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-xl transition">Kembali ke Dashboard</button>
-        </div>
-
-        <!-- Tabel Data -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-amber-200 text-amber-800 bg-amber-50/50">
-                        <th class="p-3">Tanggal</th>
-                        <th class="p-3">Nama Saham (Emiten)</th>
-                        <th class="p-3">Jenis Transaksi</th>
-                        <th class="p-3">Jumlah Lembar</th>
-                        <th class="p-3">Harga per Lembar</th>
-                        <th class="p-3 text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tabel-saham">
-                    <tr><td colspan="6" class="p-4 text-center text-amber-600">Memuat data...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Modal Edit -->
-    <div id="modal-edit" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md border border-amber-100">
-            <h3 class="text-lg font-bold text-amber-950 mb-4">Edit Data Saham</h3>
-            <input type="hidden" id="edit-id">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-amber-800">Nama Saham</label>
-                    <input type="text" id="edit-nama" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-amber-800">Jenis Transaksi</label>
-                    <select id="edit-transaksi" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <option value="Beli">Beli</option>
-                        <option value="Jual">Jual</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-amber-800">Jumlah Lembar</label>
-                        <input type="number" id="edit-jumlah" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-amber-800">Harga Per Lembar</label>
-                        <input type="number" id="edit-harga" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-amber-800">Tanggal</label>
-                    <input type="date" id="edit-date" class="w-full border border-amber-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                </div>
-            </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button onclick="tutupModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">Batal</button>
-                <button onclick="simpanEdit()" class="px-4 py-2 bg-amber-900 text-white rounded-xl hover:bg-amber-800">Simpan Data</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Konfigurasi Supabase Anda
-        const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
-        const SUPABASE_KEY = "Ganti_Dengan_Anon_Key_Supabase_Anda"; 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#603010',
+                        brandBg: '#fbf5f0',
+                        cardBg: '#ffffff',
+                    },
+                    fontFamily: {
+                        serif: ['Georgia', 'serif'],
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #fbf5f0;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e7e5e4;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #603010;
+        }
+    </style>
+</head>
+<body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
+
+    <!-- WRAPPER UTAMA -->
+    <div class="max-w-4xl w-full flex flex-col gap-6">
+        
+        <!-- HEADER / NAVIGASI ATAS -->
+        <div class="flex justify-between items-center bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition" title="Kembali ke Dashboard">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="font-serif text-xl font-bold text-brand">Investasi Saham</h1>
+                    <p class="text-xs text-stone-400">Rincian portofolio langsung dari Supabase</p>
+                </div>
+            </div>
+            
+            <!-- Total Nilai / Estimasi Dinamis (Bisa disesuaikan pengukurannya) -->
+            <div class="text-right">
+                <span class="text-xs text-stone-400 font-medium">Total Catatan</span>
+                <h2 id="total-estimasi-saham" class="text-lg font-bold text-brand font-serif">0 Transaksi</h2>
+            </div>
+        </div>
+
+        <!-- KARTU UTAMA: TABEL TRANSAKSI -->
+        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
+            
+            <!-- BAGIAN ATAS TABEL -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
+                <div class="flex items-center gap-2">
+                    <div>
+                        <h3 class="font-serif font-semibold text-lg text-brand inline-block">Daftar Jual & Beli Saham</h3>
+                        <p class="text-xs text-stone-400">Menampilkan data mutasi terbaru emiten saham</p>
+                    </div>
+                    
+                    <!-- AREA ACTION BUTTONS -->
+                    <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                        <!-- TOMBOL TAMBAH -->
+                        <button onclick="bukaModalTambah()" class="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            Tambah
+                        </button>
+                        
+                        <!-- TOMBOL AKTIFKAN MODE EDIT -->
+                        <button id="btn-mode-edit" onclick="toggleModeEdit()" class="p-1.5 border border-stone-200 text-stone-500 rounded-xl hover:bg-stone-50 hover:text-brand transition shadow-sm" title="Aktifkan Mode Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- INPUT PENCARIAN GABUNGAN -->
+                <div class="relative w-full sm:w-56">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" id="input-cari-gabungan" placeholder="Cari emiten atau tanggal..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
+                </div>
+            </div>
+
+            <!-- RESPONSIVE TABLE CONTAINER -->
+            <div class="overflow-x-auto overflow-y-auto max-h-[530px] rounded-2xl border border-stone-100 custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[620px]">
+                    <thead class="sticky top-0 bg-white z-10 shadow-[0_1px_0_0_rgba(231,229,228,1)]">
+                        <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider">
+                            <th class="p-4">Nama Saham</th>
+                            <th class="p-4">Jumlah (Lot/Lembar)</th>
+                            <th class="p-4">Transaksi</th>
+                            <th class="p-4 text-right">Harga Satuan</th>
+                            <th class="p-4">Tanggal</th>
+                            <th id="th-aksi" class="p-4 text-center hidden w-20">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-body-supa" class="divide-y divide-stone-100 text-sm text-stone-600">
+                        <tr>
+                            <td colspan="5" class="p-4 text-center text-stone-400 animate-pulse">Memuat data dari Supabase...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- KETERANGAN BAWAH -->
+            <div class="flex justify-between items-center text-xs text-stone-400 mt-2">
+                <span id="keterangan-jumlah-supa">Menampilkan 0 catatan</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP FORM MODAL (TAMBAH & EDIT TRANSAKSI) -->
+    <div id="modal-transaksi" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                <h3 id="modal-judul" class="font-serif font-bold text-lg text-brand">Tambah Transaksi Baru</h3>
+                <button type="button" onclick="tutupModal()" class="text-stone-400 hover:text-stone-600 p-1 rounded-lg hover:bg-stone-50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="form-tambah-supa" class="flex flex-col gap-3.5 text-xs text-stone-600">
+                <input type="hidden" id="form-id">
+
+                <div class="flex flex-col gap-1">
+                    <label class="font-medium text-stone-500">Nama Saham (Kode Emiten)</label>
+                    <input type="text" id="form-nama" required placeholder="Contoh: BBCA, TLKM, GOTO" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand uppercase">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Jumlah Lembar/Lot</label>
+                        <input type="number" id="form-jumlah" min="1" value="1" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Jenis Transaksi</label>
+                        <select id="form-transaksi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-medium">
+                            <option value="Beli" class="text-emerald-600 font-medium">Beli</option>
+                            <option value="Jual" class="text-red-600 font-medium">Jual</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Harga Satuan (Rp)</label>
+                        <input type="number" id="form-harga" min="0" required placeholder="0" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Tanggal</label>
+                        <input type="date" id="form-date" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                    </div>
+                </div>
+
+                <div class="flex gap-2 justify-end pt-2 border-t border-stone-100 mt-2">
+                    <button type="button" onclick="tutupModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LIBRARY & LOGIK SUPABASE MURNI -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ'; // Memakai Key Asli Anda
+        
+        const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let dataLokalSaham = [];
+        let modeEditAktif = false;
 
-        async function muatData() {
-            const { data, error } = await supabase.from('saham').select('*').order('date', { ascending: false });
-            if (error) return console.error(error);
-            
-            dataLokalSaham = data;
-            const tbody = document.getElementById('tabel-saham');
-            tbody.innerHTML = data.map(row => `
-                <tr class="border-b border-amber-100 hover:bg-amber-50/30 transition">
-                    <td class="p-3 text-sm">${row.date}</td>
-                    <td class="p-3 font-semibold text-amber-950">${row.nama_barang}</td>
-                    <td class="p-3 text-sm"><span class="px-2 py-0.5 rounded-md ${row.transaksi === 'Beli' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${row.transaksi}</span></td>
-                    <td class="p-3 text-sm">${Number(row.jumlah).toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-sm">Rp ${Number(row.harga).toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="bukaModal(${row.id})" class="text-sm bg-amber-900 hover:bg-amber-800 text-white px-3 py-1 rounded-lg transition">Edit</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        async function ambilDataSaham() {
+            try {
+                const { data, error } = await supaClient
+                    .from('saham')
+                    .select('*')
+                    .order('date', { ascending: false });
 
-        function bukaModal(id) {
-            const row = dataLokalSaham.find(r => r.id === id);
-            if (!row) return;
+                if (error) throw error;
 
-            document.getElementById('edit-id').value = row.id;
-            document.getElementById('edit-nama').value = row.nama_barang;
-            document.getElementById('edit-transaksi').value = row.transaksi;
-            document.getElementById('edit-jumlah').value = row.jumlah;
-            document.getElementById('edit-harga').value = row.harga;
-            document.getElementById('edit-date').value = row.date;
-            document.getElementById('modal-edit').classList.remove('hidden');
-        }
-
-        function tutupModal() {
-            document.getElementById('modal-edit').classList.add('hidden');
-        }
-
-        async function simpanEdit() {
-            const id = document.getElementById('edit-id').value;
-            const payload = {
-                nama_barang: document.getElementById('edit-nama').value,
-                transaksi: document.getElementById('edit-transaksi').value,
-                jumlah: parseInt(document.getElementById('edit-jumlah').value),
-                harga: parseInt(document.getElementById('edit-harga').value),
-                date: document.getElementById('edit-date').value
-            };
-
-            const { error } = await supabase.from('saham').update(payload).eq('id', id);
-            if (error) {
-                alert("Gagal mengedit data: " + error.message);
-            } else {
-                tutupModal();
-                muatData();
+                dataLokalSaham = data || [];
+                renderTabel(dataLokalSaham);
+            } catch (err) {
+                console.error('Gagal mengambil data:', err.message);
+                document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
             }
         }
 
-        muatData();
+        function renderTabel(dataArray) {
+            const tbody = document.getElementById('tabel-body-supa');
+            tbody.innerHTML = '';
+            
+            // Tampilkan jumlah transaksi di header kanan
+            document.getElementById('total-estimasi-saham').innerText = `${dataLokalSaham.length} Catatan`;
+
+            const thAksi = document.getElementById('th-aksi');
+            if (modeEditAktif) {
+                thAksi.classList.remove('hidden');
+            } else {
+                thAksi.classList.add('hidden');
+            }
+
+            if (dataArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${modeEditAktif ? '6' : '5'}" class="p-4 text-center text-stone-400">Tidak ada data saham yang cocok</td></tr>`;
+                document.getElementById('keterangan-jumlah-supa').innerText = 'Menampilkan 0 catatan';
+                return;
+            }
+
+            dataArray.forEach((row, index) => {
+                const idRow = row.id; 
+                const namaSaham = row.nama_sahams || row.nama_sahamm || row.nama_saham || row.nama_barang || 'Tanpa Nama';
+                const jumlah = row.jumlah || 0;
+                const harga = row.harga || 0;
+                const tanggal = row.date || '-';
+                const apakahBeli = row.transaksi === 'Beli';
+
+                const formatHarga = new Intl.NumberFormat('id-ID', { 
+                    style: 'currency', 
+                    currency: 'IDR', 
+                    maximumFractionDigits: 0 
+                }).format(harga);
+
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-stone-50/50 transition ${index >= 10 ? 'hidden' : ''}`;
+
+                let kolomAksiHtml = '';
+                if (modeEditAktif) {
+                    kolomAksiHtml = `
+                        <td class="p-4 text-center">
+                            <button type="button" onclick="bukaModalEdit('${idRow}')" class="p-1 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Edit Data Ini">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12 14.036H9v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                        </td>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-stone-800 uppercase tracking-wide">${namaSaham}</td>
+                    <td class="p-4 text-stone-500">${Number(jumlah).toLocaleString('id-ID')} Lot</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${apakahBeli ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
+                            ${apakahBeli ? 'Beli' : 'Jual'}
+                        </span>
+                    </td>
+                    <td class="p-4 text-right font-semibold text-stone-800">
+                        ${formatHarga}
+                    </td>
+                    <td class="p-4 text-stone-400 text-xs">${tanggal}</td>
+                    ${kolomAksiHtml}
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const totalTampil = dataArray.length > 10 ? 10 : dataArray.length;
+            document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${totalTampil} dari ${dataArray.length} catatan terdaftar`;
+        }
+
+        function toggleModeEdit() {
+            modeEditAktif = !modeEditAktif;
+            const btn = document.getElementById('btn-mode-edit');
+            if (modeEditAktif) {
+                btn.classList.remove('text-stone-500', 'border-stone-200');
+                btn.className += ' bg-brand text-white border-brand';
+            } else {
+                btn.classList.remove('bg-brand', 'text-white', 'border-brand');
+                btn.className += ' border-stone-200 text-stone-500';
+            }
+            renderTabel(dataLokalSaham);
+        }
+
+        function bukaModalTambah() {
+            document.getElementById('form-id').value = '';
+            document.getElementById('modal-judul').innerText = 'Tambah Mutasi Saham';
+            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-transaksi').classList.remove('hidden');
+        }
+
+        function bukaModalEdit(id) {
+            const dataRow = dataLokalSaham.find(row => String(row.id) === String(id));
+            if (!dataRow) {
+                console.error("Data ID tidak ditemukan lokal:", id);
+                return;
+            }
+
+            const namaSaham = dataRow.nama_sahams || dataRow.nama_sahamm || dataRow.nama_saham || dataRow.nama_barang || '';
+
+            document.getElementById('form-id').value = dataRow.id;
+            document.getElementById('modal-judul').innerText = 'Edit Mutasi Saham';
+            document.getElementById('form-nama').value = namaSaham;
+            document.getElementById('form-jumlah').value = dataRow.jumlah || 0;
+            document.getElementById('form-transaksi').value = dataRow.transaksi || 'Beli';
+            document.getElementById('form-harga').value = dataRow.harga || 0;
+            document.getElementById('form-date').value = dataRow.date || '';
+            
+            document.getElementById('modal-transaksi').classList.remove('hidden');
+        }
+
+        function tutupModal() {
+            document.getElementById('form-tambah-supa').reset();
+            document.getElementById('modal-transaksi').classList.add('hidden');
+        }
+
+        document.getElementById('form-tambah-supa').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('form-id').value;
+            const namaInput = document.getElementById('form-nama').value.trim();
+            const jumlah = parseInt(document.getElementById('form-jumlah').value);
+            const transaksi = document.getElementById('form-transaksi').value;
+            const harga = parseFloat(document.getElementById('form-harga').value);
+            const date = document.getElementById('form-date').value;
+
+            // Menyesuaikan payload ke kolom nama yang ada di tabel Supabase Anda (nama_sahams / nama_barang)
+            const payload = { 
+                nama_barang: namaInput, 
+                nama_saham: namaInput,
+                jumlah, 
+                transaksi, 
+                harga, 
+                date 
+            };
+
+            try {
+                if (id) {
+                    const { error } = await supaClient
+                        .from('saham')
+                        .update(payload)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } else {
+                    const { error } = await supaClient
+                        .from('saham')
+                        .insert([payload]);
+
+                    if (error) throw error;
+                }
+
+                tutupModal();
+                ambilDataSaham();
+            } catch (err) {
+                alert('Gagal memproses data ke Supabase: ' + err.message);
+            }
+        });
+
+        // LIVE FILTER INPUT GABUNGAN
+        document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
+            const kataKunci = e.target.value.toLowerCase().trim();
+            const dataHasilFilter = dataLokalSaham.filter(row => {
+                const namaSaham = (row.nama_sahams || row.nama_sahamm || row.nama_saham || row.nama_barang || '').toLowerCase();
+                const tanggal = (row.date || '').toLowerCase();
+                return namaSaham.includes(kataKunci) || tanggal.includes(kataKunci);
+            });
+            renderTabel(dataHasilFilter);
+        });
+
+        window.addEventListener('DOMContentLoaded', ambilDataSaham);
     </script>
 </body>
 </html>
