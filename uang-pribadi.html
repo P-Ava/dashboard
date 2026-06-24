@@ -139,12 +139,14 @@
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                // PENYESUAIAN: Memanggil nama kolom string bawaan Supabase Anda
-                const namaBarang = row['nama barang'] || 'Tanpa Nama';
+                // LOGIKA DETEKSI OTOMATIS: Mendukung variasi penamaan kolom Supabase Anda
+                const namaBarang = row['nama barang'] || row.nama_barang || row.nama || 'Tanpa Nama';
                 const harga = row.harga || 0;
                 const jumlah = row.jumlah || 1;
-                const tanggal = row.date || '-';
-                const apakahPemasukan = row.transaksi === true;
+                const tanggal = row.tanggal || row.date || row.created_at || '-';
+                
+                // Mendeteksi status transaksi (Boolean atau teks)
+                const apakahPemasukan = row.transaksi === true || String(row.transaksi).toLowerCase() === 'true';
 
                 if (apakahPemasukan) {
                     akumulasiSaldo += (harga * jumlah);
@@ -185,13 +187,13 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} catatan ditemukan`;
         }
 
-        // FUNGSI PENCARIAN GABUNGAN
+        // FUNGSI PENCARIAN GABUNGAN AMAN
         document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
             const kataKunci = e.target.value.toLowerCase().trim();
             
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
-                const namaBarang = (row['nama barang'] || '').toLowerCase();
-                const tanggal = (row.date || '').toLowerCase();
+                const namaBarang = String(row['nama barang'] || row.nama_barang || row.nama || '').toLowerCase();
+                const tanggal = String(row.tanggal || row.date || row.created_at || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
 
