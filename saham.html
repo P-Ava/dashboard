@@ -217,6 +217,12 @@
                     </thead>
                     <tbody id="tabel-body-pnl" class="divide-y divide-stone-100 text-stone-600 font-semibold">
                     </tbody>
+                    <!-- BARIS TOTAL DIBAWAH ISI TABEL PNL -->
+                    <tfoot>
+                        <tr id="tabel-foot-pnl" class="bg-stone-100 border-t-2 border-stone-200 font-bold text-stone-800">
+                            <!-- Akan di-render via Javascript -->
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
             
@@ -352,7 +358,9 @@
 
         function bukaModalPnL() {
             const tbodyPnL = document.getElementById('tabel-body-pnl');
+            const tfootPnL = document.getElementById('tabel-foot-pnl');
             tbodyPnL.innerHTML = '';
+            tfootPnL.innerHTML = '';
 
             const dataPnl = hitungPnlSesuaiTransaksi();
             const emitenTerdaftar = Object.keys(dataPnl);
@@ -365,6 +373,9 @@
                 document.getElementById('modal-pnl').classList.remove('hidden');
                 return;
             }
+
+            let grandTotalBeliDisesuaikan = 0;
+            let grandTotalNominalPnL = 0;
 
             emitenTerealisasi.forEach(kode => {
                 const item = dataPnl[kode];
@@ -379,6 +390,10 @@
                 
                 const pnlNominal = totalJualDisesuaikan - totalBeliDisesuaikan;
                 const pnlPersen = avgHargaBeli > 0 ? ((avgHargaJual - avgHargaBeli) / avgHargaBeli) * 100 : 0;
+
+                // Akumulasikan ke Grand Total Keseluruhan
+                grandTotalBeliDisesuaikan += totalBeliDisesuaikan;
+                grandTotalNominalPnL += pnlNominal;
 
                 const statusWarnaBg = pnlNominal >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700';
                 const tandaPlus = pnlNominal > 0 ? '+' : '';
@@ -401,6 +416,22 @@
                 `;
                 tbodyPnL.appendChild(tr);
             });
+
+            // HITUNG PERSENTASE GRAND TOTAL KESELURUHAN
+            const grandTotalPersenPnL = grandTotalBeliDisesuaikan > 0 ? (grandTotalNominalPnL / grandTotalBeliDisesuaikan) * 100 : 0;
+            const warnaTotalBg = grandTotalNominalPnL >= 0 ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white';
+            const tandaPlusTotal = grandTotalNominalPnL > 0 ? '+' : '';
+
+            // TAMPILKAN BARIS TOTAL DI FOOTER TABEL MODAL PNL
+            tfootPnL.innerHTML = `
+                <td class="p-4 uppercase text-stone-800 font-bold tracking-wider text-xs">Total Semua Saham</td>
+                <td class="p-4 text-right text-stone-900 font-black text-sm">Rp${Math.round(grandTotalNominalPnL).toLocaleString('id-ID')}</td>
+                <td class="p-4 text-center">
+                    <span class="px-2.5 py-1 rounded-md font-black text-[11px] shadow-sm ${warnaTotalBg}">
+                        ${tandaPlusTotal}${grandTotalPersenPnL.toFixed(2)}%
+                    </span>
+                </td>
+            `;
 
             document.getElementById('modal-pnl').classList.remove('hidden');
         }
@@ -452,7 +483,7 @@
                 const apakahBeli = row.transaksi === true;
 
                 const formatHargaLembar = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(hargaPerlembar);
-                const formatTotalHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalHarga);
+                const formatTotalHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalTotalHarga = totalHarga);
 
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-stone-50/50 transition ${index >= 10 ? 'hidden' : ''}`;
@@ -462,7 +493,7 @@
                     kolomAksiHtml = `
                         <td class="p-4 flex items-center justify-center gap-2">
                             <button type="button" onclick="bukaModalEdit('${idRow}')" class="p-1 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Edit Data Ini">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12 14.036H9v-3.572L16.732 3.732z"></path></svg>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/xl"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12 14.036H9v-3.572L16.732 3.732z"></path></svg>
                             </button>
                             <button type="button" onclick="bukaModalHapus('${idRow}')" class="p-1 text-red-600 hover:bg-red-50 rounded-lg transition" title="Hapus Data Ini">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
