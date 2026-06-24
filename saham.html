@@ -100,7 +100,7 @@
                     
                     <div class="flex items-center gap-1.5 shrink-0 ml-2">
                         <button onclick="bukaModalTambah()" class="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/xl"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             Tambah
                         </button>
                         
@@ -199,7 +199,7 @@
             <div class="flex justify-between items-center border-b border-stone-100 pb-3">
                 <div>
                     <h3 class="font-serif font-bold text-lg text-brand">Ringkasan PnL Saham</h3>
-                    <p class="text-xs text-stone-400">Total akumulasi uang per saham beserta persentase performa</p>
+                    <p class="text-xs text-stone-400">Realisasi keuntungan/kerugian dari saham yang terjual (Metode FIFO)</p>
                 </div>
                 <button type="button" onclick="tutupModalPnL()" class="text-stone-400 hover:text-stone-600 p-1 rounded-lg hover:bg-stone-50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -275,8 +275,12 @@
             }
         }
 
-        function dapatkanKalkulasiPortofolio() {
-            const portofolioMap = {};
+        // FUNGSI UTAMA KALKULASI PORTOFOLIO & PnL FIFO
+        function hitungPnlSesuaiTransaksi() {
+            const hasilSaham = {};
+            const antreanBeli = {}; 
+
+            // Urutkan transaksi dari terlama ke terbaru (kronologis)
             const transaksiKronologis = [...dataLokalSaham].reverse();
 
             transaksiKronologis.forEach(row => {
@@ -287,35 +291,58 @@
 
                 if (!kode) return;
 
-                if (!portofolioMap[kode]) {
-                    portofolioMap[kode] = { 
-                        lembar: 0, 
-                        totalBeliLembar: 0,
-                        totalBeliDana: 0,
+                if (!hasilSaham[kode]) {
+                    hasilSaham[kode] = {
+                        lembarSisa: 0,
+                        totalBeliTerpakai: 0, 
+                        totalJualTerpakai: 0,
                         hargaTerakhir: 0
                     };
+                    antreanBeli[kode] = [];
                 }
 
-                portofolioMap[kode].hargaTerakhir = harga;
+                hasilSaham[kode].hargaTerakhir = harga;
 
                 if (apakahBeli) {
-                    portofolioMap[kode].lembar += lembar;
-                    portofolioMap[kode].totalBeliLembar += lembar;
-                    portofolioMap[kode].totalBeliDana += (lembar * harga);
+                    hasilSaham[kode].lembarSisa += lembar;
+                    // Simpan ke antrean beli
+                    antreanBeli[kode].push({ lembar: lembar, harga: harga });
                 } else {
-                    portofolioMap[kode].lembar -= lembar;
+                    hasilSaham[kode].lembarSisa -= lembar;
+                    
+                    let sisaJual = lembar;
+                    // Lakukan pencocokan FIFO dengan antrean beli
+                    while (sisaJual > 0 && antreanBeli[kode].length > 0) {
+                        let antreanSekarang = antreanBeli[kode][0];
+                        
+                        if (antreanSekarang.lembar <= sisaJual) {
+                            // Seluruh lembar di antrean ini habis tercocokkan
+                            hasilSaham[kode].totalBeliTerpakai += (antreanSekarang.lembar * antreanSekarang.harga);
+                            hasilSaham[kode].totalJualTerpakai += (antreanSekarang.lembar * harga);
+                            
+                            sisaJual -= antreanSekarang.lembar;
+                            antreanBeli[kode].shift(); // Hapus dari antrean
+                        } else {
+                            // Hanya sebagian lembar di antrean tercocokkan
+                            hasilSaham[kode].totalBeliTerpakai += (sisaJual * antreanSekarang.harga);
+                            hasilSaham[kode].totalJualTerpakai += (sisaJual * harga);
+                            
+                            antreanSekarang.lembar -= sisaJual;
+                            sisaJual = 0;
+                        }
+                    }
                 }
             });
 
-            return portofolioMap;
+            return hasilSaham;
         }
 
         function renderPortofolio() {
             const gridPorto = document.getElementById('grid-portofolio');
             gridPorto.innerHTML = '';
 
-            const portofolioMap = dapatkanKalkulasiPortofolio();
-            const emitenAktif = Object.keys(portofolioMap).filter(kode => portofolioMap[kode].lembar > 0);
+            const dataPnl = hitungPnlSesuaiTransaksi();
+            const emitenAktif = Object.keys(dataPnl).filter(kode => dataPnl[kode].lembarSisa > 0);
 
             if (emitenAktif.length === 0) {
                 gridPorto.innerHTML = `<p class="text-xs text-stone-400 col-span-full text-center py-4">Belum memiliki aset portofolio saham aktif.</p>`;
@@ -323,8 +350,8 @@
             }
 
             emitenAktif.forEach(kode => {
-                const item = portofolioMap[kode];
-                const perkiraanValue = item.lembar * item.hargaTerakhir;
+                const item = dataPnl[kode];
+                const perkiraanValue = item.lembarSisa * item.hargaTerakhir;
 
                 const card = document.createElement('div');
                 card.className = "bg-stone-50 border border-stone-200/60 rounded-2xl p-3 flex flex-col gap-1 shadow-2xs";
@@ -335,7 +362,7 @@
                         <span class="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded-md font-medium">Aset</span>
                     </div>
                     <div class="mt-1">
-                        <p class="text-xs font-semibold text-stone-700">${item.lembar.toLocaleString('id-ID')} <span class="text-[10px] text-stone-400 font-normal">lembar</span></p>
+                        <p class="text-xs font-semibold text-stone-700">${item.lembarSisa.toLocaleString('id-ID')} <span class="text-[10px] text-stone-400 font-normal">lembar</span></p>
                         <p class="text-[10px] text-stone-400 mt-0.5">Value: Rp${Math.max(0, perkiraanValue).toLocaleString('id-ID')}</p>
                     </div>
                 `;
@@ -347,24 +374,27 @@
             const tbodyPnL = document.getElementById('tabel-body-pnl');
             tbodyPnL.innerHTML = '';
 
-            const portofolioMap = dapatkanKalkulasiPortofolio();
-            const emitenAktif = Object.keys(portofolioMap).filter(kode => portofolioMap[kode].lembar > 0);
+            const dataPnl = hitungPnlSesuaiTransaksi();
+            const emitenTerdaftar = Object.keys(dataPnl);
 
-            if (emitenAktif.length === 0) {
-                tbodyPnL.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-stone-400">Tidak ada aset portofolio aktif.</td></tr>`;
+            // Filter emiten yang setidaknya sudah pernah memiliki transaksi JUAL terealisasi
+            const emitenTerealisasi = emitenTerdaftar.filter(kode => dataPnl[kode].totalBeliTerpakai > 0);
+
+            if (emitenTerealisasi.length === 0) {
+                tbodyPnL.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-stone-400">Belum ada transaksi penjualan yang terealisasi untuk kalkulasi PnL.</td></tr>`;
                 document.getElementById('modal-pnl').classList.remove('hidden');
                 return;
             }
 
-            emitenAktif.forEach(kode => {
-                const item = portofolioMap[kode];
+            emitenTerealisasi.forEach(kode => {
+                const item = dataPnl[kode];
                 
-                const avgPrice = item.totalBeliLembar > 0 ? (item.totalBeliDana / item.totalBeliLembar) : 0;
-                const currentPrice = item.hargaTerakhir;
-                const totalUangPerSaham = item.lembar * currentPrice;
+                // PnL hanya dihitung dari bagian yang SUDAH terjual / terealisasi
+                const totalHargaBeliTerrealisasi = item.totalBeliTerpakai;
+                const totalHargaJualTerrealisasi = item.totalJualTerpakai;
                 
-                const pnlNominal = (currentPrice - avgPrice) * item.lembar;
-                const pnlPersen = avgPrice > 0 ? ((currentPrice - avgPrice) / avgPrice) * 100 : 0;
+                const pnlNominal = totalHargaJualTerrealisasi - totalHargaBeliTerrealisasi;
+                const pnlPersen = totalHargaBeliTerpakai > 0 ? (pnlNominal / totalHargaBeliTerpakai) * 100 : 0;
 
                 const statusWarnaBg = pnlNominal >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700';
                 const tandaPlus = pnlNominal > 0 ? '+' : '';
@@ -373,7 +403,7 @@
                 tr.className = "hover:bg-stone-50/70 transition";
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-stone-800 tracking-wide uppercase text-sm">${kode}</td>
-                    <td class="p-4 text-right text-stone-700 font-bold">Rp${Math.round(totalUangPerSaham).toLocaleString('id-ID')}</td>
+                    <td class="p-4 text-right text-stone-700 font-bold">Rp${Math.round(pnlNominal).toLocaleString('id-ID')}</td>
                     <td class="p-4 text-center">
                         <span class="px-2.5 py-1 rounded-md font-bold text-[11px] ${statusWarnaBg}">
                             ${tandaPlus}${pnlPersen.toFixed(2)}%
@@ -512,7 +542,6 @@
             document.getElementById('modal-transaksi').classList.add('hidden');
         }
 
-        // FUNGSI POPUP MODAL HAPUS
         function bukaModalHapus(id) {
             document.getElementById('hapus-id').value = id;
             document.getElementById('modal-hapus').classList.remove('hidden');
