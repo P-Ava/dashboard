@@ -77,7 +77,7 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
-                    Lihat PnL
+                    Lihat PnL Realized (Avg)
                 </button>
             </div>
 
@@ -193,13 +193,13 @@
         </div>
     </div>
 
-    <!-- POPUP MODAL PnL (PROFIT & LOSS) -->
+    <!-- POPUP MODAL PnL (PROFIT & LOSS - METHODE AVERAGE REALIZED) -->
     <div id="modal-pnl" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex justify-between items-center border-b border-stone-100 pb-3">
                 <div>
-                    <h3 class="font-serif font-bold text-lg text-brand">Ringkasan PnL Saham</h3>
-                    <p class="text-xs text-stone-400">Realisasi keuntungan/kerugian dari saham yang terjual (Metode FIFO)</p>
+                    <h3 class="font-serif font-bold text-lg text-brand">Ringkasan PnL Saham (Rata-Rata)</h3>
+                    <p class="text-xs text-stone-400">Keuntungan/Kerugian terealisasi dari lembar saham yang sudah terjual.</p>
                 </div>
                 <button type="button" onclick="tutupModalPnL()" class="text-stone-400 hover:text-stone-600 p-1 rounded-lg hover:bg-stone-50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -275,10 +275,9 @@
             }
         }
 
-        // FUNGSI UTAMA KALKULASI PORTOFOLIO & PnL FIFO
+        // FUNGSI UTAMA KALKULASI PORTOFOLIO & PnL MENGGUNAKAN METODE RATA-RATA (AVERAGE)
         function hitungPnlSesuaiTransaksi() {
             const hasilSaham = {};
-            const antreanBeli = {}; 
 
             // Urutkan transaksi dari terlama ke terbaru (kronologis)
             const transaksiKronologis = [...dataLokalSaham].reverse();
@@ -293,44 +292,25 @@
 
                 if (!hasilSaham[kode]) {
                     hasilSaham[kode] = {
+                        lembarBeli: 0,
+                        totalNilaiBeli: 0,
+                        lembarJual: 0,
+                        totalNilaiJual: 0,
                         lembarSisa: 0,
-                        totalBeliTerpakai: 0, 
-                        totalJualTerpakai: 0,
                         hargaTerakhir: 0
                     };
-                    antreanBeli[kode] = [];
                 }
 
                 hasilSaham[kode].hargaTerakhir = harga;
 
                 if (apakahBeli) {
+                    hasilSaham[kode].lembarBeli += lembar;
+                    hasilSaham[kode].totalNilaiBeli += (lembar * harga);
                     hasilSaham[kode].lembarSisa += lembar;
-                    // Simpan ke antrean beli
-                    antreanBeli[kode].push({ lembar: lembar, harga: harga });
                 } else {
+                    hasilSaham[kode].lembarJual += lembar;
+                    hasilSaham[kode].totalNilaiJual += (lembar * harga);
                     hasilSaham[kode].lembarSisa -= lembar;
-                    
-                    let sisaJual = lembar;
-                    // Lakukan pencocokan FIFO dengan antrean beli
-                    while (sisaJual > 0 && antreanBeli[kode].length > 0) {
-                        let antreanSekarang = antreanBeli[kode][0];
-                        
-                        if (antreanSekarang.lembar <= sisaJual) {
-                            // Seluruh lembar di antrean ini habis tercocokkan
-                            hasilSaham[kode].totalBeliTerpakai += (antreanSekarang.lembar * antreanSekarang.harga);
-                            hasilSaham[kode].totalJualTerpakai += (antreanSekarang.lembar * harga);
-                            
-                            sisaJual -= antreanSekarang.lembar;
-                            antreanBeli[kode].shift(); // Hapus dari antrean
-                        } else {
-                            // Hanya sebagian lembar di antrean tercocokkan
-                            hasilSaham[kode].totalBeliTerpakai += (sisaJual * antreanSekarang.harga);
-                            hasilSaham[kode].totalJualTerpakai += (sisaJual * harga);
-                            
-                            antreanSekarang.lembar -= sisaJual;
-                            sisaJual = 0;
-                        }
-                    }
                 }
             });
 
@@ -377,8 +357,8 @@
             const dataPnl = hitungPnlSesuaiTransaksi();
             const emitenTerdaftar = Object.keys(dataPnl);
 
-            // Filter emiten yang setidaknya sudah pernah memiliki transaksi JUAL terealisasi
-            const emitenTerealisasi = emitenTerdaftar.filter(kode => dataPnl[kode].totalBeliTerpakai > 0);
+            // FILTER: Hanya tampilkan emiten yang sudah pernah melakukan aksi JUAL (lembarJual > 0)
+            const emitenTerealisasi = emitenTerdaftar.filter(kode => dataPnl[kode].lembarJual > 0);
 
             if (emitenTerealisasi.length === 0) {
                 tbodyPnL.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-stone-400">Belum ada transaksi penjualan yang terealisasi untuk kalkulasi PnL.</td></tr>`;
@@ -389,12 +369,16 @@
             emitenTerealisasi.forEach(kode => {
                 const item = dataPnl[kode];
                 
-                // PnL hanya dihitung dari bagian yang SUDAH terjual / terealisasi
-                const totalHargaBeliTerealisasi = item.totalBeliTerpakai;
-                const totalHargaJualTerealisasi = item.totalJualTerpakai;
+                // 1. Ambil harga rata-rata beli dan rata-rata jual dari seluruh riwayat
+                const avgHargaBeli = item.totalNilaiBeli / item.lembarBeli;
+                const avgHargaJual = item.totalNilaiJual / item.lembarJual;
                 
-                const pnlNominal = totalHargaJualTerealisasi - totalHargaBeliTerealisasi;
-                const pnlPersen = totalHargaBeliTerealisasi > 0 ? (pnlNominal / totalHargaBeliTerealisasi) * 100 : 0;
+                // 2. PnL dicocokkan berdasarkan jumlah lembar yang sudah terpasangkan (terjual)
+                const totalBeliDisesuaikan = item.lembarJual * avgHargaBeli;
+                const totalJualDisesuaikan = item.lembarJual * avgHargaJual;
+                
+                const pnlNominal = totalJualDisesuaikan - totalBeliDisesuaikan;
+                const pnlPersen = avgHargaBeli > 0 ? ((avgHargaJual - avgHargaBeli) / avgHargaBeli) * 100 : 0;
 
                 const statusWarnaBg = pnlNominal >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700';
                 const tandaPlus = pnlNominal > 0 ? '+' : '';
@@ -402,7 +386,12 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-stone-50/70 transition";
                 tr.innerHTML = `
-                    <td class="p-4 font-bold text-stone-800 tracking-wide uppercase text-sm">${kode}</td>
+                    <td class="p-4 font-bold text-stone-800 tracking-wide uppercase text-sm">
+                        <div>${kode}</div>
+                        <div class="text-[10px] text-stone-400 font-normal normal-case mt-0.5">
+                            Avg Beli: Rp${Math.round(avgHargaBeli).toLocaleString('id-ID')} | Vol Jual: ${item.lembarJual.toLocaleString('id-ID')} lbr
+                        </div>
+                    </td>
                     <td class="p-4 text-right text-stone-700 font-bold">Rp${Math.round(pnlNominal).toLocaleString('id-ID')}</td>
                     <td class="p-4 text-center">
                         <span class="px-2.5 py-1 rounded-md font-bold text-[11px] ${statusWarnaBg}">
