@@ -77,8 +77,8 @@
                     <thead>
                         <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider border-b border-stone-100">
                             <th class="p-4">Nama Barang</th>
-                            <th class="p-4">Transaksi</th>
                             <th class="p-4">Jumlah</th>
+                            <th class="p-4">Transaksi</th>
                             <th class="p-4 text-right">Harga</th>
                             <th class="p-4">Tanggal</th>
                         </tr>
@@ -139,12 +139,13 @@
             let akumulasiSaldo = 0;
 
             dataArray.forEach(row => {
-                const namaBarang = row['nama barang'] || 'Tanpa Nama';
-                const harga = row.harga || 0;
+                // SINKRONISASI KOLOM SUPABASE
+                const namaBarang = row.nama_barang || 'Tanpa Nama';
                 const jumlah = row.jumlah || 1;
+                const harga = row.harga || 0;
                 const tanggal = row.date || '-';
                 
-                // true = Pemasukan, false = Penjualan
+                // TRUE = Pemasukan (+), FALSE = Penjualan (-)
                 const apakahPemasukan = row.transaksi === true;
 
                 if (apakahPemasukan) {
@@ -161,14 +162,16 @@
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-stone-50/50 transition';
+                
+                // URUTAN KOLOM WEB: nama barang -> jumlah -> transaksi -> harga -> tanggal
                 tr.innerHTML = `
                     <td class="p-4 font-medium text-stone-800">${namaBarang}</td>
+                    <td class="p-4 text-stone-500">${jumlah}x</td>
                     <td class="p-4">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${apakahPemasukan ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
                             ${apakahPemasukan ? 'Pemasukan' : 'Penjualan'}
                         </span>
                     </td>
-                    <td class="p-4 text-stone-500">${jumlah}x</td>
                     <td class="p-4 text-right font-semibold ${apakahPemasukan ? 'text-emerald-600' : 'text-red-600'}">
                         ${apakahPemasukan ? '+' : '-'}${formatHarga}
                     </td>
@@ -191,7 +194,7 @@
             const kataKunci = e.target.value.toLowerCase().trim();
             
             const dataHasilFilter = dataLokalUangPribadi.filter(row => {
-                const namaBarang = (row['nama barang'] || '').toLowerCase();
+                const namaBarang = (row.nama_barang || '').toLowerCase();
                 const tanggal = (row.date || '').toLowerCase();
                 return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
             });
