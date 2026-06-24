@@ -85,7 +85,7 @@
                             Tambah
                         </button>
                         
-                        <!-- TOMBOL AKTIFKAN MODE EDIT (PENSIL COKELAT ATAS) -->
+                        <!-- TOMBOL AKTIFKAN MODE EDIT -->
                         <button id="btn-mode-edit" onclick="toggleModeEdit()" class="p-1.5 border border-stone-200 text-stone-500 rounded-xl hover:bg-stone-50 hover:text-brand transition shadow-sm" title="Aktifkan Mode Edit">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
@@ -248,7 +248,8 @@
             }
 
             dataArray.forEach((row, index) => {
-                const idRow = row.id;
+                // SINKRONISASI KOLOM ID HURUF BESAR SESUAI SUPABASE
+                const idRow = row.ID; 
                 const namaBarang = row.nama_barang || 'Tanpa Nama';
                 const jumlah = row.jumlah || 1;
                 const harga = row.harga || 0;
@@ -262,7 +263,6 @@
                 }).format(harga);
 
                 const tr = document.createElement('tr');
-                // Sembunyikan baris ke-11 dan seterusnya dari layar (maksimal 10 transaksi tampil)
                 tr.className = `hover:bg-stone-50/50 transition ${index >= 10 ? 'hidden' : ''}`;
 
                 let kolomAksiHtml = '';
@@ -297,7 +297,7 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${totalTampil} dari ${dataArray.length} catatan terdaftar`;
         }
 
-        // SWITCHING MODE EDIT (PENSIL COKELAT ATAS)
+        // SWITCHING MODE EDIT
         function toggleModeEdit() {
             modeEditAktif = !modeEditAktif;
             const btn = document.getElementById('btn-mode-edit');
@@ -319,7 +319,7 @@
             document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
-        // POPUP PEMICU FORM EDIT (MENGISI FORM DENGAN DATA LAMA)
+        // POPUP PEMICU FORM EDIT (MENGGUNAKAN ID HURUF BESAR)
         function bukaModalEdit(id) {
             const dataRow = dataLokalUangPribadi.find(row => String(row.ID) === String(id));
             if (!dataRow) {
@@ -327,7 +327,7 @@
                 return;
             }
 
-            document.getElementById('form-id').value = dataRow.id;
+            document.getElementById('form-id').value = dataRow.ID;
             document.getElementById('modal-judul').innerText = 'Edit Transaksi Lama';
             document.getElementById('form-nama').value = dataRow.nama_barang || '';
             document.getElementById('form-jumlah').value = dataRow.jumlah || 1;
@@ -343,7 +343,7 @@
             document.getElementById('modal-transaksi').classList.add('hidden');
         }
 
-        // SAVE / UPDATE HANDLER
+        // SAVE / UPDATE HANDLER (MENGGUNAKAN MATCHING ID HURUF BESAR)
         document.getElementById('form-tambah-supa').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -356,11 +356,11 @@
 
             try {
                 if (id) {
-                    // JALANKAN UPDATE JIKA ID TERSEDIA
+                    // JALANKAN UPDATE BERDASARKAN KOLOM ID CAPITAL
                     const { error } = await supaClient
                         .from('uang_pribadi')
                         .update({ nama_barang, jumlah, transaksi, harga, date })
-                        .eq('id', id);
+                        .eq('ID', id);
 
                     if (error) throw error;
                 } else {
