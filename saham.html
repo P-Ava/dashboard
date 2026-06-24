@@ -67,18 +67,24 @@
 
         <!-- SEKSI: PORTOFOLIO SAHAM YANG DIMILIKI -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
-            <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+            <div class="flex justify-between items-start border-b border-stone-100 pb-3">
                 <div>
                     <h3 class="font-serif font-semibold text-lg text-brand">Portofolio Saham Anda</h3>
                     <p class="text-xs text-stone-400">Daftar saham yang saat ini Anda miliki (aset aktif)</p>
                 </div>
-                <!-- Tombol PnL -->
-                <button onclick="bukaModalPnL()" class="px-3 py-1.5 bg-amber-700 text-white text-xs font-semibold rounded-xl hover:bg-amber-800 transition shadow-sm flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    Lihat PnL Realized (Avg)
-                </button>
+                <!-- Area Tombol PnL & Teks Angka di Bawahnya -->
+                <div class="flex flex-col items-end gap-1">
+                    <button onclick="bukaModalPnL()" class="px-3 py-1.5 bg-amber-700 text-white text-xs font-semibold rounded-xl hover:bg-amber-800 transition shadow-sm flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Lihat PnL Realized (Avg)
+                    </button>
+                    <!-- Teks Angka & Persentase Tepat di bawah Button PnL -->
+                    <div id="pnl-ringkas-bawah-tombol" class="text-[11px] font-bold text-stone-500 tracking-wide mt-0.5">
+                        Menghitung PnL...
+                    </div>
+                </div>
             </div>
 
             <!-- Grid Tampilan Portofolio -->
@@ -217,12 +223,6 @@
                     </thead>
                     <tbody id="tabel-body-pnl" class="divide-y divide-stone-100 text-stone-600 font-semibold">
                     </tbody>
-                    <!-- BARIS TOTAL DIBAWAH ISI TABEL PNL -->
-                    <tfoot>
-                        <tr id="tabel-foot-pnl" class="bg-stone-100 border-t-2 border-stone-200 font-bold text-stone-800">
-                            <!-- Akan di-render via Javascript -->
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
             
@@ -236,7 +236,7 @@
     <div id="modal-hapus" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 text-center animate-in fade-in zoom-in-95 duration-150">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-50 text-red-600">
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/xl">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                 </svg>
             </div>
@@ -275,6 +275,7 @@
                 dataLokalSaham = data || [];
                 renderTabel(dataLokalSaham);
                 renderPortofolio();
+                hitungDanTampilkanPnlRingkas(); // Eksekusi hitung pnl bawah tombol
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
                 document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
@@ -284,8 +285,6 @@
         // FUNGSI UTAMA KALKULASI PORTOFOLIO & PnL MENGGUNAKAN METODE RATA-RATA (AVERAGE)
         function hitungPnlSesuaiTransaksi() {
             const hasilSaham = {};
-
-            // Urutkan transaksi dari terlama ke terbaru (kronologis)
             const transaksiKronologis = [...dataLokalSaham].reverse();
 
             transaksiKronologis.forEach(row => {
@@ -323,6 +322,45 @@
             return hasilSaham;
         }
 
+        // FUNGSI BARU: MENAMPILKAN ANGKA & PERSENTASE DI BAWAH TOMBOL SECARA OTOMATIS
+        function hitungDanTampilkanPnlRingkas() {
+            const targetEl = document.getElementById('pnl-ringkas-bawah-tombol');
+            const dataPnl = hitungPnlSesuaiTransaksi();
+            const emitenTerdaftar = Object.keys(dataPnl);
+            const emitenTerealisasi = emitenTerdaftar.filter(kode => dataPnl[kode].lembarJual > 0);
+
+            if (emitenTerealisasi.length === 0) {
+                targetEl.innerHTML = `<span class="text-stone-400">Rp0 (0.00%)</span>`;
+                return;
+            }
+
+            let grandTotalBeliDisesuaikan = 0;
+            let grandTotalNominalPnL = 0;
+
+            emitenTerealisasi.forEach(kode => {
+                const item = dataPnl[kode];
+                const avgHargaBeli = item.totalNilaiBeli / item.lembarBeli;
+                const avgHargaJual = item.totalNilaiJual / item.lembarJual;
+                
+                const totalBeliDisesuaikan = item.lembarJual * avgHargaBeli;
+                const totalJualDisesuaikan = item.lembarJual * avgHargaJual;
+                
+                grandTotalBeliDisesuaikan += totalBeliDisesuaikan;
+                grandTotalNominalPnL += (totalJualDisesuaikan - totalBeliDisesuaikan);
+            });
+
+            const grandTotalPersenPnL = grandTotalBeliDisesuaikan > 0 ? (grandTotalNominalPnL / grandTotalBeliDisesuaikan) * 100 : 0;
+            const tandaPlusTotal = grandTotalNominalPnL > 0 ? '+' : '';
+            const warnaTeks = grandTotalNominalPnL >= 0 ? 'text-emerald-600' : 'text-red-600';
+
+            // Masukkan data murni angka dan persentase
+            targetEl.innerHTML = `
+                <span class="${warnaTeks}">
+                    Rp${Math.round(grandTotalNominalPnL).toLocaleString('id-ID')} (${tandaPlusTotal}${grandTotalPersenPnL.toFixed(2)}%)
+                </span>
+            `;
+        }
+
         function renderPortofolio() {
             const gridPorto = document.getElementById('grid-portofolio');
             gridPorto.innerHTML = '';
@@ -358,14 +396,10 @@
 
         function bukaModalPnL() {
             const tbodyPnL = document.getElementById('tabel-body-pnl');
-            const tfootPnL = document.getElementById('tabel-foot-pnl');
             tbodyPnL.innerHTML = '';
-            tfootPnL.innerHTML = '';
 
             const dataPnl = hitungPnlSesuaiTransaksi();
             const emitenTerdaftar = Object.keys(dataPnl);
-
-            // FILTER: Hanya tampilkan emiten yang sudah pernah melakukan aksi JUAL (lembarJual > 0)
             const emitenTerealisasi = emitenTerdaftar.filter(kode => dataPnl[kode].lembarJual > 0);
 
             if (emitenTerealisasi.length === 0) {
@@ -374,26 +408,16 @@
                 return;
             }
 
-            let grandTotalBeliDisesuaikan = 0;
-            let grandTotalNominalPnL = 0;
-
             emitenTerealisasi.forEach(kode => {
                 const item = dataPnl[kode];
-                
-                // 1. Ambil harga rata-rata beli dan rata-rata jual dari seluruh riwayat
                 const avgHargaBeli = item.totalNilaiBeli / item.lembarBeli;
                 const avgHargaJual = item.totalNilaiJual / item.lembarJual;
                 
-                // 2. PnL dicocokkan berdasarkan jumlah lembar yang sudah terpasangkan (terjual)
                 const totalBeliDisesuaikan = item.lembarJual * avgHargaBeli;
                 const totalJualDisesuaikan = item.lembarJual * avgHargaJual;
                 
                 const pnlNominal = totalJualDisesuaikan - totalBeliDisesuaikan;
                 const pnlPersen = avgHargaBeli > 0 ? ((avgHargaJual - avgHargaBeli) / avgHargaBeli) * 100 : 0;
-
-                // Akumulasikan ke Grand Total Keseluruhan
-                grandTotalBeliDisesuaikan += totalBeliDisesuaikan;
-                grandTotalNominalPnL += pnlNominal;
 
                 const statusWarnaBg = pnlNominal >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700';
                 const tandaPlus = pnlNominal > 0 ? '+' : '';
@@ -416,22 +440,6 @@
                 `;
                 tbodyPnL.appendChild(tr);
             });
-
-            // HITUNG PERSENTASE GRAND TOTAL KESELURUHAN
-            const grandTotalPersenPnL = grandTotalBeliDisesuaikan > 0 ? (grandTotalNominalPnL / grandTotalBeliDisesuaikan) * 100 : 0;
-            const warnaTotalBg = grandTotalNominalPnL >= 0 ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white';
-            const tandaPlusTotal = grandTotalNominalPnL > 0 ? '+' : '';
-
-            // TAMPILKAN BARIS TOTAL DI FOOTER TABEL MODAL PNL
-            tfootPnL.innerHTML = `
-                <td class="p-4 uppercase text-stone-800 font-bold tracking-wider text-xs">Total Semua Saham</td>
-                <td class="p-4 text-right text-stone-900 font-black text-sm">Rp${Math.round(grandTotalNominalPnL).toLocaleString('id-ID')}</td>
-                <td class="p-4 text-center">
-                    <span class="px-2.5 py-1 rounded-md font-black text-[11px] shadow-sm ${warnaTotalBg}">
-                        ${tandaPlusTotal}${grandTotalPersenPnL.toFixed(2)}%
-                    </span>
-                </td>
-            `;
 
             document.getElementById('modal-pnl').classList.remove('hidden');
         }
@@ -483,7 +491,7 @@
                 const apakahBeli = row.transaksi === true;
 
                 const formatHargaLembar = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(hargaPerlembar);
-                const formatTotalHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalTotalHarga = totalHarga);
+                const formatTotalHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalHarga);
 
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-stone-50/50 transition ${index >= 10 ? 'hidden' : ''}`;
