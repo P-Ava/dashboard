@@ -46,21 +46,47 @@
     <div class="max-w-4xl w-full flex flex-col gap-6">
         
         <!-- HEADER / NAVIGASI ATAS -->
-        <div class="flex justify-between items-center bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition" title="Kembali ke Dashboard">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-cardBg p-5 rounded-2xl shadow-sm border border-stone-100 gap-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition shrink-0" title="Kembali ke Dashboard">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                 </a>
-                <div>
+                
+                <!-- Grup Judul Utama -->
+                <div class="flex flex-col">
                     <h1 class="font-serif text-xl font-bold text-brand">Investasi Saham</h1>
-                    <p class="text-xs text-stone-400">Rincian portofolio langsung dari Supabase</p>
+                    <p class="text-[11px] text-stone-400">Rincian portofolio terintegrasi</p>
+                </div>
+
+                <!-- SEKAT VERTIKAL (DESKTOP) -->
+                <div class="hidden sm:block h-8 w-px bg-stone-200 mx-1"></div>
+
+                <!-- RINGKASAN DATA BARU: TOTAL EMITEN & BANK RDN -->
+                <div class="flex items-center gap-4 bg-stone-50/80 px-4 py-2 rounded-xl border border-stone-100">
+                    <div>
+                        <span class="text-[10px] text-stone-400 font-medium block uppercase tracking-wider">Total Saham</span>
+                        <span id="total-saham-dimiliki" class="text-sm font-bold text-stone-800">0 Emiten</span>
+                    </div>
+                    <div class="h-6 w-px bg-stone-200"></div>
+                    <div>
+                        <span class="text-[10px] text-stone-400 font-medium block uppercase tracking-wider">Bank RDN</span>
+                        <div class="flex items-center gap-1.5">
+                            <span id="saldo-rdn" class="text-sm font-bold text-emerald-700">Rp0</span>
+                            <!-- Tombol Edit Saldo RDN -->
+                            <button onclick="bukaModalRdn()" class="text-stone-400 hover:text-brand transition" title="Edit Saldo RDN Manual">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="text-right">
-                <span class="text-xs text-stone-400 font-medium">Total Uang Saham</span>
+            <div class="text-left md:text-right shrink-0">
+                <span class="text-xs text-stone-400 font-medium">Total Uang Saham (Net)</span>
                 <h2 id="total-uang-saham" class="text-lg font-bold text-brand font-serif">Rp0</h2>
             </div>
         </div>
@@ -199,6 +225,24 @@
         </div>
     </div>
 
+    <!-- POPUP MODAL EDIT BANK RDN MANUAl -->
+    <div id="modal-rdn" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+            <div class="border-b border-stone-100 pb-2">
+                <h3 class="font-serif font-bold text-base text-brand">Atur Ulang Saldo RDN</h3>
+                <p class="text-[11px] text-stone-400 mt-0.5">Atur nominal dasar rekening dana nasabah Anda.</p>
+            </div>
+            <div class="flex flex-col gap-1 text-xs">
+                <label class="font-medium text-stone-500">Nominal Dasar RDN (Rp)</label>
+                <input type="number" id="input-nominal-rdn" placeholder="Contoh: 5000000" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+            </div>
+            <div class="flex gap-2 justify-end text-xs pt-1">
+                <button type="button" onclick="tutupModalRdn()" class="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 transition">Batal</button>
+                <button type="button" onclick="simpanSaldoRdnManual()" class="px-3 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Perbarui</button>
+            </div>
+        </div>
+    </div>
+
     <!-- POPUP MODAL PnL (PROFIT & LOSS - METHODE AVERAGE REALIZED) -->
     <div id="modal-pnl" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
@@ -275,7 +319,8 @@
                 dataLokalSaham = data || [];
                 renderTabel(dataLokalSaham);
                 renderPortofolio();
-                hitungDanTampilkanPnlRingkas(); // Eksekusi hitung pnl bawah tombol
+                hitungDanTampilkanPnlRingkas();
+                hitungDanTampilkanRdnOtomatis(); // Hitung akumulasi RDN
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
                 document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
@@ -322,7 +367,50 @@
             return hasilSaham;
         }
 
-        // FUNGSI BARU: MENAMPILKAN ANGKA & PERSENTASE DI BAWAH TOMBOL SECARA OTOMATIS
+        // LOGIKA BARU: OLEH-OLEH DARI STRUKTUR RDN & TRANSAKSI OTOMATIS
+        function hitungDanTampilkanRdnOtomatis() {
+            // Mengambil nominal dasar dari localStorage (default 0 jika belum diset)
+            const nominalDasarRDN = parseFloat(localStorage.getItem('base_rdn_balance') || '0');
+            
+            let totalMutasiTransaksi = 0;
+            dataLokalSaham.forEach(row => {
+                const totalHarga = row.total_harga || ((row.jumlah_perlembar || 0) * (row.harga_perlembar || 0));
+                if (row.transaksi === true) {
+                    // Beli saham = RDN Berkurang
+                    totalMutasiTransaksi -= totalHarga;
+                } else {
+                    // Jual saham = RDN Bertambah
+                    totalMutasiTransaksi += totalHarga;
+                }
+            });
+
+            const saldoAkhirRDN = nominalDasarRDN + totalMutasiTransaksi;
+            
+            // Render ke UI RDN
+            document.getElementById('saldo-rdn').innerText = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                maximumFractionDigits: 0 
+            }).format(saldoAkhirRDN);
+        }
+
+        function bukaModalRdn() {
+            const currentBase = localStorage.getItem('base_rdn_balance') || '0';
+            document.getElementById('input-nominal-rdn').value = currentBase;
+            document.getElementById('modal-rdn').classList.remove('hidden');
+        }
+
+        function tutupModalRdn() {
+            document.getElementById('modal-rdn').classList.add('hidden');
+        }
+
+        function simpanSaldoRdnManual() {
+            const val = document.getElementById('input-nominal-rdn').value || '0';
+            localStorage.setItem('base_rdn_balance', val);
+            tutupModalRdn();
+            hitungDanTampilkanRdnOtomatis(); // recalculate
+        }
+
         function hitungDanTampilkanPnlRingkas() {
             const targetEl = document.getElementById('pnl-ringkas-bawah-tombol');
             const dataPnl = hitungPnlSesuaiTransaksi();
@@ -353,7 +441,6 @@
             const tandaPlusTotal = grandTotalNominalPnL > 0 ? '+' : '';
             const warnaTeks = grandTotalNominalPnL >= 0 ? 'text-emerald-600' : 'text-red-600';
 
-            // Masukkan data murni angka dan persentase
             targetEl.innerHTML = `
                 <span class="${warnaTeks}">
                     Rp${Math.round(grandTotalNominalPnL).toLocaleString('id-ID')} (${tandaPlusTotal}${grandTotalPersenPnL.toFixed(2)}%)
@@ -367,6 +454,9 @@
 
             const dataPnl = hitungPnlSesuaiTransaksi();
             const emitenAktif = Object.keys(dataPnl).filter(kode => dataPnl[kode].lembarSisa > 0);
+
+            // Perbarui Counter Total Saham yang Dimiliki di bagian Header Atas
+            document.getElementById('total-saham-dimiliki').innerText = `${emitenAktif.length} Emiten`;
 
             if (emitenAktif.length === 0) {
                 gridPorto.innerHTML = `<p class="text-xs text-stone-400 col-span-full text-center py-4">Belum memiliki aset portofolio saham aktif.</p>`;
@@ -444,9 +534,8 @@
             document.getElementById('modal-pnl').classList.remove('hidden');
         }
 
-        function tutupModalPnL() {
-            document.getElementById('modal-pnl').classList.add('hidden');
-        }
+        function开ModalPnL() { tutupModalPnL(); }
+        function tutupModalPnL() { document.getElementById('modal-pnl').classList.add('hidden'); }
 
         function renderTabel(dataArray) {
             const tbody = document.getElementById('tabel-body-supa');
