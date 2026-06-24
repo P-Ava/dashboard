@@ -1,195 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rincian Uang Pribadi</title>
-    <!-- Tailwind CSS untuk styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: '#603010',
-                        brandBg: '#fbf5f0',
-                        cardBg: '#ffffff',
-                    },
-                    fontFamily: {
-                        serif: ['Georgia', 'serif'],
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #fbf5f0;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e7e5e4;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #603010;
-        }
-    </style>
-</head>
-<body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
-
-    <!-- WRAPPER UTAMA -->
-    <div class="max-w-4xl w-full flex flex-col gap-6">
-        
-        <!-- HEADER / NAVIGASI ATAS -->
-        <div class="flex justify-between items-center bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 text-brand transition" title="Kembali ke Dashboard">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                </a>
-                <div>
-                    <h1 class="font-serif text-xl font-bold text-brand">Uang Pribadi</h1>
-                    <p class="text-xs text-stone-400">Rincian mutasi langsung dari Supabase</p>
-                </div>
-            </div>
-            
-            <!-- Total Saldo Dinamis -->
-            <div class="text-right">
-                <span class="text-xs text-stone-400 font-medium">Total Saldo</span>
-                <h2 id="total-saldo-pribadi" class="text-lg font-bold text-brand font-serif">Rp0</h2>
-            </div>
-        </div>
-
-        <!-- KARTU UTAMA: TABEL TRANSAKSI -->
-        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
-            
-            <!-- BAGIAN ATAS TABEL -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
-                <div class="flex items-center gap-2">
-                    <div>
-                        <h3 class="font-serif font-semibold text-lg text-brand inline-block">Daftar Pengeluaran & Pemasukan</h3>
-                        <p class="text-xs text-stone-400">Menampilkan 10 data terbaru, urutan tanggal terbaru</p>
-                    </div>
-                    
-                    <!-- AREA ACTION BUTTONS -->
-                    <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                        <!-- TOMBOL TAMBAH -->
-                        <button onclick="bukaModalTambah()" class="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                            Tambah
-                        </button>
-                        
-                        <!-- TOMBOL AKTIFKAN MODE EDIT -->
-                        <button id="btn-mode-edit" onclick="toggleModeEdit()" class="p-1.5 border border-stone-200 text-stone-500 rounded-xl hover:bg-stone-50 hover:text-brand transition shadow-sm" title="Aktifkan Mode Edit">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- INPUT PENCARIAN GABUNGAN -->
-                <div class="relative w-full sm:w-56">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </span>
-                    <input type="text" id="input-cari-gabungan" placeholder="Cari barang atau tanggal..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
-                </div>
-            </div>
-
-            <!-- RESPONSIVE TABLE CONTAINER (MAKSIMAL 10 TRANSAKSI, SISANYA GULIR) -->
-            <div class="overflow-x-auto overflow-y-auto max-h-[530px] rounded-2xl border border-stone-100 custom-scrollbar">
-                <table class="w-full text-left border-collapse min-w-[620px]">
-                    <thead class="sticky top-0 bg-white z-10 shadow-[0_1px_0_0_rgba(231,229,228,1)]">
-                        <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider">
-                            <th class="p-4">Nama Barang</th>
-                            <th class="p-4">Jumlah</th>
-                            <th class="p-4">Transaksi</th>
-                            <th class="p-4 text-right">Harga</th>
-                            <th class="p-4">Tanggal</th>
-                            <th id="th-aksi" class="p-4 text-center hidden w-20">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabel-body-supa" class="divide-y divide-stone-100 text-sm text-stone-600">
-                        <tr>
-                            <td colspan="5" class="p-4 text-center text-stone-400 animate-pulse">Memuat data dari Supabase...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- KETERANGAN BAWAH -->
-            <div class="flex justify-between items-center text-xs text-stone-400 mt-2">
-                <span id="keterangan-jumlah-supa">Menampilkan 0 catatan</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- POPUP FORM MODAL (TAMBAH & EDIT TRANSAKSI) -->
-    <div id="modal-transaksi" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
-            <div class="flex justify-between items-center border-b border-stone-100 pb-3">
-                <h3 id="modal-judul" class="font-serif font-bold text-lg text-brand">Tambah Transaksi Baru</h3>
-                <button type="button" onclick="tutupModal()" class="text-stone-400 hover:text-stone-600 p-1 rounded-lg hover:bg-stone-50">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <form id="form-tambah-supa" class="flex flex-col gap-3.5 text-xs text-stone-600">
-                <!-- ID Hidden penting untuk penanda edit -->
-                <input type="hidden" id="form-id">
-
-                <div class="flex flex-col gap-1">
-                    <label class="font-medium text-stone-500">Nama Barang</label>
-                    <input type="text" id="form-nama" required placeholder="Contoh: Gaji Bulanan, Kopi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Jumlah</label>
-                        <input type="number" id="form-jumlah" min="1" value="1" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Jenis Transaksi</label>
-                        <select id="form-transaksi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-medium">
-                            <option value="true" class="text-emerald-600 font-medium">Pemasukan (+)</option>
-                            <option value="false" class="text-red-600 font-medium">Penjualan (-)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Harga (Rp)</label>
-                        <input type="number" id="form-harga" min="0" required placeholder="0" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Tanggal</label>
-                        <input type="date" id="form-date" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                    </div>
-                </div>
-
-                <div class="flex gap-2 justify-end pt-2 border-t border-stone-100 mt-2">
-                    <button type="button" onclick="tutupModal()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 font-medium transition">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Simpan Data</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- LIBRARY & LOGIK SUPABASE MURNI -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
-    <script>
-        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
-        
-        const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let dataLokalUangPribadi = [];
+let dataLokalUangPribadi = [];
         let modeEditAktif = false;
 
         // FUNGSI AMBIL DATA (URUT TANGGAL TERBARU)
@@ -215,7 +24,6 @@
             const tbody = document.getElementById('tabel-body-supa');
             tbody.innerHTML = '';
             
-            // Hitung akumulasi total saldo
             let akumulasiSaldo = 0;
             dataLokalUangPribadi.forEach(row => {
                 const harga = row.harga || 0;
@@ -233,7 +41,6 @@
                 maximumFractionDigits: 0 
             }).format(akumulasiSaldo);
 
-            // Kontrol visibilitas Header Kolom Aksi
             const thAksi = document.getElementById('th-aksi');
             if (modeEditAktif) {
                 thAksi.classList.remove('hidden');
@@ -248,8 +55,8 @@
             }
 
             dataArray.forEach((row, index) => {
-                // SINKRONISASI KOLOM ID HURUF BESAR SESUAI SUPABASE
-                const idRow = row.ID; 
+                // KEMBALI MENGGUNAKAN HURUF KECIL 'id' SESUAI DATABASE
+                const idRow = row.id; 
                 const namaBarang = row.nama_barang || 'Tanpa Nama';
                 const jumlah = row.jumlah || 1;
                 const harga = row.harga || 0;
@@ -297,7 +104,6 @@
             document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${totalTampil} dari ${dataArray.length} catatan terdaftar`;
         }
 
-        // SWITCHING MODE EDIT
         function toggleModeEdit() {
             modeEditAktif = !modeEditAktif;
             const btn = document.getElementById('btn-mode-edit');
@@ -311,7 +117,6 @@
             renderTabel(dataLokalUangPribadi);
         }
 
-        // POPUP PEMICU FORM TAMBAH
         function bukaModalTambah() {
             document.getElementById('form-id').value = '';
             document.getElementById('modal-judul').innerText = 'Tambah Transaksi Baru';
@@ -319,15 +124,15 @@
             document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
-        // POPUP PEMICU FORM EDIT (MENGGUNAKAN ID HURUF BESAR)
+        // DI SINI KUNCI PERBAIKANNYA: Menggunakan row.id (huruf kecil)
         function bukaModalEdit(id) {
-            const dataRow = dataLokalUangPribadi.find(row => String(row.ID) === String(id));
+            const dataRow = dataLokalUangPribadi.find(row => String(row.id) === String(id));
             if (!dataRow) {
                 console.error("Data ID tidak ditemukan lokal:", id);
                 return;
             }
 
-            document.getElementById('form-id').value = dataRow.ID;
+            document.getElementById('form-id').value = dataRow.id; // <-- Diisi dengan id huruf kecil
             document.getElementById('modal-judul').innerText = 'Edit Transaksi Lama';
             document.getElementById('form-nama').value = dataRow.nama_barang || '';
             document.getElementById('form-jumlah').value = dataRow.jumlah || 1;
@@ -343,7 +148,7 @@
             document.getElementById('modal-transaksi').classList.add('hidden');
         }
 
-        // SAVE / UPDATE HANDLER (MENGGUNAKAN MATCHING ID HURUF BESAR)
+        // SAVE / UPDATE HANDLER
         document.getElementById('form-tambah-supa').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -356,15 +161,14 @@
 
             try {
                 if (id) {
-                    // JALANKAN UPDATE BERDASARKAN KOLOM ID CAPITAL
+                    // MENGGUNAKAN 'id' HURUF KECIL UNTUK KUERI UPDATE KE SUPABASE
                     const { error } = await supaClient
                         .from('uang_pribadi')
                         .update({ nama_barang, jumlah, transaksi, harga, date })
-                        .eq('ID', id);
+                        .eq('id', id);
 
                     if (error) throw error;
                 } else {
-                    // JALANKAN INSERT BARU JIKA ID KOSONG
                     const { error } = await supaClient
                         .from('uang_pribadi')
                         .insert([{ nama_barang, jumlah, transaksi, harga, date }]);
@@ -391,6 +195,3 @@
         });
 
         window.addEventListener('DOMContentLoaded', ambilDataUangPribadi);
-    </script>
-</body>
-</html>
