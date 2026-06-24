@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <!-- KOTAK STATISTIK METRIK & TOMBOL AKSI (DI ATAS TABEL) -->
+        <!-- KOTAK STATISTIK METRIK & TOMBOL AKSI -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-stone-200/60 shadow-sm">
             <!-- Pemasukan -->
             <div class="flex flex-col gap-1 border-r border-stone-100 last:border-0 pr-2">
@@ -113,11 +113,11 @@
         </div>
     </main>
 
-    <!-- POPUP MODAL TAMBAH TRANSAKSI -->
+    <!-- POPUP MODAL TRANSAKSI (TAMBAH & EDIT) -->
     <div id="modal-transaksi" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4">
             <div class="border-b border-stone-100 pb-2">
-                <h3 class="font-serif font-bold text-base text-brand">Catat Transaksi Baru</h3>
+                <h3 id="modal-title" class="font-serif font-bold text-base text-brand">Catat Transaksi Baru</h3>
             </div>
             <form id="form-transaksi" onsubmit="simpanTransaksi(event)" class="flex flex-col gap-3 text-xs">
                 <div class="flex flex-col gap-1">
@@ -156,11 +156,11 @@
     <!-- LOGIKA JAVASCRIPT & SUPABASE -->
     <script>
         const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ"; // Ganti dengan anon public key asli Anda
+        const SUPABASE_KEY = "sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ"; 
         
         const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
         let dataLokalUsaha = [];
-        let modeAksiAktif = false; // Status visibilitas kolom edit/hapus
+        let modeAksiAktif = false;
 
         async function ambilDataUsaha() {
             if (!_supabase) return;
@@ -209,9 +209,18 @@
                         <td class="px-6 py-4 whitespace-nowrap text-center">${row.jumlah || 0}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right font-bold font-mono text-stone-800">${formatRupiah(total)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-center kol-aksi ${modeAksiAktif ? '' : 'hidden'}">
-                            <button onclick="hapusTransaksi('${row.id}')" class="text-stone-400 hover:text-rose-600 transition" title="Hapus">
-                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                            <div class="flex items-center justify-center gap-3">
+                                <button onclick="bukaModalEditTransaksi('${row.id}')" class="text-stone-400 hover:text-amber-600 transition" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="hapusTransaksi('${row.id}')" class="text-stone-400 hover:text-rose-600 transition" title="Hapus">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -240,7 +249,6 @@
             document.getElementById('stat-pengeluaran').innerText = formatRupiah(keluar);
             document.getElementById('stat-selisih').innerText = formatRupiah(selisih);
             
-            // Beri warna dinamis untuk selisih (merah jika minus, hitam jika surplus)
             const elSelisih = document.getElementById('stat-selisih');
             if (selisih < 0) {
                 elSelisih.className = "text-base font-bold text-rose-600";
@@ -249,7 +257,6 @@
             }
         }
 
-        // Fungsi menyalakan/mematikan tombol aksi lewat ikon pensil
         function toggleAksiMode() {
             modeAksiAktif = !modeAksiAktif;
             updateVisibilitasKolomAksi();
@@ -269,13 +276,32 @@
         }
 
         function bukaModalTransaksi() {
+            document.getElementById('modal-title').innerText = "Catat Transaksi Baru";
+            delete document.getElementById('form-transaksi').dataset.editId;
             document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-transaksi').classList.remove('hidden');
+        }
+
+        function bukaModalEditTransaksi(id) {
+            const item = dataLokalUsaha.find(d => d.id == id);
+            if (!item) return;
+
+            document.getElementById('modal-title').innerText = "Edit Transaksi";
+            document.getElementById('form-transaksi').dataset.editId = id;
+            
+            document.getElementById('form-date').value = item.date || '';
+            document.getElementById('form-nama').value = item.nama_barang || '';
+            document.getElementById('form-jenis').value = item.transaksi ? "true" : "false";
+            document.getElementById('form-harga').value = item.harga || 0;
+            document.getElementById('form-jumlah').value = item.jumlah || 0;
+
             document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
         function tutupModalTransaksi() {
             document.getElementById('modal-transaksi').classList.add('hidden');
             document.getElementById('form-transaksi').reset();
+            delete document.getElementById('form-transaksi').dataset.editId;
         }
 
         async function simpanTransaksi(e) {
@@ -288,22 +314,31 @@
             const harga = parseFloat(document.getElementById('form-harga').value || '0');
             const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
             
-            // Sesuai kesepakatan database Anda: abaikan total_harga saat kirim jika tidak ada kolomnya
-            const dataBaru = { date, nama_barang, transaksi, harga, jumlah };
+            const dataPayload = { date, nama_barang, transaksi, harga, jumlah };
+            const editId = document.getElementById('form-transaksi').dataset.editId;
 
             try {
-                const { error } = await _supabase
-                    .from('usaha')
-                    .insert([dataBaru]);
-
-                if (error) throw error;
+                if (editId) {
+                    // Jalankan Aksi UPDATE jika dalam mode edit
+                    const { error } = await _supabase
+                        .from('usaha')
+                        .update(dataPayload)
+                        .eq('id', editId);
+                    if (error) throw error;
+                } else {
+                    // Jalankan Aksi INSERT jika transaksi baru
+                    const { error } = await _supabase
+                        .from('usaha')
+                        .insert([dataPayload]);
+                    if (error) throw error;
+                }
 
                 tutupModalTransaksi();
                 await ambilDataUsaha();
 
             } catch (err) {
                 console.error("Detail Error:", err.message);
-                alert("Gagal menyimpan transaksi: " + err.message);
+                alert("Gagal menyimpan data: " + err.message);
             }
         }
 
