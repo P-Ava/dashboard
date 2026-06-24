@@ -59,10 +59,32 @@
                 </div>
             </div>
             
-            <!-- Mengubah Total Transaksi Menjadi Total Uang Saham Dinamis -->
             <div class="text-right">
                 <span class="text-xs text-stone-400 font-medium">Total Uang Saham</span>
                 <h2 id="total-uang-saham" class="text-lg font-bold text-brand font-serif">Rp0</h2>
+            </div>
+        </div>
+
+        <!-- SEKSI BARU: PORTOFOLIO SAHAM YANG DIMILIKI -->
+        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                <div>
+                    <h3 class="font-serif font-semibold text-lg text-brand">Portofolio Saham Anda</h3>
+                    <p class="text-xs text-stone-400">Daftar saham yang saat ini Anda miliki (aset aktif)</p>
+                </div>
+                <!-- Tombol PnL -->
+                <button onclick="alert('Fitur PnL (Profit & Loss) sedang dalam pengembangan!')" class="px-3 py-1.5 bg-amber-700 text-white text-xs font-semibold rounded-xl hover:bg-amber-800 transition shadow-sm flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Lihat PnL
+                </button>
+            </div>
+
+            <!-- Grid Tampilan Portofolio -->
+            <div id="grid-portofolio" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <!-- Data portofolio akan di-render di sini lewat JS -->
+                <p class="text-xs text-stone-400 col-span-full text-center">Memuat portofolio...</p>
             </div>
         </div>
 
@@ -203,10 +225,69 @@
 
                 dataLokalSaham = data || [];
                 renderTabel(dataLokalSaham);
+                renderPortofolio();
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
                 document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
             }
+        }
+
+        // FUNGSI BARU: MENGHITUNG DAN MENAMPILKAN PORTOFOLIO AKTIF (REAL-TIME)
+        function renderPortofolio() {
+            const gridPorto = document.getElementById('grid-portofolio');
+            gridPorto.innerHTML = '';
+
+            // Map untuk mengelompokkan lembar saham berdasarkan nama_saham
+            const portofolioMap = {};
+
+            // Urutkan transaksi dari terlama ke terbaru agar kalkulasi logis berjalan tepat (+) dan (-)
+            const transaksiKronologis = [...dataLokalSaham].reverse();
+
+            transaksiKronologis.forEach(row => {
+                const kode = (row.nama_saham || '').toUpperCase().trim();
+                const lembar = parseInt(row.jumlah_perlembar || 0);
+                const apakahBeli = row.transaksi === true;
+
+                if (!kode) return;
+
+                if (!portofolioMap[kode]) {
+                    portofolioMap[kode] = { lembar: 0, totalBiaya: 0 };
+                }
+
+                if (apakahBeli) {
+                    portofolioMap[kode].lembar += lembar;
+                    portofolioMap[kode].totalBiaya += (row.total_harga || (lembar * (row.harga_perlembar || 0)));
+                } else {
+                    portofolioMap[kode].lembar -= lembar;
+                    portofolioMap[kode].totalBiaya -= (row.total_harga || (lembar * (row.harga_perlembar || 0)));
+                }
+            });
+
+            // Ambil emiten yang lembar sahamnya > 0 (jika habis terjual otomatis keluar)
+            const emitenAktif = Object.keys(portofolioMap).filter(kode => portofolioMap[kode].lembar > 0);
+
+            if (emitenAktif.length === 0) {
+                gridPorto.innerHTML = `<p class="text-xs text-stone-400 col-span-full text-center py-4">Belum memiliki aset portofolio saham aktif.</p>`;
+                return;
+            }
+
+            emitenAktif.forEach(kode => {
+                const item = portofolioMap[kode];
+                const card = document.createElement('div');
+                card.className = "bg-stone-50 border border-stone-200/60 rounded-2xl p-3 flex flex-col gap-1 shadow-2xs";
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm text-brand tracking-wide">${kode}</span>
+                        <span class="text-[10px] bg-stone-200 text-stone-600 px-1.5 py-0.5 rounded-md font-medium">Aset</span>
+                    </div>
+                    <div class="mt-1">
+                        <p class="text-xs font-semibold text-stone-700">${item.lembar.toLocaleString('id-ID')} <span class="text-[10px] text-stone-400 font-normal">lembar</span></p>
+                        <p class="text-[10px] text-stone-400 mt-0.5">Value: Rp${Math.max(0, item.totalBiaya).toLocaleString('id-ID')}</p>
+                    </div>
+                `;
+                gridPorto.appendChild(card);
+            });
         }
 
         function renderTabel(dataArray) {
@@ -218,9 +299,9 @@
             dataLokalSaham.forEach(row => {
                 const totalHarga = row.total_harga || ((row.jumlah_perlembar || 0) * (row.harga_perlembar || 0));
                 if (row.transaksi === true) {
-                    akumulasiUangSaham += totalHarga; // Beli menambah aset
+                    akumulasiUangSaham += totalHarga;
                 } else {
-                    akumulasiUangSaham -= totalHarga; // Jual mengurangi aset
+                    akumulasiUangSaham -= totalHarga;
                 }
             });
 
