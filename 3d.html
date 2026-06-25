@@ -19,10 +19,10 @@
       position: absolute;
       left: 40px;
       top: 40px;
-      width: 40px;
-      height: 40px;
+      width: 20px;
+      height: 10px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.8);
+      background-color: rgba(255,255,255,0.8);
     }
   </style>
 </head>
@@ -36,116 +36,113 @@
 import * as THREE from 'https://unpkg.com/three@0.179.1/build/three.module.js';
 
 const scene = new THREE.Scene();
-
 const camera = new THREE.PerspectiveCamera(
   75,
-  window.innerWidth/window.innerHeight,
+  window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({antialias: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(),
-  new THREE.MeshNormalMaterial()
-);
-scene.add(cube);
+let cube;
 
-const plane = new THREE.Mesh(
-  new THREE.PlaneGeometry(50,50),
-  new THREE.MeshBasicMaterial({color:0x444444})
-);
-plane.rotation.x = -Math.PI/2;
-plane.position.y = -1;
-scene.add(plane);
+function init() {
+  // Create the cube and plane
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshNormalMaterial();
 
-camera.position.set(0,5,8);
-camera.lookAt(cube.position);
+  cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
 
-let moveX = 0;
-let moveZ = 0;
+  const planeGeometry = new THREE.PlaneGeometry(50, 50);
+  const planeMaterial = new THREE.MeshBasicMaterial({color:0x444444});
+  plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  plane.rotation.x = -Math.PI/2;
+  plane.position.y = -1;
+  scene.add(plane);
 
-const keys = {};
+  // Add event listeners
+  window.addEventListener('keydown', e => {
+    cube.position.x += (e.key.toLowerCase() === 'w') ? 0.05 : 0;
+    cube.position.z += (e.key.toLowerCase() === 's') ? 0.05 : 0;
+  });
 
-window.addEventListener('keydown',e=>{
-  keys[e.key.toLowerCase()] = true;
-});
+  window.addEventListener('keyup', e => {
+    cube.position.x -= (e.key.toLowerCase() === 'w') ? 0.05 : 0;
+    cube.position.z -= (e.key.toLowerCase() === 's') ? 0.05 : 0;
+  });
 
-window.addEventListener('keyup',e=>{
-  keys[e.key.toLowerCase()] = false;
-});
+  document.getElementById('joystick').addEventListener('pointerdown', () => {
+    dragging = true;
+  });
 
-const joystick = document.getElementById('joystick');
-const stick = document.getElementById('stick');
+  window.addEventListener('pointerup', () => {
+    dragging = false;
+    moveX = 0;
+    moveZ = 0;
+    stick.style.left='40px';
+    stick.style.top='40px';
+  });
 
-let dragging = false;
+  window.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
 
-joystick.addEventListener('pointerdown',()=>{
-  dragging = true;
-});
+    const rect = document.getElementById('joystick').getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
 
-window.addEventListener('pointerup',()=>{
-  dragging = false;
-  moveX = 0;
-  moveZ = 0;
-  stick.style.left='40px';
-  stick.style.top='40px';
-});
+    let x = e.clientX - rect.left - cx;
+    let y = e.clientY - rect.top - cy;
 
-window.addEventListener('pointermove',(e)=>{
-  if(!dragging) return;
+    const max = 20;
+    const len = Math.hypot(x, y);
 
-  const rect = joystick.getBoundingClientRect();
+    if (len > max) {
+      x = x / len * max;
+      y = y / len * max;
+    }
 
-  const cx = rect.width/2;
-  const cy = rect.height/2;
+    document.getElementById('stick').style.left = `${x}px`;
+    document.getElementById('stick').style.top = `${y}px`;
 
-  let x = e.clientX - rect.left - cx;
-  let y = e.clientY - rect.top - cy;
+    moveX = x / max;
+    moveZ = y / max;
+  });
 
-  const max = 40;
-  const len = Math.hypot(x,y);
+  // Set initial camera position
+  camera.position.x = cube.position.x;
+  camera.position.z = cube.position.z + 8;
+  camera.lookAt(cube.position);
 
-  if(len > max){
-    x = x/len*max;
-    y = y/len*max;
-  }
+  animate();
 
-  stick.style.left = `${x+cx-20}px`;
-  stick.style.top  = `${y+cy-20}px`;
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
 
-  moveX = x/max;
-  moveZ = y/max;
-});
+init();
 
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
 
-  if(keys['a']) cube.position.x -= 0.05;
-  if(keys['d']) cube.position.x += 0.05;
-  if(keys['w']) cube.position.z -= 0.05;
-  if(keys['s']) cube.position.z += 0.05;
-
-  cube.position.x += moveX * 0.05;
-  cube.position.z += moveZ * 0.05;
+  if (keys['a']) cube.position.x -= 0.01;
+  if (keys['d']) cube.position.x += 0.01;
+  if (keys['w']) cube.position.z -= 0.01;
+  if (keys['s']) cube.position.z += 0.01;
 
   camera.position.x = cube.position.x;
   camera.position.z = cube.position.z + 8;
   camera.lookAt(cube.position);
 
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 
-animate();
-
-window.addEventListener('resize',()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
 </script>
 
 </body>
