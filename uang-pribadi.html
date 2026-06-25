@@ -9,13 +9,16 @@
 
         // AMBIL DATA UTAMA DARI SUPABASE
         async function ambilData() {
-            if (!_supabase) return;
+            if (!_supabase) {
+                tampilkanPesanError("Supabase tidak terinisialisasi dengan benar.");
+                return;
+            }
             try {
-                // Menggunakan '"DATE"' dengan tanda kutip ganda agar PostgreSQL membaca kolom case-sensitive
+                // Menggunakan 'date' huruf kecil sesuai standar database Anda
                 const { data, error } = await _supabase
                     .from('catatan_keuangan')
                     .select('*')
-                    .order('DATE', { ascending: false }); 
+                    .order('date', { ascending: false }); 
 
                 if (error) throw error;
                 dataLokalRemot = data || [];
@@ -26,8 +29,16 @@
 
             } catch (err) {
                 console.error("Gagal sinkronisasi data:", err.message);
-                document.getElementById('tabel-body').innerHTML = `
-                    <tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Gagal terhubung ke database Supabase. Kolom data tidak sesuai.</td></tr>
+                tampilkanPesanError(`Gagal terhubung ke Supabase: ${err.message}. Pastikan nama kolom 'date' atau nama tabel 'catatan_keuangan' sudah sesuai di database.`);
+            }
+        }
+
+        // Fungsi pembantu agar tidak blank putih jika terjadi error script
+        function tampilkanPesanError(pesan) {
+            const tbody = document.getElementById('tabel-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-red-500 font-semibold">${pesan}</td></tr>
                 `;
             }
         }
@@ -35,6 +46,7 @@
         // GENERATE DROP-DOWN BULAN SECARA OTOMATIS
         function buatOpsiPilihanBulan() {
             const selectBulan = document.getElementById('filter-bulan-stat');
+            if (!selectBulan) return;
             const nilaiTerpilihSebelumnya = selectBulan.value;
 
             selectBulan.innerHTML = '<option value="semua">Semua Waktu</option>';
@@ -43,8 +55,7 @@
             const namaBulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
             dataLokalRemot.forEach(row => {
-                // Mengambil dari row.DATE atau row.date secara fleksibel
-                const tanggalRaw = row.DATE || row.date;
+                const tanggalRaw = row.date || row.DATE;
                 if (tanggalRaw) { 
                     const objekTanggal = new Date(tanggalRaw);
                     if (!isNaN(objekTanggal)) {
@@ -75,7 +86,8 @@
         // HITUNG STATISTIK METRIK & TOTAL SALDO AKHIR REALTIME
         function hitungDanTampilkanStatistik() {
             const saldoAwalSistem = parseFloat(localStorage.getItem('base_personal_balance') || '0');
-            const filterBulanStat = document.getElementById('filter-bulan-stat').value;
+            const elFilter = document.getElementById('filter-bulan-stat');
+            const filterBulanStat = elFilter ? elFilter.value : 'semua';
 
             let totalPemasukanBulanan = 0;
             let totalPengeluaranBulanan = 0;
@@ -96,7 +108,7 @@
 
                 // Filter Periodik
                 let laporBarisIni = false;
-                const tanggalRaw = row.DATE || row.date;
+                const tanggalRaw = row.date || row.DATE;
                 if (filterBulanStat === "semua") {
                     laporBarisIni = true;
                 } else if (tanggalRaw) { 
@@ -120,34 +132,40 @@
 
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
-            document.getElementById('total-saldo-display').innerText = formatRupiah(saldoDompetAkhirReal);
-            document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
-            document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
-            document.getElementById('stat-selisih').innerText = formatRupiah(selisihNetto);
+            if(document.getElementById('total-saldo-display')) document.getElementById('total-saldo-display').innerText = formatRupiah(saldoDompetAkhirReal);
+            if(document.getElementById('stat-pemasukan')) document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
+            if(document.getElementById('stat-pengeluaran')) document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
+            if(document.getElementById('stat-selisih')) document.getElementById('stat-selisih').innerText = formatRupiah(selisihNetto);
             
             const elSelisih = document.getElementById('stat-selisih');
-            if (selisihNetto < 0) {
-                elSelisih.className = "text-base font-bold text-rose-600";
-            } else if (selisihNetto > 0) {
-                elSelisih.className = "text-base font-bold text-emerald-600";
-            } else {
-                elSelisih.className = "text-base font-bold text-stone-900";
+            if (elSelisih) {
+                if (selisihNetto < 0) {
+                    elSelisih.className = "text-base font-bold text-rose-600";
+                } else if (selisihNetto > 0) {
+                    elSelisih.className = "text-base font-bold text-emerald-600";
+                } else {
+                    elSelisih.className = "text-base font-bold text-stone-900";
+                }
             }
         }
 
         // TAMPILKAN TABEL MULTI-FILTER PENCARIAN
         function tampilkanTabel() {
             const tbody = document.getElementById('tabel-body');
-            const kataKunci = document.getElementById('cari-input').value.toLowerCase().trim();
+            if (!tbody) return;
+            
+            const kataKunci = document.getElementById('cari-input') ? document.getElementById('cari-input').value.toLowerCase().trim() : '';
 
             const dataTerfilter = dataLokalRemot.filter(row => {
-                const tanggalRaw = row.DATE || row.date || '';
+                const tanggalRaw = row.date || row.DATE || '';
                 const cocokNama = (row.nama_barang || '').toLowerCase().includes(kataKunci);
                 const cocokTgl = String(tanggalRaw).toLowerCase().includes(kataKunci); 
                 return cocokNama || cocokTgl;
             });
 
-            document.getElementById('info-baris').innerText = `Menampilkan ${dataTerfilter.length} dari ${dataLokalRemot.length} catatan terdaftar`;
+            if(document.getElementById('info-baris')) {
+                document.getElementById('info-baris').innerText = `Menampilkan ${dataTerfilter.length} dari ${dataLokalRemot.length} catatan terdaftar`;
+            }
 
             if (dataTerfilter.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-stone-400">Tidak ada data transaksi yang cocok.</td></tr>`;
@@ -160,7 +178,7 @@
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
                 const isPemasukan = row.transaksi === true || row.transaksi === "true";
-                const tanggalTampil = row.DATE || row.date || '-';
+                const tanggalTampil = row.date || row.DATE || '-';
 
                 html += `
                     <tr class="hover:bg-stone-50/50 transition">
@@ -205,62 +223,70 @@
             const thAksi = document.getElementById('th-aksi');
             const tdAksi = document.querySelectorAll('.kol-aksi');
             
-            if (modeAksiAktif) {
-                thAksi.classList.remove('hidden');
-                tdAksi.forEach(el => el.classList.remove('hidden'));
-            } else {
-                thAksi.classList.add('hidden');
-                tdAksi.forEach(el => el.classList.add('hidden'));
+            if (thAksi) {
+                if (modeAksiAktif) {
+                    thAksi.classList.remove('hidden');
+                    tdAksi.forEach(el => el.classList.remove('hidden'));
+                } else {
+                    thAksi.classList.add('hidden');
+                    tdAksi.forEach(el => el.classList.add('hidden'));
+                }
             }
         }
 
-        // FUNGSI MODAL SALDO AWAL (PENSIL)
         function bukaModalSaldoDasar() {
-            document.getElementById('input-nominal-saldo').value = localStorage.getItem('base_personal_balance') || '0';
-            document.getElementById('modal-saldo-dasar').classList.remove('hidden');
+            if(document.getElementById('input-nominal-saldo')) {
+                document.getElementById('input-nominal-saldo').value = localStorage.getItem('base_personal_balance') || '0';
+            }
+            if(document.getElementById('modal-saldo-dasar')) {
+                document.getElementById('modal-saldo-dasar').classList.remove('hidden');
+            }
         }
 
         function tutupModalSaldoDasar() {
-            document.getElementById('modal-saldo-dasar').classList.add('hidden');
+            if(document.getElementById('modal-saldo-dasar')) {
+                document.getElementById('modal-saldo-dasar').classList.add('hidden');
+            }
         }
 
         function simpanSaldoDasarManual() {
-            const nilaiSaldo = document.getElementById('input-nominal-saldo').value || '0';
-            localStorage.setItem('base_personal_balance', nilaiSaldo);
+            const nilaiSaldo = document.getElementById('input-nominal-saldo') ? document.getElementById('input-nominal-saldo').value : '0';
+            localStorage.setItem('base_personal_balance', nilaiSaldo || '0');
             tutupModalSaldoDasar();
             hitungDanTampilkanStatistik();
         }
 
         function bukaModalTransaksi() {
-            document.getElementById('modal-title').innerText = "Catat Mutasi Baru";
-            delete document.getElementById('form-transaksi').dataset.editId;
-            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-transaksi').classList.remove('hidden');
+            if(document.getElementById('modal-title')) document.getElementById('modal-title').innerText = "Catat Mutasi Baru";
+            if(document.getElementById('form-transaksi')) delete document.getElementById('form-transaksi').dataset.editId;
+            if(document.getElementById('form-date')) document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            if(document.getElementById('modal-transaksi')) document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
         function bukaModalEdit(id) {
             const item = dataLokalRemot.find(d => d.id == id);
             if (!item) return;
 
-            document.getElementById('modal-title').innerText = "Edit Catatan Keuangan";
-            document.getElementById('form-transaksi').dataset.editId = id;
+            if(document.getElementById('modal-title')) document.getElementById('modal-title').innerText = "Edit Catatan Keuangan";
+            if(document.getElementById('form-transaksi')) document.getElementById('form-transaksi').dataset.editId = id;
             
-            document.getElementById('form-date').value = item.DATE || item.date || ''; 
-            document.getElementById('form-nama').value = item.nama_barang || '';
-            document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
-            document.getElementById('form-harga').value = item.harga || 0;
-            document.getElementById('form-jumlah').value = item.jumlah || 1;
+            if(document.getElementById('form-date')) document.getElementById('form-date').value = item.date || item.DATE || ''; 
+            if(document.getElementById('form-nama')) document.getElementById('form-nama').value = item.nama_barang || '';
+            if(document.getElementById('form-jenis')) document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
+            if(document.getElementById('form-harga')) document.getElementById('form-harga').value = item.harga || 0;
+            if(document.getElementById('form-jumlah')) document.getElementById('form-jumlah').value = item.jumlah || 1;
 
-            document.getElementById('modal-transaksi').classList.remove('hidden');
+            if(document.getElementById('modal-transaksi')) document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
         function tutupModalTransaksi() {
-            document.getElementById('modal-transaksi').classList.add('hidden');
-            document.getElementById('form-transaksi').reset();
-            delete document.getElementById('form-transaksi').dataset.editId;
+            if(document.getElementById('modal-transaksi')) document.getElementById('modal-transaksi').classList.add('hidden');
+            if(document.getElementById('form-transaksi')) {
+                document.getElementById('form-transaksi').reset();
+                delete document.getElementById('form-transaksi').dataset.editId;
+            }
         }
 
-        // SIMPAN DATA KE SUPABASE
         async function simpanTransaksi(e) {
             e.preventDefault();
             if (!_supabase) return;
@@ -271,17 +297,14 @@
             const harga = parseFloat(document.getElementById('form-harga').value || '0');
             const jumlah = parseInt(document.getElementById('form-jumlah').value || '1');
             
-            // Payload dinamis mendeteksi nama kolom database yang tepat
             const dataPayload = { 
                 nama_barang, 
                 transaksi, 
                 harga, 
-                jumlah 
+                jumlah,
+                date: inputDate // Menggunakan key kecil standar 'date'
             };
             
-            // Masukkan field date sesuai properti capitalized
-            dataPayload['DATE'] = inputDate;
-
             const editId = document.getElementById('form-transaksi').dataset.editId;
 
             try {
