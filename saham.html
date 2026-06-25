@@ -386,6 +386,9 @@
                 currency: 'IDR', 
                 maximumFractionDigits: 0 
             }).format(saldoAkhirRDN);
+
+            // Memicu sinkronisasi otomatis nilai saldo RDN ke tabel catatan_keuangan Supabase
+            sinkronisasiRdnKeCatatanKeuangan(saldoAkhirRDN);
         }
 
         function bukaModalRdn() {
@@ -719,6 +722,29 @@
             });
             renderTabel(dataHasilFilter);
         });
+
+        // FUNGSI UNTUK SINKRONISASI BANK RDN KE TABEL CATATAN_KEUANGAN (BARIS SAHAM)
+        async function sinkronisasiRdnKeCatatanKeuangan(totalRdn) {
+            try {
+                const rdnStr = String(totalRdn); 
+
+                const { data, error } = await supaClient
+                    .from('catatan_keuangan')
+                    .update({ deskripsi: rdnStr })
+                    .eq('judul', 'saham')
+                    .select();
+
+                if (error) throw error;
+                
+                if (data && data.length === 0) {
+                    console.warn('Peringatan: Berhasil terhubung ke Supabase, tetapi tidak ada baris dengan judul "saham" yang terupdate.');
+                } else {
+                    console.log('Berhasil sinkronisasi RDN Saham! Data terupdate:', data);
+                }
+            } catch (err) {
+                console.error('Gagal sinkronisasi RDN ke catatan_keuangan:', err.message);
+            }
+        }
 
         window.addEventListener('DOMContentLoaded', ambilDataSaham);
     </script>
