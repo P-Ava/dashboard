@@ -369,8 +369,7 @@
 
             renderTabel(dataTerfilter);
         }
-
-        // RENDER BARIS TABEL HTML
+       // RENDER BARIS TABEL HTML (DENGAN UPDATE TOMBOL DELETE)
         function renderTabel(dataArray) {
             const tbody = document.getElementById('tabel-body-supa');
             tbody.innerHTML = '';
@@ -408,9 +407,14 @@
                 let kolomAksiHtml = '';
                 if (modeEditAktif) {
                     kolomAksiHtml = `
-                        <td class="p-4 text-center">
+                        <td class="p-4 text-center flex items-center justify-center gap-1">
+                            <!-- Tombol Edit -->
                             <button type="button" onclick="bukaModalEdit('${idRow}')" class="p-1 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Edit Data Ini">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12 14.036H9v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <!-- Tombol Hapus -->
+                            <button type="button" onclick="hapusDataUangPribadi('${idRow}', '${namaBarang.replace(/'/g, "\\'")}')" class="p-1 text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Hapus Data Ini">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </td>
                     `;
@@ -445,7 +449,26 @@
         function tutupModalSaldoDasar() {
             document.getElementById('modal-saldo-dasar').classList.add('hidden');
         }
+        // FUNGSI UNTUK MENGHAPUS DATA DARI SUPABASE
+        async function hapusDataUangPribadi(id, namaBarang) {
+            const konfirmasi = confirm(`Apakah Anda yakin ingin menghapus transaksi "${namaBarang}"?`);
+            if (!konfirmasi) return;
 
+            try {
+                const { error } = await supaClient
+                    .from('uang_pribadi')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                // Refresh data setelah berhasil dihapus
+                ambilDataUangPribadi();
+            } catch (err) {
+                alert('Gagal menghapus data dari Supabase: ' + err.message);
+            }
+        }
+    
         function simpanSaldoDasarManual() {
             const nilaiSaldo = document.getElementById('input-nominal-saldo').value || '0';
             localStorage.setItem('base_personal_balance_pribadi', nilaiSaldo);
