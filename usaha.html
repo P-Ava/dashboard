@@ -679,7 +679,7 @@ async function sinkronisasiRdnUsahaKeCatatanKeuangan(totalRdn)  {
     try {
         const rdnStr = String(totalRdn); 
 
-        const { data, error } = await supaClient
+        const { data, error } = await _supabase
             .from('catatan_keuangan')
             .update({ deskripsi: rdnStr })
             .eq('judul', 'usaha') // Mencari baris dengan judul 'usaha'
