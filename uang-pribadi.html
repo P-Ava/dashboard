@@ -295,16 +295,25 @@
         // FUNGSI UNTUK SINKRONISASI SALDO KE TABEL CATATAN_KEUANGAN
         async function sinkronisasiKeCatatanKeuangan(totalSaldo) {
             try {
-                const { error } = await supaClient
-                    .from('catatan_keuangan')
-                    .update({ deskripsi: String(totalSaldo) })
-                    .eq('judul', 'uang_pribadi');
+            // Konversi ke String karena tipe kolom di Supabase Anda saat ini adalah 'text'
+            const saldoStr = String(totalSaldo); 
 
-                if (error) throw error;
-                console.log('Berhasil sinkronisasi ke tabel catatan_keuangan!');
-            } catch (err) {
-                console.error('Gagal sinkronisasi ke catatan_keuangan:', err.message);
+            const { data, error } = await supaClient
+                .from('catatan_keuangan')
+                .update({ deskripsi: saldoStr })
+                .eq('judul', 'uang_pribadi')
+                .select(); // Ditambahkan .select() agar kita bisa melihat response balikan dari Supabase
+
+            if (error) throw error;
+        
+            if (data && data.length === 0) {
+                console.warn('Peringatan: Berhasil terhubung ke Supabase, tetapi tidak ada baris dengan judul "uang_pribadi" yang terupdate.');
+            } else {
+                console.log('Berhasil sinkronisasi! Data terupdate:', data);
             }
+        } catch (err) {
+            console.error('Gagal sinkronisasi ke catatan_keuangan:', err.message);
+        }
         }
 
         // HITUNG TOTAL REALTIME, STATISTIK BOX ATAS & FILTERING DATA
