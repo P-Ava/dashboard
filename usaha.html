@@ -269,7 +269,7 @@
                 buatOpsiPilihanBulan();
                 perbaruiDaftarAutocompleteBarang();
                 tampilkanTabelUsaha();
-                hitungDanTampilkanStatistik();
+                await hitungDanTampilkanStatistik();
                 prosesDanTampilkanGudang();
 
             } catch (err) {
@@ -461,8 +461,25 @@
             }
         }
 
-        function hitungDanTampilkanStatistik() {
-            const saldoAwalRdn = parseFloat(localStorage.getItem('base_rdn_usaha_balance') || '0');
+        async function hitungDanTampilkanStatistik() {
+            let saldoAwalRdn = 0;
+            
+            if (_supabase) {
+                try {
+                    const { data, error } = await _supabase
+                        .from('catatan_keuangan')
+                        .select('deskripsi')
+                        .eq('judul', 'usaha')
+                        .single();
+                    
+                    if (!error && data) {
+                        saldoAwalRdn = parseFloat(data.deskripsi || '0');
+                    }
+                } catch (err) {
+                    console.error("Gagal mengambil RDN awal dari Supabase:", err.message);
+                }
+            }
+
             const filterBulanStat = document.getElementById('filter-bulan-stat').value;
 
             let totalBeli = 0;
@@ -535,8 +552,21 @@
             }
         }
 
-        function bukaModalRdnUsaha() {
-            document.getElementById('input-nominal-rdn').value = localStorage.getItem('base_rdn_usaha_balance') || '0';
+        async function bukaModalRdnUsaha() {
+            let nilaiSekarang = "0";
+            if (_supabase) {
+                try {
+                    const { data } = await _supabase
+                        .from('catatan_keuangan')
+                        .select('deskripsi')
+                        .eq('judul', 'usaha')
+                        .single();
+                    if (data) nilaiSekarang = data.deskripsi || "0";
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            document.getElementById('input-nominal-rdn').value = nilaiSekarang;
             document.getElementById('modal-rdn-usaha').classList.remove('hidden');
         }
 
@@ -544,11 +574,25 @@
             document.getElementById('modal-rdn-usaha').classList.add('hidden');
         }
 
-        function simpanRdnUsahaManual() {
+        async function simpanRdnUsahaManual() {
             const nilaiRdn = document.getElementById('input-nominal-rdn').value || '0';
-            localStorage.setItem('base_rdn_usaha_balance', nilaiRdn);
+            
+            if (_supabase) {
+                try {
+                    const { error } = await _supabase
+                        .from('catatan_keuangan')
+                        .update({ deskripsi: nilaiRdn })
+                        .eq('judul', 'usaha');
+                        
+                    if (error) throw error;
+                } catch (err) {
+                    alert("Gagal memperbarui RDN di Supabase: " + err.message);
+                    return;
+                }
+            }
+            
             tutupModalRdnUsaha();
-            hitungDanTampilkanStatistik();
+            await hitungDanTampilkanStatistik();
         }
 
         function resetFilter() {
