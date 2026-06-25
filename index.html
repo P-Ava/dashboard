@@ -24,6 +24,52 @@
         }
     </script>
 </head>
+     <!-- java ai -->
+    <script>
+     async function kirimAI() {
+
+        const input =
+            document.getElementById("ai-input");
+    
+        const output =
+            document.getElementById("ai-response");
+
+        const prompt = input.value.trim();
+
+        if (!prompt) return;
+
+        output.innerText = "Sedang berpikir...";
+
+        try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/chat",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    prompt: prompt
+                })
+            }
+        );
+
+            const data = await response.json();
+    
+             output.innerText =
+            data.response;
+
+        } catch (err) {
+
+            output.innerText =
+            "Gagal terhubung ke AI: " +
+            err.message;
+            }
+        }
+    </script>
+    
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <!-- WRAPPER UTAMA -->
@@ -64,10 +110,23 @@
             </div>
             <p class="text-xs text-stone-500">Tuliskan data keuangan baru (misal: "Tambah income 5000" atau "Catat pengeluaran makan 150").</p>
             <div class="flex gap-2 mt-1">
-                <input type="text" placeholder="Ketik perintah di sini untuk memasukkan data..." class="flex-1 text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand transition">
-                <button class="bg-brand hover:bg-opacity-90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition duration-200">
-                    Kirim
-                </button>
+             <input
+                id="ai-input"
+                type="text"
+                placeholder="Ketik perintah di sini untuk memasukkan data..."
+                class="flex-1 text-sm bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand transition">
+
+            <button
+                onclick="kirimAI()"
+                class="bg-brand hover:bg-opacity-90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition duration-200">
+                Kirim
+            </button>  
+            </div>
+            <!-- jawaban ai -->
+            <div
+                id="ai-response"
+                class="mt-3 p-3 rounded-xl bg-stone-50 border border-stone-200 text-sm whitespace-pre-wrap">
+                AI siap...
             </div>
         </div>
 
