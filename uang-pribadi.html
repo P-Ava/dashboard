@@ -59,31 +59,10 @@
                 </div>
             </div>
             
-            <!-- Total Saldo Dinamis + Tombol Pensil -->
-            <div class="text-right flex items-center gap-3 bg-stone-50/60 pl-4 pr-3 py-1.5 rounded-xl border border-stone-100">
-                <div class="text-right">
-                    <span class="text-[10px] uppercase tracking-wider text-stone-400 font-bold block leading-none mb-0.5">Total Saldo</span>
-                    <h2 id="total-saldo-pribadi" class="text-base md:text-lg font-bold text-brand font-serif leading-none">Rp0</h2>
-                </div>
-                <button onclick="bukaModalSaldoDasar()" class="p-1 text-stone-400 hover:text-brand rounded-lg hover:bg-white transition shadow-sm border border-transparent hover:border-stone-100" title="Atur Saldo Awal Dompet">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- 3 BLOK METRIK STATISTIK PERIODIK -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-cardBg p-4 rounded-2xl border border-stone-100 shadow-sm flex flex-col">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-600 mb-1">Pemasukan Bulanan</span>
-                <span id="stat-pemasukan" class="text-base font-bold text-stone-900 font-mono">Rp0</span>
-            </div>
-            <div class="bg-cardBg p-4 rounded-2xl border border-stone-100 shadow-sm flex flex-col">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-rose-600 mb-1">Pengeluaran Bulanan</span>
-                <span id="stat-pengeluaran" class="text-base font-bold text-stone-900 font-mono">Rp0</span>
-            </div>
-            <div class="bg-cardBg p-4 rounded-2xl border border-stone-100 shadow-sm flex flex-col">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-stone-500 mb-1">Selisih Bersih</span>
-                <span id="stat-selisih" class="text-base font-bold text-stone-900 font-mono">Rp0</span>
+            <!-- Total Saldo Dinamis -->
+            <div class="text-right">
+                <span class="text-xs text-stone-400 font-medium">Total Saldo</span>
+                <h2 id="total-saldo-pribadi" class="text-lg font-bold text-brand font-serif">Rp0</h2>
             </div>
         </div>
 
@@ -91,37 +70,34 @@
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
             
             <!-- BAGIAN ATAS TABEL -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-100 pb-4">
-                <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-100 pb-4">
+                <div class="flex items-center gap-2">
                     <div>
                         <h3 class="font-serif font-semibold text-lg text-brand inline-block">Daftar Pengeluaran & Pemasukan</h3>
                         <p class="text-xs text-stone-400">Menampilkan data terbaru dari database</p>
                     </div>
                     
                     <!-- AREA ACTION BUTTONS -->
-                    <div class="flex items-center gap-1.5 shrink-0 ml-1">
+                    <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                        <!-- TOMBOL TAMBAH -->
                         <button onclick="bukaModalTambah()" class="px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition shadow-sm flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             Tambah
                         </button>
                         
+                        <!-- TOMBOL AKTIFKAN MODE EDIT -->
                         <button id="btn-mode-edit" onclick="toggleModeEdit()" class="p-1.5 border border-stone-200 text-stone-500 rounded-xl hover:bg-stone-50 hover:text-brand transition shadow-sm" title="Aktifkan Mode Edit">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
                     </div>
                 </div>
                 
-                <!-- DROPDOWN BULAN & FILTER CARI -->
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <select id="filter-bulan-stat" onchange="hitungStatistikDanFilter()" class="text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-medium max-w-[140px]">
-                        <option value="semua">Semua Waktu</option>
-                    </select>
-                    <div class="relative flex-1 sm:w-48">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </span>
-                        <input type="text" id="input-cari-gabungan" placeholder="Cari..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-brand transition">
-                    </div>
+                <!-- INPUT PENCARIAN GABUNGAN -->
+                <div class="relative w-full sm:w-56">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" id="input-cari-gabungan" placeholder="Cari barang atau tanggal..." class="w-full text-xs bg-stone-50 text-stone-800 border border-stone-200 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-brand transition">
                 </div>
             </div>
 
@@ -131,10 +107,10 @@
                     <thead class="sticky top-0 bg-white z-10 shadow-[0_1px_0_0_rgba(231,229,228,1)]">
                         <tr class="bg-stone-50 text-stone-500 text-xs font-semibold uppercase tracking-wider">
                             <th class="p-4">Nama Barang</th>
-                            <th class="p-4 w-20 text-center">Jumlah</th>
-                            <th class="p-4 w-32 text-center">Transaksi</th>
-                            <th class="p-4 text-right w-36">Harga</th>
-                            <th class="p-4 w-32 text-center">Tanggal</th>
+                            <th class="p-4">Jumlah</th>
+                            <th class="p-4">Transaksi</th>
+                            <th class="p-4 text-right">Harga</th>
+                            <th class="p-4">Tanggal</th>
                             <th id="th-aksi" class="p-4 text-center hidden w-20">Aksi</th>
                         </tr>
                     </thead>
@@ -149,24 +125,6 @@
             <!-- KETERANGAN BAWAH -->
             <div class="flex justify-between items-center text-xs text-stone-400 mt-2">
                 <span id="keterangan-jumlah-supa">Menampilkan 0 catatan</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL POPUP SET SALDO AWAL (PENSIL) -->
-    <div id="modal-saldo-dasar" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-xl border border-stone-100 flex flex-col gap-4">
-            <div>
-                <h3 class="font-serif font-bold text-base text-brand">Atur Saldo Awal Dompet</h3>
-                <p class="text-[11px] text-stone-400">Modal dasar sebelum ditambah/dikurangi transaksi database.</p>
-            </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-[11px] font-medium text-stone-500">Nominal Saldo Utama (Rp)</label>
-                <input type="number" id="input-nominal-saldo" placeholder="0" class="w-full text-xs bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-mono font-bold">
-            </div>
-            <div class="flex gap-2 justify-end pt-1">
-                <button type="button" onclick="tutupModalSaldoDasar()" class="px-3 py-1.5 text-xs rounded-xl bg-stone-100 hover:bg-stone-200 transition font-medium">Batal</button>
-                <button type="button" onclick="simpanSaldoDasarManual()" class="px-3 py-1.5 text-xs rounded-xl bg-brand text-white font-semibold hover:bg-stone-800 transition shadow-sm">Terapkan</button>
             </div>
         </div>
     </div>
@@ -198,7 +156,7 @@
                         <label class="font-medium text-stone-500">Jenis Transaksi</label>
                         <select id="form-transaksi" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand font-medium">
                             <option value="true" class="text-emerald-600 font-medium">Pemasukan (+)</option>
-                            <option value="false" class="text-red-600 font-medium">Pengeluaran (-)</option>
+                            <option value="false" class="text-red-600 font-medium">Penjualan (-)</option>
                         </select>
                     </div>
                 </div>
@@ -243,146 +201,33 @@
                 if (error) throw error;
 
                 dataLokalUangPribadi = data || [];
-                
-                buatOpsiPilihanBulan();
-                await hitungStatistikDanFilter();
+                renderTabel(dataLokalUangPribadi);
             } catch (err) {
                 console.error('Gagal mengambil data:', err.message);
                 document.getElementById('tabel-body-supa').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500 font-medium">Koneksi Supabase Gagal.</td></tr>`;
             }
         }
 
-        // GENERATE DROP-DOWN BULAN SECARA OTOMATIS BERDASARKAN DATA DATABASE
-        function buatOpsiPilihanBulan() {
-            const selectBulan = document.getElementById('filter-bulan-stat');
-            if (!selectBulan) return;
-            const nilaiTerpilihSebelumnya = selectBulan.value;
-
-            selectBulan.innerHTML = '<option value="semua">Semua Waktu</option>';
-
-            const kumpulanBulan = new Set();
-            const namaBulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-
-            dataLokalUangPribadi.forEach(row => {
-                const tglString = row.date || row.tanggal;
-                if (tglString) {
-                    const objekTanggal = new Date(tglString);
-                    if (!isNaN(objekTanggal)) {
-                        const yyyy = objekTanggal.getFullYear();
-                        const mm = String(objekTanggal.getMonth() + 1).padStart(2, '0');
-                        kumpulanBulan.add(`${yyyy}-${mm}`);
-                    }
-                }
-            });
-
-            const susunanBulanSorted = Array.from(kumpulanBulan).sort().reverse();
-
-            susunanBulanSorted.forEach(itemBlon => {
-                const [tahun, bulanNum] = itemBlon.split('-');
-                const namaBulan = namaBulanIndo[parseInt(bulanNum) - 1];
-                
-                const opsi = document.createElement('option');
-                opsi.value = itemBlon;
-                opsi.textContent = `${namaBulan} ${tahun}`;
-                selectBulan.appendChild(opsi);
-            });
-
-            if (Array.from(selectBulan.options).some(o => o.value === nilaiTerpilihSebelumnya)) {
-                selectBulan.value = nilaiTerpilihSebelumnya;
-            }
-        }
-
-        // HITUNG TOTAL REALTIME, STATISTIK BOX ATAS, FILTERING & SYNC KE CATATAN_KEUANGAN
-        async function hitungStatistikDanFilter() {
-            const saldoAwalSistem = parseFloat(localStorage.getItem('base_personal_balance_pribadi') || '0');
-            const filterBulan = document.getElementById('filter-bulan-stat').value;
-            const kataKunci = document.getElementById('input-cari-gabungan').value.toLowerCase().trim();
-
-            let totalPemasukanBulanan = 0;
-            let totalPengeluaranBulanan = 0;
-            let akumulasiSaldoDompetReal = saldoAwalSistem;
-
-            // Hitung Saldo Dompet Total (Semua Waktu)
-            dataLokalUangPribadi.forEach(row => {
-                const harga = row.harga || 0;
-                const jumlah = row.jumlah || 1;
-                const nilaiNominal = harga * jumlah;
-                
-                if (row.transaksi === true || row.transaksi === "true") {
-                    akumulasiSaldoDompetReal += nilaiNominal;
-                } else {
-                    akumulasiSaldoDompetReal -= nilaiNominal;
-                }
-            });
-
-            // Filter Data untuk Box Statistik Bulanan & Tampilan Tabel
-            const dataTerfilter = dataLokalUangPribadi.filter(row => {
-                const tglString = row.date || row.tanggal || '';
-                const namaBarang = (row.nama_barang || '').toLowerCase();
-                
-                let cocokBulan = false;
-                if (filterBulan === "semua") {
-                    cocokBulan = true;
-                } else if (tglString) {
-                    if (tglString.substring(0, 7) === filterBulan) {
-                        cocokBulan = true;
-                    }
-                }
-
-                if (cocokBulan) {
-                    const harga = row.harga || 0;
-                    const jumlah = row.jumlah || 1;
-                    const nilaiNominal = harga * jumlah;
-
-                    if (row.transaksi === true || row.transaksi === "true") {
-                        totalPemasukanBulanan += nilaiNominal;
-                    } else {
-                        totalPengeluaranBulanan += nilaiNominal;
-                    }
-                }
-
-                const cocokKeyword = namaBarang.includes(kataKunci) || tglString.toLowerCase().includes(kataKunci);
-                
-                return cocokBulan && cocokKeyword;
-            });
-
-            const selisihNetto = totalPemasukanBulanan - totalPengeluaranBulanan;
-            const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-            const formatRupiahMurni = (angka) => new Intl.NumberFormat('id-ID').format(angka);
-
-            // Tampilkan ke Elemen Atas HTML
-            document.getElementById('total-saldo-pribadi').innerText = formatRupiah(akumulasiSaldoDompetReal);
-            document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
-            document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
-            
-            const elSelisih = document.getElementById('stat-selisih');
-            elSelisih.innerText = formatRupiah(selisihNetto);
-            if (selisihNetto < 0) {
-                elSelisih.className = "text-base font-bold text-rose-600 font-mono";
-            } else if (selisihNetto > 0) {
-                elSelisih.className = "text-base font-bold text-emerald-600 font-mono";
-            } else {
-                elSelisih.className = "text-base font-bold text-stone-900 font-mono";
-            }
-
-            renderTabel(dataTerfilter);
-
-            // OTONATIS SINKRONISASI TOTAL SALDO KE TABEL CATATAN_KEUANGAN
-            try {
-                await supaClient
-                    .from('catatan_keuangan')
-                    .update({ deskripsi: formatRupiahMurni(akumulasiSaldoDompetReal) })
-                    .eq('judul', 'uang_pribadi');
-                console.log('Saldo catatan_keuangan berhasil di-update secara realtime!');
-            } catch (err) {
-                console.error('Gagal update ke catatan_keuangan:', err.message);
-            }
-        }
-
-        // RENDER BARIS TABEL HTML
         function renderTabel(dataArray) {
             const tbody = document.getElementById('tabel-body-supa');
             tbody.innerHTML = '';
+            
+            let akumulasiSaldo = 0;
+            dataLokalUangPribadi.forEach(row => {
+                const harga = row.harga || 0;
+                const jumlah = row.jumlah || 1;
+                if (row.transaksi === true) {
+                    akumulasiSaldo += (harga * jumlah);
+                } else {
+                    akumulasiSaldo -= (harga * jumlah);
+                }
+            });
+
+            document.getElementById('total-saldo-pribadi').innerText = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                maximumFractionDigits: 0 
+            }).format(akumulasiSaldo);
 
             const thAksi = document.getElementById('th-aksi');
             if (modeEditAktif) {
@@ -392,7 +237,7 @@
             }
 
             if (dataArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${modeEditAktif ? '6' : '5'}" class="p-4 text-center text-stone-400">Tidak ada data transaksi yang cocok</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${modeEditAktif ? '6' : '5'}" class="p-4 text-center text-stone-400">Tidak ada data yang cocok</td></tr>`;
                 document.getElementById('keterangan-jumlah-supa').innerText = 'Menampilkan 0 catatan';
                 return;
             }
@@ -402,8 +247,8 @@
                 const namaBarang = row.nama_barang || 'Tanpa Nama';
                 const jumlah = row.jumlah || 1;
                 const harga = row.harga || 0;
-                const tanggal = row.date || row.tanggal || '-';
-                const apakahPemasukan = row.transaksi === true || row.transaksi === "true";
+                const tanggal = row.date || '-';
+                const apakahPemasukan = row.transaksi === true;
 
                 const formatHarga = new Intl.NumberFormat('id-ID', { 
                     style: 'currency', 
@@ -412,7 +257,7 @@
                 }).format(harga);
 
                 const tr = document.createElement('tr');
-                tr.className = `hover:bg-stone-50/50 transition`;
+                tr.className = `hover:bg-stone-50/50 transition ${index >= 10 ? 'hidden' : ''}`;
 
                 let kolomAksiHtml = '';
                 if (modeEditAktif) {
@@ -426,43 +271,26 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="p-4 font-semibold text-stone-800">${namaBarang}</td>
-                    <td class="p-4 text-center text-stone-500">${jumlah}x</td>
-                    <td class="p-4 text-center">
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase ${apakahPemasukan ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
-                            ${apakahPemasukan ? 'PEMASUKAN' : 'PENGELUARAN'}
+                    <td class="p-4 font-medium text-stone-800">${namaBarang}</td>
+                    <td class="p-4 text-stone-500">${jumlah}x</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${apakahPemasukan ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
+                            ${apakahPemasukan ? 'Pemasukan' : 'Penjualan'}
                         </span>
                     </td>
-                    <td class="p-4 text-right font-mono font-bold ${apakahPemasukan ? 'text-emerald-600' : 'text-rose-600'}">
+                    <td class="p-4 text-right font-semibold ${apakahPemasukan ? 'text-emerald-600' : 'text-red-600'}">
                         ${apakahPemasukan ? '+' : '-'}${formatHarga}
                     </td>
-                    <td class="p-4 text-center text-stone-400 text-xs">${tanggal}</td>
+                    <td class="p-4 text-stone-400 text-xs">${tanggal}</td>
                     ${kolomAksiHtml}
                 `;
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${dataArray.length} dari ${dataLokalUangPribadi.length} catatan terdaftar`;
+            const totalTampil = dataArray.length > 10 ? 10 : dataArray.length;
+            document.getElementById('keterangan-jumlah-supa').innerText = `Menampilkan ${totalTampil} dari ${dataArray.length} catatan terdaftar`;
         }
 
-        // FUNGSI MODAL PENSIL EDIT SALDO AWAL DOMPET
-        function bukaModalSaldoDasar() {
-            document.getElementById('input-nominal-saldo').value = localStorage.getItem('base_personal_balance_pribadi') || '0';
-            document.getElementById('modal-saldo-dasar').classList.remove('hidden');
-        }
-
-        function tutupModalSaldoDasar() {
-            document.getElementById('modal-saldo-dasar').classList.add('hidden');
-        }
-
-        async function simpanSaldoDasarManual() {
-            const nilaiSaldo = document.getElementById('input-nominal-saldo').value || '0';
-            localStorage.setItem('base_personal_balance_pribadi', nilaiSaldo);
-            tutupModalSaldoDasar();
-            await hitungStatistikDanFilter();
-        }
-
-        // TOGGLE SWITCH EDIT MODE
         function toggleModeEdit() {
             modeEditAktif = !modeEditAktif;
             const btn = document.getElementById('btn-mode-edit');
@@ -473,7 +301,7 @@
                 btn.classList.remove('bg-brand', 'text-white', 'border-brand');
                 btn.className += ' border-stone-200 text-stone-500';
             }
-            hitungStatistikDanFilter();
+            renderTabel(dataLokalUangPribadi);
         }
 
         function bukaModalTambah() {
@@ -485,15 +313,18 @@
 
         function bukaModalEdit(id) {
             const dataRow = dataLokalUangPribadi.find(row => String(row.id) === String(id));
-            if (!dataRow) return;
+            if (!dataRow) {
+                console.error("Data ID tidak ditemukan lokal:", id);
+                return;
+            }
 
             document.getElementById('form-id').value = dataRow.id;
             document.getElementById('modal-judul').innerText = 'Edit Transaksi Lama';
             document.getElementById('form-nama').value = dataRow.nama_barang || '';
             document.getElementById('form-jumlah').value = dataRow.jumlah || 1;
-            document.getElementById('form-transaksi').value = String(dataRow.transaksi);
+            document.getElementById('form-transaksi').value = dataRow.transaksi === true ? 'true' : 'false';
             document.getElementById('form-harga').value = dataRow.harga || 0;
-            document.getElementById('form-date').value = dataRow.date || dataRow.tanggal || '';
+            document.getElementById('form-date').value = dataRow.date || '';
             
             document.getElementById('modal-transaksi').classList.remove('hidden');
         }
@@ -513,31 +344,38 @@
             const harga = parseFloat(document.getElementById('form-harga').value);
             const date = document.getElementById('form-date').value;
 
-            const payload = { nama_barang, jumlah, transaksi, harga, date: date, tanggal: date };
-
             try {
                 if (id) {
                     const { error } = await supaClient
                         .from('uang_pribadi')
-                        .update(payload)
+                        .update({ nama_barang, jumlah, transaksi, harga, date })
                         .eq('id', id);
+
                     if (error) throw error;
                 } else {
                     const { error } = await supaClient
                         .from('uang_pribadi')
-                        .insert([payload]);
+                        .insert([{ nama_barang, jumlah, transaksi, harga, date }]);
+
                     if (error) throw error;
                 }
 
                 tutupModal();
-                await ambilDataUangPribadi();
+                ambilDataUangPribadi();
             } catch (err) {
                 alert('Gagal memproses data ke Supabase: ' + err.message);
             }
         });
 
-        // Event listener saat kolom pencarian diketik
-        document.getElementById('input-cari-gabungan').addEventListener('input', hitungStatistikDanFilter);
+        document.getElementById('input-cari-gabungan').addEventListener('input', function(e) {
+            const kataKunci = e.target.value.toLowerCase().trim();
+            const dataHasilFilter = dataLokalUangPribadi.filter(row => {
+                const namaBarang = (row.nama_barang || '').toLowerCase();
+                const tanggal = (row.date || '').toLowerCase();
+                return namaBarang.includes(kataKunci) || tanggal.includes(kataKunci);
+            });
+            renderTabel(dataHasilFilter);
+        });
 
         window.addEventListener('DOMContentLoaded', ambilDataUangPribadi);
     </script>
