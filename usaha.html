@@ -46,16 +46,14 @@
     <main class="max-w-5xl mx-auto px-4 mt-8 flex flex-col gap-6">
         
         <!-- HEADER -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-                <h1 class="font-serif font-bold text-2xl text-brand">Keuangan Usaha</h1>
-                <p class="text-xs text-stone-400 mt-0.5">Kelola arus kas masuk, pengeluaran, dan performa bisnis Anda.</p>
-            </div>
+        <div>
+            <h1 class="font-serif font-bold text-2xl text-brand">Keuangan Usaha</h1>
+            <p class="text-xs text-stone-400 mt-0.5">Kelola arus kas masuk, pengeluaran, dan performa bisnis Anda.</p>
         </div>
 
         <!-- KOTAK STATISTIK METRIK & TOMBOL AKSI -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white p-5 rounded-2xl border border-stone-200/60 shadow-sm">
-            <!-- RDN Usaha + Tombol Pensil -->
+            <!-- RDN Usaha -->
             <div class="flex flex-col gap-1 border-r border-stone-100 last:border-0 pr-2">
                 <div class="flex items-center gap-1.5">
                     <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">RDN Usaha</span>
@@ -109,7 +107,7 @@
                     </svg>
                     <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600">Gudang Barang (Tersedia)</h2>
                 </div>
-                <span class="text-[10px] bg-stone-200/60 text-stone-600 px-2 py-0.5 rounded-full font-semibold">Real-time</span>
+                <span class="text-[10px] bg-stone-200/60 text-stone-600 px-2 py-0.5 rounded-full font-semibold">Hanya Barang</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -151,7 +149,8 @@
                     <thead>
                         <tr class="bg-stone-50 border-b border-stone-200 text-stone-400 font-semibold uppercase tracking-wider">
                             <th class="px-6 py-3.5">Tanggal</th>
-                            <th class="px-6 py-3.5">Nama Barang</th>
+                            <th class="px-6 py-3.5">Nama Barang / Jasa</th>
+                            <th class="px-6 py-3.5">Kategori</th>
                             <th class="px-6 py-3.5">Jenis</th>
                             <th class="px-6 py-3.5 text-right">Harga Satuan</th>
                             <th class="px-6 py-3.5 text-center">Jumlah</th>
@@ -161,7 +160,7 @@
                     </thead>
                     <tbody id="tabel-body-usaha" class="divide-y divide-stone-100 text-stone-600 font-medium">
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-stone-400">Memuat data transaksi...</td>
+                            <td colspan="8" class="px-6 py-8 text-center text-stone-400">Memuat data transaksi...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -181,15 +180,24 @@
                     <input type="date" id="form-date" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="font-medium text-stone-500">Nama Barang</label>
+                    <label class="font-medium text-stone-500">Nama Barang / Jasa</label>
                     <input type="text" id="form-nama" placeholder="Nama produk / keperluan" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label class="font-medium text-stone-500">Jenis Transaksi</label>
-                    <select id="form-jenis" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                        <option value="true">Pendapatan / Uang Masuk (True)</option>
-                        <option value="false">Pengeluaran / Uang Keluar (False)</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Kategori</label>
+                        <select id="form-kategori" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                            <option value="true">Barang</option>
+                            <option value="false">Jasa</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="font-medium text-stone-500">Jenis Aliran</label>
+                        <select id="form-jenis" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
+                            <option value="true">MASUK (Pendapatan)</option>
+                            <option value="false">KELUAR (Pengeluaran)</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="flex flex-col gap-1">
@@ -234,7 +242,7 @@
         
         const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
         let dataLokalUsaha = [];
-        let modeAksiAktif = true; 
+        let modeAksiAktif = false; // Diubah ke false agar tersembunyi secara default sebelum klik pensil
 
         async function ambilDataUsaha() {
             if (!_supabase) return;
@@ -254,7 +262,7 @@
             } catch (err) {
                 console.error("Gagal memuat data:", err.message);
                 document.getElementById('tabel-body-usaha').innerHTML = `
-                    <tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>
+                    <tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>
                 `;
             }
         }
@@ -271,7 +279,7 @@
             });
 
             if (dataTerfilter.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-stone-400">Tidak ada transaksi yang cocok.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-stone-400">Tidak ada transaksi yang cocok.</td></tr>`;
                 return;
             }
 
@@ -280,10 +288,18 @@
                 const total = row.total_harga || ((row.harga || 0) * (row.jumlah || 0));
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
+                // Cek kategori (barang/jasa)
+                const isBarang = row.kategori === true || row.kategori === "true";
+
                 html += `
                     <tr class="hover:bg-stone-50/60 transition">
                         <td class="px-6 py-4 whitespace-nowrap text-stone-500">${row.date || '-'}</td>
                         <td class="px-6 py-4 font-semibold text-stone-800">${row.nama_barang || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-medium ${isBarang ? 'bg-amber-50 text-amber-800 border border-amber-200/50' : 'bg-sky-50 text-sky-800 border border-sky-200/50'}">
+                                ${isBarang ? 'Barang' : 'Jasa'}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${row.transaksi ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
                                 ${row.transaksi ? 'MASUK' : 'KELUAR'}
@@ -313,15 +329,19 @@
             updateVisibilitasKolomAksi();
         }
 
-        // LOGIKA UTAMA HITUNG GUDANG (PORTOFOLIO)
+        // PERHITUNGAN PORTOFOLIO GUDANG (HANYA BARANG)
         function prosesDanTampilkanGudang() {
             const gudang = {};
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
             
-            // Diurutkan dari transaksi terlama agar perhitungan stok mengalir runtut kronologis
+            // Diurutkan dari transaksi terlama agar perhitungan stok runtut
             const dataKronologis = [...dataLokalUsaha].reverse();
 
             dataKronologis.forEach(row => {
+                // FILTER: Hanya hitung jika kategori adalah Barang (true)
+                const isBarang = row.kategori === true || row.kategori === "true";
+                if (!isBarang) return; 
+
                 const nama = (row.nama_barang || '').trim();
                 if (!nama) return;
 
@@ -333,13 +353,10 @@
                 }
 
                 if (row.transaksi === true) {
-                    // Transaksi MASUK (Beli / Restock) -> Stok bertambah, kalkulasi total harga beli
                     gudang[nama].stok += qty;
                     gudang[nama].totalBiaya += (qty * hargaUnit);
                 } else {
-                    // Transaksi KELUAR (Jual / Terpakai) -> Stok berkurang
                     gudang[nama].stok -= qty;
-                    // Jika stok berkurang, kurangi nilai total biaya secara proporsional
                     if (gudang[nama].stok < 0) gudang[nama].stok = 0;
                 }
             });
@@ -351,10 +368,10 @@
             for (const namaBarang in gudang) {
                 const info = gudang[namaBarang];
                 
-                // JIKA STOK HABIS (0), OTOMATIS TERHAPUS / TIDAK DITAMPILKAN DI GUDANG
+                // Otomatis terhapus dari display jika stok sudah 0
                 if (info.stok > 0) {
                     adaBarang = true;
-                    const avgHargaBeli = info.stok > 0 ? (info.totalBiaya / info.stok) : 0;
+                    const avgHargaBeli = info.totalBiaya / (info.stok + (info.stok === 0 ? 1 : 0)); 
                     const totalNilai = info.stok * avgHargaBeli;
 
                     htmlGudang += `
@@ -407,6 +424,24 @@
             }
         }
 
+        function toggleAksiMode() {
+            modeAksiAktif = !modeAksiAktif;
+            updateVisibilitasKolomAksi();
+        }
+
+        function updateVisibilitasKolomAksi() {
+            const thAksi = document.getElementById('th-aksi');
+            const tdAksi = document.querySelectorAll('.kol-aksi');
+            
+            if (modeAksiAktif) {
+                thAksi.classList.remove('hidden');
+                tdAksi.forEach(el => el.classList.remove('hidden'));
+            } else {
+                thAksi.classList.add('hidden');
+                tdAksi.forEach(el => el.classList.add('hidden'));
+            }
+        }
+
         function bukaModalRdnUsaha() {
             document.getElementById('input-nominal-rdn').value = localStorage.getItem('base_rdn_usaha_balance') || '0';
             document.getElementById('modal-rdn-usaha').classList.remove('hidden');
@@ -429,24 +464,6 @@
             tampilkanTabelUsaha();
         }
 
-        function toggleAksiMode() {
-            modeAksiAktif = !modeAksiAktif;
-            updateVisibilitasKolomAksi();
-        }
-
-        function updateVisibilitasKolomAksi() {
-            const thAksi = document.getElementById('th-aksi');
-            const tdAksi = document.querySelectorAll('.kol-aksi');
-            
-            if (modeAksiAktif) {
-                thAksi.classList.remove('hidden');
-                tdAksi.forEach(el => el.classList.remove('hidden'));
-            } else {
-                thAksi.classList.add('hidden');
-                tdAksi.forEach(el => el.classList.add('hidden'));
-            }
-        }
-
         function bukaModalTransaksi() {
             document.getElementById('modal-title').innerText = "Catat Transaksi Baru";
             delete document.getElementById('form-transaksi').dataset.editId;
@@ -463,6 +480,7 @@
             
             document.getElementById('form-date').value = item.date || '';
             document.getElementById('form-nama').value = item.nama_barang || '';
+            document.getElementById('form-kategori').value = item.kategori === false || item.kategori === "false" ? "false" : "true";
             document.getElementById('form-jenis').value = item.transaksi ? "true" : "false";
             document.getElementById('form-harga').value = item.harga || 0;
             document.getElementById('form-jumlah').value = item.jumlah || 0;
@@ -482,11 +500,12 @@
 
             const date = document.getElementById('form-date').value;
             const nama_barang = document.getElementById('form-nama').value;
+            const kategori = document.getElementById('form-kategori').value === "true"; 
             const transaksi = document.getElementById('form-jenis').value === "true"; 
             const harga = parseFloat(document.getElementById('form-harga').value || '0');
             const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
             
-            const dataPayload = { date, nama_barang, transaksi, harga, jumlah };
+            const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah };
             const editId = document.getElementById('form-transaksi').dataset.editId;
 
             try {
