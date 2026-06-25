@@ -292,28 +292,44 @@
             }
         }
 
-        // FUNGSI UNTUK SINKRONISASI SALDO KE TABEL CATATAN_KEUANGAN
-        async function sinkronisasiKeCatatanKeuangan(totalSaldo) {
-            try {
-            // Konversi ke String karena tipe kolom di Supabase Anda saat ini adalah 'text'
-            const saldoStr = String(totalSaldo); 
+// FUNGSI UNTUK SINKRONISASI SALDO KE TABEL CATATAN_KEUANGAN
+async function sinkronisasiKeCatatanKeuangan(totalSaldo) {
+    try {
+        const saldoStr = String(totalSaldo); 
 
-            const { data, error } = await supaClient
+        // 1. Cek dulu apakah baris 'uang_pribadi' sudah ada di tabel
+        const { data: dataCari, error: errorCari } = await supaClient
+            .from('catatan_keuangan')
+            .select('id')
+            .eq('judul', 'uang_pribadi');
+
+        if (errorCari) throw errorCari;
+
+        if (dataCari && dataCari.length > 0) {
+            // 2. Jika ADA, lakukan UPDATE menggunakan ID uniknya (Sangat Aman!)
+            const idBaris = dataCari[0].id;
+            const { data: dataUpdate, error: errorUpdate } = await supaClient
                 .from('catatan_keuangan')
                 .update({ deskripsi: saldoStr })
-                .eq('judul', 'uang_pribadi')
-                .select(); // Ditambahkan .select() agar kita bisa melihat response balikan dari Supabase
+                .eq('id', idBaris)
+                .select();
 
-            if (error) throw error;
-        
-            if (data && data.length === 0) {
-                console.warn('Peringatan: Berhasil terhubung ke Supabase, tetapi tidak ada baris dengan judul "uang_pribadi" yang terupdate.');
-            } else {
-                console.log('Berhasil sinkronisasi! Data terupdate:', data);
-            }
-        } catch (err) {
-            console.error('Gagal sinkronisasi ke catatan_keuangan:', err.message);
+            if (errorUpdate) throw errorUpdate;
+            console.log('Berhasil update saldo! Data terbaru:', dataUpdate);
+        } else {
+            // 3. Jika BELUM ADA, otomatis buat (INSERT) baris baru
+            const { data: dataInsert, error: errorInsert } = await supaClient
+                .from('catatan_keuangan')
+                .insert([{ judul: 'uang_pribadi', deskripsi: saldoStr }])
+                .select();
+
+            if (errorInsert) throw errorInsert;
+            console.log('Baris "uang_pribadi" belum ada. Otomatis membuat baris baru:', dataInsert);
         }
+    } catch (err) {
+        console.error('Gagal sinkronisasi ke catatan_keuangan:', err.message);
+    }
+}
         }
 
         // HITUNG TOTAL REALTIME, STATISTIK BOX ATAS & FILTERING DATA
