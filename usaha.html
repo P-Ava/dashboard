@@ -48,7 +48,7 @@
         <!-- HEADER -->
         <div>
             <h1 class="font-serif font-bold text-2xl text-brand">Keuangan Usaha</h1>
-            <p class="text-xs text-stone-400 mt-0.5">Kelola arus kas masuk, pengeluaran, dan performa bisnis Anda.</p>
+            <p class="text-xs text-stone-400 mt-0.5">Kelola kas pembelian, penjualan, dan performa real-time gudang Anda.</p>
         </div>
 
         <!-- KOTAK STATISTIK METRIK & TOMBOL AKSI -->
@@ -65,20 +65,20 @@
                 </div>
                 <span id="stat-rdn" class="text-base font-bold text-stone-900">Rp0</span>
             </div>
-            <!-- Pemasukan -->
+            <!-- Total Beli -->
             <div class="flex flex-col gap-1 border-r border-stone-100 last:border-0 pr-2">
-                <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Total Pemasukan</span>
-                <span id="stat-pemasukan" class="text-base font-bold text-emerald-600">Rp0</span>
+                <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Total Beli</span>
+                <span id="stat-pemasukan" class="text-base font-bold text-rose-600">Rp0</span>
             </div>
-            <!-- Pengeluaran -->
+            <!-- Total Jual -->
             <div class="flex flex-col gap-1 border-r border-stone-100 last:border-0 pr-2">
-                <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Total Pengeluaran</span>
-                <span id="stat-pengeluaran" class="text-base font-bold text-rose-600">Rp0</span>
+                <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Total Jual</span>
+                <span id="stat-pengeluaran" class="text-base font-bold text-emerald-600">Rp0</span>
             </div>
-            <!-- Selisih Bulanan + Tombol Pensil Aksi Tabel -->
+            <!-- PNL Bulanan + Tombol Pensil Aksi Tabel -->
             <div class="flex flex-col gap-1 border-r border-stone-100 last:border-0 pr-2">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Selisih Bulanan</span>
+                    <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">PNL Bulanan</span>
                     <button onclick="toggleAksiMode()" class="text-stone-400 hover:text-brand transition" title="Aktifkan Mode Edit/Hapus">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
@@ -192,10 +192,10 @@
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="font-medium text-stone-500">Jenis Aliran</label>
+                        <label class="font-medium text-stone-500">Jenis</label>
                         <select id="form-jenis" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                            <option value="true">MASUK (Pendapatan)</option>
-                            <option value="false">KELUAR (Pengeluaran)</option>
+                            <option value="true">BELI</option>
+                            <option value="false">JUAL</option>
                         </select>
                     </div>
                 </div>
@@ -242,7 +242,7 @@
         
         const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
         let dataLokalUsaha = [];
-        let modeAksiAktif = false; // Diubah ke false agar tersembunyi secara default sebelum klik pensil
+        let modeAksiAktif = false; // Tersembunyi secara default
 
         async function ambilDataUsaha() {
             if (!_supabase) return;
@@ -288,8 +288,8 @@
                 const total = row.total_harga || ((row.harga || 0) * (row.jumlah || 0));
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
-                // Cek kategori (barang/jasa)
                 const isBarang = row.kategori === true || row.kategori === "true";
+                const isBeli = row.transaksi === true || row.transaksi === "true";
 
                 html += `
                     <tr class="hover:bg-stone-50/60 transition">
@@ -301,8 +301,8 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${row.transaksi ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
-                                ${row.transaksi ? 'MASUK' : 'KELUAR'}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isBeli ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">
+                                ${isBeli ? 'BELI' : 'JUAL'}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right font-mono">${formatRupiah(row.harga || 0)}</td>
@@ -329,16 +329,13 @@
             updateVisibilitasKolomAksi();
         }
 
-        // PERHITUNGAN PORTOFOLIO GUDANG (HANYA BARANG)
         function prosesDanTampilkanGudang() {
             const gudang = {};
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
             
-            // Diurutkan dari transaksi terlama agar perhitungan stok runtut
             const dataKronologis = [...dataLokalUsaha].reverse();
 
             dataKronologis.forEach(row => {
-                // FILTER: Hanya hitung jika kategori adalah Barang (true)
                 const isBarang = row.kategori === true || row.kategori === "true";
                 if (!isBarang) return; 
 
@@ -352,7 +349,9 @@
                     gudang[nama] = { stok: 0, totalBiaya: 0 };
                 }
 
-                if (row.transaksi === true) {
+                const isBeli = row.transaksi === true || row.transaksi === "true";
+
+                if (isBeli) {
                     gudang[nama].stok += qty;
                     gudang[nama].totalBiaya += (qty * hargaUnit);
                 } else {
@@ -368,10 +367,9 @@
             for (const namaBarang in gudang) {
                 const info = gudang[namaBarang];
                 
-                // Otomatis terhapus dari display jika stok sudah 0
                 if (info.stok > 0) {
                     adaBarang = true;
-                    const avgHargaBeli = info.totalBiaya / (info.stok + (info.stok === 0 ? 1 : 0)); 
+                    const avgHargaBeli = info.totalBiaya / info.stok; 
                     const totalNilai = info.stok * avgHargaBeli;
 
                     htmlGudang += `
@@ -394,31 +392,38 @@
 
         function hitungDanTampilkanStatistik() {
             const saldoAwalRdn = parseFloat(localStorage.getItem('base_rdn_usaha_balance') || '0');
-            let masuk = 0;
-            let keluar = 0;
+            let totalBeli = 0;
+            let totalJual = 0;
             
             dataLokalUsaha.forEach(row => {
                 const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
-                if (row.transaksi === true) {
-                    masuk += totalHarga;
+                const isBeli = row.transaksi === true || row.transaksi === "true";
+                
+                if (isBeli) {
+                    totalBeli += totalHarga;
                 } else {
-                    keluar += totalHarga;
+                    totalJual += totalHarga;
                 }
             });
 
-            const selisih = masuk - keluar;
-            const rdnUsahaAkhir = saldoAwalRdn + selisih; 
+            // PNL = Jual - Beli
+            const pnl = totalJual - totalBeli;
+            
+            // Logika Kas Portofolio: Beli mengurangi RDN, Jual menambah RDN
+            const rdnUsahaAkhir = saldoAwalRdn - totalBeli + totalJual; 
             
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
             document.getElementById('stat-rdn').innerText = formatRupiah(rdnUsahaAkhir);
-            document.getElementById('stat-pemasukan').innerText = formatRupiah(masuk);
-            document.getElementById('stat-pengeluaran').innerText = formatRupiah(keluar);
-            document.getElementById('stat-selisih').innerText = formatRupiah(selisih);
+            document.getElementById('stat-pemasukan').innerText = formatRupiah(totalBeli);
+            document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalJual);
+            document.getElementById('stat-selisih').innerText = formatRupiah(pnl);
             
             const elSelisih = document.getElementById('stat-selisih');
-            if (selisih < 0) {
+            if (pnl < 0) {
                 elSelisih.className = "text-base font-bold text-rose-600";
+            } else if (pnl > 0) {
+                elSelisih.className = "text-base font-bold text-emerald-600";
             } else {
                 elSelisih.className = "text-base font-bold text-stone-900";
             }
@@ -481,7 +486,7 @@
             document.getElementById('form-date').value = item.date || '';
             document.getElementById('form-nama').value = item.nama_barang || '';
             document.getElementById('form-kategori').value = item.kategori === false || item.kategori === "false" ? "false" : "true";
-            document.getElementById('form-jenis').value = item.transaksi ? "true" : "false";
+            document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
             document.getElementById('form-harga').value = item.harga || 0;
             document.getElementById('form-jumlah').value = item.jumlah || 0;
 
