@@ -22,7 +22,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-serif { font-family: 'Playfair Display', serif; }
@@ -97,6 +97,36 @@
                     </svg>
                     Catat Transaksi
                 </button>
+            </div>
+        </div>
+
+        <!-- SEKSI GUDANG BARANG (PORTOFOLIO) -->
+        <div class="bg-white rounded-2xl border border-stone-200/60 shadow-sm overflow-hidden">
+            <div class="px-5 py-3.5 bg-stone-50 border-b border-stone-100 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600">Gudang Barang (Tersedia)</h2>
+                </div>
+                <span class="text-[10px] bg-stone-200/60 text-stone-600 px-2 py-0.5 rounded-full font-semibold">Real-time</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-stone-100 text-stone-400 font-medium bg-stone-50/30">
+                            <th class="px-6 py-2.5">Nama Barang</th>
+                            <th class="px-6 py-2.5 text-center">Stok Tersedia</th>
+                            <th class="px-6 py-2.5 text-right">Avg Harga Beli</th>
+                            <th class="px-6 py-2.5 text-right">Total Nilai Barang</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-body-gudang" class="divide-y divide-stone-100 text-stone-600 font-medium">
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-stone-400">Gudang kosong atau semua barang sudah terjual.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -219,6 +249,7 @@
                 dataLokalUsaha = data || [];
                 tampilkanTabelUsaha();
                 hitungDanTampilkanStatistik();
+                prosesDanTampilkanGudang();
 
             } catch (err) {
                 console.error("Gagal memuat data:", err.message);
@@ -282,6 +313,68 @@
             updateVisibilitasKolomAksi();
         }
 
+        // LOGIKA UTAMA HITUNG GUDANG (PORTOFOLIO)
+        function prosesDanTampilkanGudang() {
+            const gudang = {};
+            const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+            
+            // Diurutkan dari transaksi terlama agar perhitungan stok mengalir runtut kronologis
+            const dataKronologis = [...dataLokalUsaha].reverse();
+
+            dataKronologis.forEach(row => {
+                const nama = (row.nama_barang || '').trim();
+                if (!nama) return;
+
+                const qty = parseInt(row.jumlah || 0);
+                const hargaUnit = parseFloat(row.harga || 0);
+
+                if (!gudang[nama]) {
+                    gudang[nama] = { stok: 0, totalBiaya: 0 };
+                }
+
+                if (row.transaksi === true) {
+                    // Transaksi MASUK (Beli / Restock) -> Stok bertambah, kalkulasi total harga beli
+                    gudang[nama].stok += qty;
+                    gudang[nama].totalBiaya += (qty * hargaUnit);
+                } else {
+                    // Transaksi KELUAR (Jual / Terpakai) -> Stok berkurang
+                    gudang[nama].stok -= qty;
+                    // Jika stok berkurang, kurangi nilai total biaya secara proporsional
+                    if (gudang[nama].stok < 0) gudang[nama].stok = 0;
+                }
+            });
+
+            const tbodyGudang = document.getElementById('tabel-body-gudang');
+            let htmlGudang = "";
+            let adaBarang = false;
+
+            for (const namaBarang in gudang) {
+                const info = gudang[namaBarang];
+                
+                // JIKA STOK HABIS (0), OTOMATIS TERHAPUS / TIDAK DITAMPILKAN DI GUDANG
+                if (info.stok > 0) {
+                    adaBarang = true;
+                    const avgHargaBeli = info.stok > 0 ? (info.totalBiaya / info.stok) : 0;
+                    const totalNilai = info.stok * avgHargaBeli;
+
+                    htmlGudang += `
+                        <tr class="hover:bg-stone-50/40 transition">
+                            <td class="px-6 py-3 font-semibold text-stone-800">${namaBarang}</td>
+                            <td class="px-6 py-3 text-center font-bold text-stone-700">${info.stok}</td>
+                            <td class="px-6 py-3 text-right font-mono text-stone-500">${formatRupiah(avgHargaBeli)}</td>
+                            <td class="px-6 py-3 text-right font-mono font-bold text-brand">${formatRupiah(totalNilai)}</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            if (!adaBarang) {
+                tbodyGudang.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-stone-400">Gudang kosong atau semua barang sudah terjual.</td></tr>`;
+            } else {
+                tbodyGudang.innerHTML = htmlGudang;
+            }
+        }
+
         function hitungDanTampilkanStatistik() {
             const saldoAwalRdn = parseFloat(localStorage.getItem('base_rdn_usaha_balance') || '0');
             let masuk = 0;
@@ -314,7 +407,6 @@
             }
         }
 
-        // FUNGSI MODAL ATUR SALDO RDN MANUAL
         function bukaModalRdnUsaha() {
             document.getElementById('input-nominal-rdn').value = localStorage.getItem('base_rdn_usaha_balance') || '0';
             document.getElementById('modal-rdn-usaha').classList.remove('hidden');
