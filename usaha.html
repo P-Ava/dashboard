@@ -190,9 +190,7 @@
                 </div>
                 <div class="flex flex-col gap-1">
                     <label class="font-medium text-stone-500">Nama Barang / Jasa</label>
-                    <!-- Menghubungkan input dengan datalist menggunakan atribut list -->
                     <input type="text" id="form-nama" list="daftar-produk-tercatat" placeholder="Nama produk / keperluan" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand">
-                    <!-- Wadah untuk memunculkan popup rekomendasi ketikan -->
                     <datalist id="daftar-produk-tercatat"></datalist>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -269,7 +267,7 @@
                 dataLokalUsaha = data || [];
                 
                 buatOpsiPilihanBulan();
-                perbaruiDaftarAutocompleteBarang(); // Memperbarui popup list autocomplete tiap data diambil
+                perbaruiDaftarAutocompleteBarang();
                 tampilkanTabelUsaha();
                 hitungDanTampilkanStatistik();
                 prosesDanTampilkanGudang();
@@ -282,21 +280,18 @@
             }
         }
 
-        // FUNGSI UNTUK GENERATE DATA AUTOCOMPLETE PADA INPUT NAMA BARANG
         function perbaruiDaftarAutocompleteBarang() {
             const datalist = document.getElementById('daftar-produk-tercatat');
-            datalist.innerHTML = ''; // Bersihkan list lama
+            datalist.innerHTML = '';
 
             const kumpulanNamaBarang = new Set();
             
-            // Ambil semua nama unik yang ada di riwayat transaksi usaha
             dataLokalUsaha.forEach(row => {
                 if (row.nama_barang && row.nama_barang.trim() !== "") {
                     kumpulanNamaBarang.add(row.nama_barang.trim());
                 }
             });
 
-            // Urutkan nama barang secara abjad (A-Z) agar rapi di popup browser
             const susunanNamaSorted = Array.from(kumpulanNamaBarang).sort();
 
             susunanNamaSorted.forEach(nama => {
@@ -306,7 +301,6 @@
             });
         }
 
-        // FUNGSI OTOMATIS GENERATE DAFTAR BULAN PADA DROPDOWN
         function buatOpsiPilihanBulan() {
             const selectBulan = document.getElementById('filter-bulan-stat');
             const nilaiTerpilihSebelumnya = selectBulan.value;
