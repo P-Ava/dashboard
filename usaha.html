@@ -46,9 +46,18 @@
     <main class="max-w-5xl mx-auto px-4 mt-8 flex flex-col gap-6">
         
         <!-- HEADER -->
-        <div>
-            <h1 class="font-serif font-bold text-2xl text-brand">Keuangan Usaha</h1>
-            <p class="text-xs text-stone-400 mt-0.5">Kelola kas pembelian, penjualan, dan performa real-time gudang Anda.</p>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <h1 class="font-serif font-bold text-2xl text-brand">Keuangan Usaha</h1>
+                <p class="text-xs text-stone-400 mt-0.5">Kelola kas pembelian, penjualan, dan performa real-time gudang Anda.</p>
+            </div>
+            <!-- FILTER BULAN UNTUK STATISTIK -->
+            <div class="flex flex-col gap-1 min-w-[160px]">
+                <label for="filter-bulan-stat" class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Periode Statistik</label>
+                <select id="filter-bulan-stat" onchange="hitungDanTampilkanStatistik()" class="bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs font-semibold text-stone-700 focus:outline-none focus:border-brand shadow-sm cursor-pointer">
+                    <option value="semua">Semua Waktu</option>
+                </select>
+            </div>
         </div>
 
         <!-- KOTAK STATISTIK METRIK & TOMBOL AKSI -->
@@ -242,7 +251,7 @@
         
         const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
         let dataLokalUsaha = [];
-        let modeAksiAktif = false; // Tersembunyi secara default
+        let modeAksiAktif = false; 
 
         async function ambilDataUsaha() {
             if (!_supabase) return;
@@ -255,6 +264,8 @@
                 if (error) throw error;
 
                 dataLokalUsaha = data || [];
+                
+                buatOpsiPilihanBulan();
                 tampilkanTabelUsaha();
                 hitungDanTampilkanStatistik();
                 prosesDanTampilkanGudang();
@@ -264,6 +275,47 @@
                 document.getElementById('tabel-body-usaha').innerHTML = `
                     <tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>
                 `;
+            }
+        }
+
+        // FUNGSI OTOMATIS GENERATE DAFTAR BULAN PADA DROPDOWN
+        function buatOpsiPilihanBulan() {
+            const selectBulan = document.getElementById('filter-bulan-stat');
+            const nilaiTerpilihSebelumnya = selectBulan.value;
+
+            // Bersihkan, sisakan "Semua Waktu"
+            selectBulan.innerHTML = '<option value="semua">Semua Waktu</option>';
+
+            const kumpulanBulan = new Set();
+            const namaBulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+            dataLokalUsaha.forEach(row => {
+                if (row.date) {
+                    const objekTanggal = new Date(row.date);
+                    if (!isNaN(objekTanggal)) {
+                        const yyyy = objekTanggal.getFullYear();
+                        const mm = String(objekTanggal.getMonth() + 1).padStart(2, '0');
+                        kumpulanBulan.add(`${yyyy}-${mm}`);
+                    }
+                }
+            });
+
+            // Urutkan bulan dari yang terbaru
+            const susunanBulanSorted = Array.from(kumpulanBulan).sort().reverse();
+
+            susunanBulanSorted.forEach(itemBlon => {
+                const [tahun, bulanNum] = itemBlon.split('-');
+                const namaBulan = namaBulanIndo[parseInt(bulanNum) - 1];
+                
+                const opsi = document.createElement('option');
+                opsi.value = itemBlon;
+                opsi.textContent = `${namaBulan} ${tahun}`;
+                selectBulan.appendChild(opsi);
+            });
+
+            // Kembalikan ke nilai sebelumnya jika masih tersedia
+            if (Array.from(selectBulan.options).some(o => o.value === nilaiTerpilihSebelumnya)) {
+                selectBulan.value = nilaiTerpilihSebelumnya;
             }
         }
 
@@ -392,25 +444,48 @@
 
         function hitungDanTampilkanStatistik() {
             const saldoAwalRdn = parseFloat(localStorage.getItem('base_rdn_usaha_balance') || '0');
+            const filterBulanStat = document.getElementById('filter-bulan-stat').value; // format: 'YYYY-MM' atau 'semua'
+
             let totalBeli = 0;
             let totalJual = 0;
             
+            // Variabel khusus akumulasi kumulatif untuk RDN (RDN selalu dihitung dari awal waktu agar akurat secara real-time)
+            let akumulasiBeliSemuaWaktu = 0;
+            let akumulasiJualSemuaWaktu = 0;
+
             dataLokalUsaha.forEach(row => {
                 const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
                 const isBeli = row.transaksi === true || row.transaksi === "true";
                 
-                if (isBeli) {
-                    totalBeli += totalHarga;
-                } else {
-                    totalJual += totalHarga;
+                // 1. Hitung akumulasi mutlak RDN berjalan
+                if (isBeli) akumulasiBeliSemuaWaktu += totalHarga;
+                else akumulasiJualSemuaWaktu += totalHarga;
+
+                // 2. Hitung statistik kotak berdasarkan filter bulan terpilih
+                let laporBarisIni = false;
+                if (filterBulanStat === "semua") {
+                    laporBarisIni = true;
+                } else if (row.date) {
+                    const bagianTanggal = row.date.substring(0, 7); // ambil 'YYYY-MM'
+                    if (bagianTanggal === filterBulanStat) {
+                        laporBarisIni = true;
+                    }
+                }
+
+                if (laporBarisIni) {
+                    if (isBeli) {
+                        totalBeli += totalHarga;
+                    } else {
+                        totalJual += totalHarga;
+                    }
                 }
             });
 
-            // PNL = Jual - Beli
+            // PNL = Jual - Beli (Berdasarkan filter periode terpilih)
             const pnl = totalJual - totalBeli;
             
-            // Logika Kas Portofolio: Beli mengurangi RDN, Jual menambah RDN
-            const rdnUsahaAkhir = saldoAwalRdn - totalBeli + totalJual; 
+            // Logika Kas Portofolio: Beli mengurangi RDN dasar, Jual menambah RDN dasar
+            const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
             
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
@@ -463,6 +538,7 @@
             hitungDanTampilkanStatistik();
         }
 
+        // ... Sisa fungsi Supabase, Modal, & Hapus tetap dipertahankan utuh ...
         function resetFilter() {
             document.getElementById('cari-barang').value = '';
             document.getElementById('cari-tanggal').value = '';
