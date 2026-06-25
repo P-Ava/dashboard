@@ -672,6 +672,28 @@
             alert("Gagal menyimpan data: " + err.message);
         }
     }
+    // FUNGSI UNTUK SINKRONISASI BANK RDN KE TABEL CATATAN_KEUANGAN (BARIS SAHAM)
+async function sinkronisasiRdnUsahaKeCatatanKeuangan(totalRdn)  {
+    try {
+        const rdnStr = String(totalRdn); 
+
+        const { data, error } = await supaClient
+            .from('catatan_keuangan')
+            .update({ deskripsi: rdnStr })
+            .eq('judul', 'usaha') // Mencari baris dengan judul 'usaha'
+            .select();
+
+        if (error) throw error;
+        
+        if (data && data.length === 0) {
+            console.warn('Peringatan: Berhasil terhubung ke Supabase, tetapi tidak ada baris dengan judul "saham" yang terupdate.');
+        } else {
+            console.log('Berhasil sinkronisasi RDN Saham! Data terupdate:', data);
+        }
+    } catch (err) {
+        console.error('Gagal sinkronisasi RDN ke catatan_keuangan:', err.message);
+    }
+}
 
     async function hapusTransaksi(id) {
         if (!_supabase || !confirm("Hapus transaksi ini?")) return;
