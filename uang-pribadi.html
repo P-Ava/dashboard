@@ -235,7 +235,6 @@
 
         async function ambilDataUangPribadi() {
             try {
-                // Menyesuaikan query agar sinkron dengan nama kolom database Anda (tanggal/date)
                 const { data, error } = await supaClient
                     .from('uang_pribadi')
                     .select('*')
@@ -290,6 +289,21 @@
 
             if (Array.from(selectBulan.options).some(o => o.value === nilaiTerpilihSebelumnya)) {
                 selectBulan.value = nilaiTerpilihSebelumnya;
+            }
+        }
+
+        // FUNGSI UNTUK SINKRONISASI SALDO KE TABEL CATATAN_KEUANGAN
+        async function sinkronisasiKeCatatanKeuangan(totalSaldo) {
+            try {
+                const { error } = await supaClient
+                    .from('catatan_keuangan')
+                    .update({ deskripsi: String(totalSaldo) })
+                    .eq('judul', 'uang_pribadi');
+
+                if (error) throw error;
+                console.log('Berhasil sinkronisasi ke tabel catatan_keuangan!');
+            } catch (err) {
+                console.error('Gagal sinkronisasi ke catatan_keuangan:', err.message);
             }
         }
 
@@ -357,6 +371,9 @@
             document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
             document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
             
+            // Jalankan sinkronisasi real-time ke tabel catatan_keuangan
+            sinkronisasiKeCatatanKeuangan(akumulasiSaldoDompetReal);
+
             const elSelisih = document.getElementById('stat-selisih');
             elSelisih.innerText = formatRupiah(selisihNetto);
             if (selisihNetto < 0) {
@@ -369,6 +386,7 @@
 
             renderTabel(dataTerfilter);
         }
+
        // RENDER BARIS TABEL HTML (DENGAN UPDATE TOMBOL DELETE)
         function renderTabel(dataArray) {
             const tbody = document.getElementById('tabel-body-supa');
@@ -449,6 +467,7 @@
         function tutupModalSaldoDasar() {
             document.getElementById('modal-saldo-dasar').classList.add('hidden');
         }
+
         // FUNGSI UNTUK MENGHAPUS DATA DARI SUPABASE
         async function hapusDataUangPribadi(id, namaBarang) {
             const konfirmasi = confirm(`Apakah Anda yakin ingin menghapus transaksi "${namaBarang}"?`);
@@ -527,7 +546,6 @@
             const harga = parseFloat(document.getElementById('form-harga').value);
             const date = document.getElementById('form-date').value;
 
-             // KODE YANG BENAR (Hapus bagian tanggal: date):
             const payload = { nama_barang, jumlah, transaksi, harga, date: date };
 
             try {
