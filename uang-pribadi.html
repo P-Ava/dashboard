@@ -504,8 +504,8 @@
             const harga = parseFloat(document.getElementById('form-harga').value);
             const date = document.getElementById('form-date').value;
 
-            // Mengirim payload dengan menduplikasi nilai ke properti date & tanggal agar kompatibel penuh dengan skema database Anda
-            const payload = { nama_barang, jumlah, transaksi, harga, date: date, tanggal: date };
+             // KODE YANG BENAR (Hapus bagian tanggal: date):
+            const payload = { nama_barang, jumlah, transaksi, harga, date: date };
 
             try {
                 if (id) {
