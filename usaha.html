@@ -246,442 +246,447 @@
     </div>
 
     <!-- LOGIKA JAVASCRIPT & SUPABASE -->
-    <script>
-        const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ"; 
-        
-        const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-        let dataLokalUsaha = [];
-        let modeAksiAktif = false; 
+<script>
+    const SUPABASE_URL = "https://hjexgyqmyskgtgwpnufg.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ"; 
+    
+    const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    let dataLokalUsaha = [];
+    let modeAksiAktif = false; 
 
-        async function ambilDataUsaha() {
-            if (!_supabase) return;
-            try {
-                const { data, error } = await _supabase
-                    .from('usaha')
-                    .select('*')
-                    .order('date', { ascending: false });
+    async function ambilDataUsaha() {
+        if (!_supabase) return;
+        try {
+            const { data, error } = await _supabase
+                .from('usaha')
+                .select('*')
+                .order('date', { ascending: false });
 
-                if (error) throw error;
+            if (error) throw error;
 
-                dataLokalUsaha = data || [];
-                
-                buatOpsiPilihanBulan();
-                perbaruiDaftarAutocompleteBarang();
-                tampilkanTabelUsaha();
-                await hitungDanTampilkanStatistik();
-                prosesDanTampilkanGudang();
-
-            } catch (err) {
-                console.error("Gagal memuat data:", err.message);
-                document.getElementById('tabel-body-usaha').innerHTML = `
-                    <tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>
-                `;
-            }
-        }
-
-        function perbaruiDaftarAutocompleteBarang() {
-            const datalist = document.getElementById('daftar-produk-tercatat');
-            datalist.innerHTML = '';
-
-            const kumpulanNamaBarang = new Set();
+            dataLokalUsaha = data || [];
             
-            dataLokalUsaha.forEach(row => {
-                if (row.nama_barang && row.nama_barang.trim() !== "") {
-                    kumpulanNamaBarang.add(row.nama_barang.trim());
+            buatOpsiPilihanBulan();
+            perbaruiDaftarAutocompleteBarang();
+            tampilkanTabelUsaha();
+            await hitungDanTampilkanStatistik();
+            prosesDanTampilkanGudang();
+
+        } catch (err) {
+            console.error("Gagal memuat data:", err.message);
+            document.getElementById('tabel-body-usaha').innerHTML = `
+                <tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Gagal memuat data dari Supabase.</td></tr>
+            `;
+        }
+    }
+
+    function perbaruiDaftarAutocompleteBarang() {
+        const datalist = document.getElementById('daftar-produk-tercatat');
+        datalist.innerHTML = '';
+
+        const kumpulanNamaBarang = new Set();
+        
+        dataLokalUsaha.forEach(row => {
+            if (row.nama_barang && row.nama_barang.trim() !== "") {
+                kumpulanNamaBarang.add(row.nama_barang.trim());
+            }
+        });
+
+        const susunanNamaSorted = Array.from(kumpulanNamaBarang).sort();
+
+        susunanNamaSorted.forEach(nama => {
+            const option = document.createElement('option');
+            option.value = nama;
+            datalist.appendChild(option);
+        });
+    }
+
+    function buatOpsiPilihanBulan() {
+        const selectBulan = document.getElementById('filter-bulan-stat');
+        const nilaiTerpilihSebelumnya = selectBulan.value;
+
+        selectBulan.innerHTML = '<option value="semua">Semua Waktu</option>';
+
+        const kumpulanBulan = new Set();
+        const namaBulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+        dataLokalUsaha.forEach(row => {
+            if (row.date) {
+                const objekTanggal = new Date(row.date);
+                if (!isNaN(objekTanggal)) {
+                    const yyyy = objekTanggal.getFullYear();
+                    const mm = String(objekTanggal.getMonth() + 1).padStart(2, '0');
+                    kumpulanBulan.add(`${yyyy}-${mm}`);
                 }
-            });
+            }
+        });
 
-            const susunanNamaSorted = Array.from(kumpulanNamaBarang).sort();
+        const susunanBulanSorted = Array.from(kumpulanBulan).sort().reverse();
 
-            susunanNamaSorted.forEach(nama => {
-                const option = document.createElement('option');
-                option.value = nama;
-                datalist.appendChild(option);
-            });
+        susunanBulanSorted.forEach(itemBlon => {
+            const [tahun, bulanNum] = itemBlon.split('-');
+            const namaBulan = namaBulanIndo[parseInt(bulanNum) - 1];
+            
+            const opsi = document.createElement('option');
+            opsi.value = itemBlon;
+            opsi.textContent = `${namaBulan} ${tahun}`;
+            selectBulan.appendChild(opsi);
+        });
+
+        if (Array.from(selectBulan.options).some(o => o.value === nilaiTerpilihSebelumnya)) {
+            selectBulan.value = nilaiTerpilihSebelumnya;
+        }
+    }
+
+    function tampilkanTabelUsaha() {
+        const tbody = document.getElementById('tabel-body-usaha');
+        const kataKunci = document.getElementById('cari-barang').value.toLowerCase().trim();
+        const filterTanggal = document.getElementById('cari-tanggal').value;
+
+        const dataTerfilter = dataLokalUsaha.filter(row => {
+            const cocokNama = (row.nama_barang || '').toLowerCase().includes(kataKunci);
+            const cocokTanggal = filterTanggal ? (row.date === filterTanggal) : true;
+            return cocokNama && cocokTanggal;
+        });
+
+        if (dataTerfilter.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-stone-400">Tidak ada transaksi yang cocok.</td></tr>`;
+            return;
         }
 
-        function buatOpsiPilihanBulan() {
-            const selectBulan = document.getElementById('filter-bulan-stat');
-            const nilaiTerpilihSebelumnya = selectBulan.value;
+        let html = "";
+        dataTerfilter.forEach(row => {
+            const total = row.total_harga || ((row.harga || 0) * (row.jumlah || 0));
+            const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+            
+            const isBarang = row.kategori === true || row.kategori === "true";
+            const isBeli = row.transaksi === true || row.transaksi === "true";
 
-            selectBulan.innerHTML = '<option value="semua">Semua Waktu</option>';
+            html += `
+                <tr class="hover:bg-stone-50/60 transition">
+                    <td class="px-6 py-4 whitespace-nowrap text-stone-500">${row.date || '-'}</td>
+                    <td class="px-6 py-4 font-semibold text-stone-800">${row.nama_barang || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-medium ${isBarang ? 'bg-amber-50 text-amber-800 border border-amber-200/50' : 'bg-sky-50 text-sky-800 border border-sky-200/50'}">
+                            ${isBarang ? 'Barang' : 'Jasa'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isBeli ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">
+                            ${isBeli ? 'BELI' : 'JUAL'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-mono">${formatRupiah(row.harga || 0)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">${row.jumlah || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold font-mono text-stone-800">${formatRupiah(total)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center kol-aksi ${modeAksiAktif ? '' : 'hidden'}">
+                        <div class="flex items-center justify-center gap-3">
+                            <button onclick="bukaModalEditTransaksi('${row.id}')" class="text-stone-400 hover:text-amber-600 transition" title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="hapusTransaksi('${row.id}')" class="text-stone-400 hover:text-rose-600 transition" title="Hapus">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        updateVisibilitasKolomAksi();
+    }
 
-            const kumpulanBulan = new Set();
-            const namaBulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    function prosesDanTampilkanGudang() {
+        const gudang = {};
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+        
+        const dataKronologis = [...dataLokalUsaha].reverse();
 
-            dataLokalUsaha.forEach(row => {
-                if (row.date) {
-                    const objekTanggal = new Date(row.date);
-                    if (!isNaN(objekTanggal)) {
-                        const yyyy = objekTanggal.getFullYear();
-                        const mm = String(objekTanggal.getMonth() + 1).padStart(2, '0');
-                        kumpulanBulan.add(`${yyyy}-${mm}`);
-                    }
-                }
-            });
+        dataKronologis.forEach(row => {
+            const isBarang = row.kategori === true || row.kategori === "true";
+            if (!isBarang) return; 
 
-            const susunanBulanSorted = Array.from(kumpulanBulan).sort().reverse();
+            const nama = (row.nama_barang || '').trim();
+            if (!nama) return;
 
-            susunanBulanSorted.forEach(itemBlon => {
-                const [tahun, bulanNum] = itemBlon.split('-');
-                const namaBulan = namaBulanIndo[parseInt(bulanNum) - 1];
-                
-                const opsi = document.createElement('option');
-                opsi.value = itemBlon;
-                opsi.textContent = `${namaBulan} ${tahun}`;
-                selectBulan.appendChild(opsi);
-            });
+            const qty = parseInt(row.jumlah || 0);
+            const hargaUnit = parseFloat(row.harga || 0);
 
-            if (Array.from(selectBulan.options).some(o => o.value === nilaiTerpilihSebelumnya)) {
-                selectBulan.value = nilaiTerpilihSebelumnya;
+            if (!gudang[nama]) {
+                gudang[nama] = { stok: 0, totalBiaya: 0 };
             }
-        }
 
-        function tampilkanTabelUsaha() {
-            const tbody = document.getElementById('tabel-body-usaha');
-            const kataKunci = document.getElementById('cari-barang').value.toLowerCase().trim();
-            const filterTanggal = document.getElementById('cari-tanggal').value;
+            const isBeli = row.transaksi === true || row.transaksi === "true";
 
-            const dataTerfilter = dataLokalUsaha.filter(row => {
-                const cocokNama = (row.nama_barang || '').toLowerCase().includes(kataKunci);
-                const cocokTanggal = filterTanggal ? (row.date === filterTanggal) : true;
-                return cocokNama && cocokTanggal;
-            });
-
-            if (dataTerfilter.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-stone-400">Tidak ada transaksi yang cocok.</td></tr>`;
-                return;
+            if (isBeli) {
+                gudang[nama].stok += qty;
+                gudang[nama].totalBiaya += (qty * hargaUnit);
+            } else {
+                gudang[nama].stok -= qty;
+                if (gudang[nama].stok < 0) gudang[nama].stok = 0;
             }
+        });
 
-            let html = "";
-            dataTerfilter.forEach(row => {
-                const total = row.total_harga || ((row.harga || 0) * (row.jumlah || 0));
-                const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-                
-                const isBarang = row.kategori === true || row.kategori === "true";
-                const isBeli = row.transaksi === true || row.transaksi === "true";
+        const tbodyGudang = document.getElementById('tabel-body-gudang');
+        let htmlGudang = "";
+        let adaBarang = false;
 
-                html += `
-                    <tr class="hover:bg-stone-50/60 transition">
-                        <td class="px-6 py-4 whitespace-nowrap text-stone-500">${row.date || '-'}</td>
-                        <td class="px-6 py-4 font-semibold text-stone-800">${row.nama_barang || '-'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-0.5 rounded-md text-[10px] font-medium ${isBarang ? 'bg-amber-50 text-amber-800 border border-amber-200/50' : 'bg-sky-50 text-sky-800 border border-sky-200/50'}">
-                                ${isBarang ? 'Barang' : 'Jasa'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isBeli ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">
-                                ${isBeli ? 'BELI' : 'JUAL'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right font-mono">${formatRupiah(row.harga || 0)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">${row.jumlah || 0}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right font-bold font-mono text-stone-800">${formatRupiah(total)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center kol-aksi ${modeAksiAktif ? '' : 'hidden'}">
-                            <div class="flex items-center justify-center gap-3">
-                                <button onclick="bukaModalEditTransaksi('${row.id}')" class="text-stone-400 hover:text-amber-600 transition" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                                    </svg>
-                                </button>
-                                <button onclick="hapusTransaksi('${row.id}')" class="text-stone-400 hover:text-rose-600 transition" title="Hapus">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
+        for (const namaBarang in gudang) {
+            const info = gudang[namaBarang];
+            
+            if (info.stok > 0) {
+                adaBarang = true;
+                const avgHargaBeli = info.totalBiaya / info.stok; 
+                const totalNilai = info.stok * avgHargaBeli;
+
+                htmlGudang += `
+                    <tr class="hover:bg-stone-50/40 transition">
+                        <td class="px-6 py-3 font-semibold text-stone-800">${namaBarang}</td>
+                        <td class="px-6 py-3 text-center font-bold text-stone-700">${info.stok}</td>
+                        <td class="px-6 py-3 text-right font-mono text-stone-500">${formatRupiah(avgHargaBeli)}</td>
+                        <td class="px-6 py-3 text-right font-mono font-bold text-brand">${formatRupiah(totalNilai)}</td>
                     </tr>
                 `;
-            });
-            tbody.innerHTML = html;
-            updateVisibilitasKolomAksi();
-        }
-
-        function prosesDanTampilkanGudang() {
-            const gudang = {};
-            const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-            
-            const dataKronologis = [...dataLokalUsaha].reverse();
-
-            dataKronologis.forEach(row => {
-                const isBarang = row.kategori === true || row.kategori === "true";
-                if (!isBarang) return; 
-
-                const nama = (row.nama_barang || '').trim();
-                if (!nama) return;
-
-                const qty = parseInt(row.jumlah || 0);
-                const hargaUnit = parseFloat(row.harga || 0);
-
-                if (!gudang[nama]) {
-                    gudang[nama] = { stok: 0, totalBiaya: 0 };
-                }
-
-                const isBeli = row.transaksi === true || row.transaksi === "true";
-
-                if (isBeli) {
-                    gudang[nama].stok += qty;
-                    gudang[nama].totalBiaya += (qty * hargaUnit);
-                } else {
-                    gudang[nama].stok -= qty;
-                    if (gudang[nama].stok < 0) gudang[nama].stok = 0;
-                }
-            });
-
-            const tbodyGudang = document.getElementById('tabel-body-gudang');
-            let htmlGudang = "";
-            let adaBarang = false;
-
-            for (const namaBarang in gudang) {
-                const info = gudang[namaBarang];
-                
-                if (info.stok > 0) {
-                    adaBarang = true;
-                    const avgHargaBeli = info.totalBiaya / info.stok; 
-                    const totalNilai = info.stok * avgHargaBeli;
-
-                    htmlGudang += `
-                        <tr class="hover:bg-stone-50/40 transition">
-                            <td class="px-6 py-3 font-semibold text-stone-800">${namaBarang}</td>
-                            <td class="px-6 py-3 text-center font-bold text-stone-700">${info.stok}</td>
-                            <td class="px-6 py-3 text-right font-mono text-stone-500">${formatRupiah(avgHargaBeli)}</td>
-                            <td class="px-6 py-3 text-right font-mono font-bold text-brand">${formatRupiah(totalNilai)}</td>
-                        </tr>
-                    `;
-                }
-            }
-
-            if (!adaBarang) {
-                tbodyGudang.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-stone-400">Gudang kosong atau semua barang sudah terjual.</td></tr>`;
-            } else {
-                tbodyGudang.innerHTML = htmlGudang;
             }
         }
 
-        async function hitungDanTampilkanStatistik() {
-            let saldoAwalRdn = 0;
-            
-            if (_supabase) {
-                try {
-                    const { data, error } = await _supabase
-                        .from('catatan_keuangan')
-                        .select('deskripsi')
-                        .eq('judul', 'usaha')
-                        .single();
-                    
-                    if (!error && data) {
-                        saldoAwalRdn = parseFloat(data.deskripsi || '0');
-                    }
-                } catch (err) {
-                    console.error("Gagal mengambil RDN awal dari Supabase:", err.message);
-                }
-            }
+        if (!adaBarang) {
+            tbodyGudang.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-stone-400">Gudang kosong atau semua barang sudah terjual.</td></tr>`;
+        } else {
+            tbodyGudang.innerHTML = htmlGudang;
+        }
+    }
 
-            const filterBulanStat = document.getElementById('filter-bulan-stat').value;
-
-            let totalBeli = 0;
-            let totalJual = 0;
-            
-            let akumulasiBeliSemuaWaktu = 0;
-            let akumulasiJualSemuaWaktu = 0;
-
-            dataLokalUsaha.forEach(row => {
-                const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
-                const isBeli = row.transaksi === true || row.transaksi === "true";
+    async function hitungDanTampilkanStatistik() {
+        let saldoAwalRdn = 0;
+        
+        if (_supabase) {
+            try {
+                // Ambil nilai dasar 'deskripsi' dari catatan_keuangan untuk judul 'usaha'
+                const { data, error } = await _supabase
+                    .from('catatan_keuangan')
+                    .select('deskripsi')
+                    .eq('judul', 'usaha')
+                    .single();
                 
-                if (isBeli) akumulasiBeliSemuaWaktu += totalHarga;
-                else akumulasiJualSemuaWaktu += totalHarga;
+                if (!error && data) {
+                    saldoAwalRdn = parseFloat(data.deskripsi || '0');
+                }
+            } catch (err) {
+                console.error("Gagal mengambil RDN awal dari Supabase:", err.message);
+            }
+        }
 
-                let laporBarisIni = false;
-                if (filterBulanStat === "semua") {
+        const filterBulanStat = document.getElementById('filter-bulan-stat').value;
+
+        let totalBeli = 0;
+        let totalJual = 0;
+        
+        let akumulasiBeliSemuaWaktu = 0;
+        let akumulasiJualSemuaWaktu = 0;
+
+        dataLokalUsaha.forEach(row => {
+            const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
+            const isBeli = row.transaksi === true || row.transaksi === "true";
+            
+            if (isBeli) akumulasiBeliSemuaWaktu += totalHarga;
+            else akumulasiJualSemuaWaktu += totalHarga;
+
+            let laporBarisIni = false;
+            if (filterBulanStat === "semua") {
+                laporBarisIni = true;
+            } else if (row.date) {
+                const bagianTanggal = row.date.substring(0, 7);
+                if (bagianTanggal === filterBulanStat) {
                     laporBarisIni = true;
-                } else if (row.date) {
-                    const bagianTanggal = row.date.substring(0, 7);
-                    if (bagianTanggal === filterBulanStat) {
-                        laporBarisIni = true;
-                    }
-                }
-
-                if (laporBarisIni) {
-                    if (isBeli) {
-                        totalBeli += totalHarga;
-                    } else {
-                        totalJual += totalHarga;
-                    }
-                }
-            });
-
-            const pnl = totalJual - totalBeli;
-            const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
-            
-            const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-
-            document.getElementById('stat-rdn').innerText = formatRupiah(rdnUsahaAkhir);
-            document.getElementById('stat-pemasukan').innerText = formatRupiah(totalBeli);
-            document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalJual);
-            document.getElementById('stat-selisih').innerText = formatRupiah(pnl);
-            
-            const elSelisih = document.getElementById('stat-selisih');
-            if (pnl < 0) {
-                elSelisih.className = "text-base font-bold text-rose-600";
-            } else if (pnl > 0) {
-                elSelisih.className = "text-base font-bold text-emerald-600";
-            } else {
-                elSelisih.className = "text-base font-bold text-stone-900";
-            }
-        }
-
-        function toggleAksiMode() {
-            modeAksiAktif = !modeAksiAktif;
-            updateVisibilitasKolomAksi();
-        }
-
-        function updateVisibilitasKolomAksi() {
-            const thAksi = document.getElementById('th-aksi');
-            const tdAksi = document.querySelectorAll('.kol-aksi');
-            
-            if (modeAksiAktif) {
-                thAksi.classList.remove('hidden');
-                tdAksi.forEach(el => el.classList.remove('hidden'));
-            } else {
-                thAksi.classList.add('hidden');
-                tdAksi.forEach(el => el.classList.add('hidden'));
-            }
-        }
-
-        async function bukaModalRdnUsaha() {
-            let nilaiSekarang = "0";
-            if (_supabase) {
-                try {
-                    const { data } = await _supabase
-                        .from('catatan_keuangan')
-                        .select('deskripsi')
-                        .eq('judul', 'usaha')
-                        .single();
-                    if (data) nilaiSekarang = data.deskripsi || "0";
-                } catch (err) {
-                    console.error(err);
                 }
             }
-            document.getElementById('input-nominal-rdn').value = nilaiSekarang;
-            document.getElementById('modal-rdn-usaha').classList.remove('hidden');
-        }
 
-        function tutupModalRdnUsaha() {
-            document.getElementById('modal-rdn-usaha').classList.add('hidden');
-        }
-
-        async function simpanRdnUsahaManual() {
-            const nilaiRdn = document.getElementById('input-nominal-rdn').value || '0';
-            
-            if (_supabase) {
-                try {
-                    const { error } = await _supabase
-                        .from('catatan_keuangan')
-                        .update({ deskripsi: nilaiRdn })
-                        .eq('judul', 'usaha');
-                        
-                    if (error) throw error;
-                } catch (err) {
-                    alert("Gagal memperbarui RDN di Supabase: " + err.message);
-                    return;
-                }
-            }
-            
-            tutupModalRdnUsaha();
-            await hitungDanTampilkanStatistik();
-        }
-
-        function resetFilter() {
-            document.getElementById('cari-barang').value = '';
-            document.getElementById('cari-tanggal').value = '';
-            tampilkanTabelUsaha();
-        }
-
-        function bukaModalTransaksi() {
-            document.getElementById('modal-title').innerText = "Catat Transaksi Baru";
-            delete document.getElementById('form-transaksi').dataset.editId;
-            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-transaksi').classList.remove('hidden');
-        }
-
-        function bukaModalEditTransaksi(id) {
-            const item = dataLokalUsaha.find(d => d.id == id);
-            if (!item) return;
-
-            document.getElementById('modal-title').innerText = "Edit Transaksi";
-            document.getElementById('form-transaksi').dataset.editId = id;
-            
-            document.getElementById('form-date').value = item.date || '';
-            document.getElementById('form-nama').value = item.nama_barang || '';
-            document.getElementById('form-kategori').value = item.kategori === false || item.kategori === "false" ? "false" : "true";
-            document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
-            document.getElementById('form-harga').value = item.harga || 0;
-            document.getElementById('form-jumlah').value = item.jumlah || 0;
-
-            document.getElementById('modal-transaksi').classList.remove('hidden');
-        }
-
-        function tutupModalTransaksi() {
-            document.getElementById('modal-transaksi').classList.add('hidden');
-            document.getElementById('form-transaksi').reset();
-            delete document.getElementById('form-transaksi').dataset.editId;
-        }
-
-        async function simpanTransaksi(e) {
-            e.preventDefault();
-            if (!_supabase) return;
-
-            const date = document.getElementById('form-date').value;
-            const nama_barang = document.getElementById('form-nama').value;
-            const kategori = document.getElementById('form-kategori').value === "true"; 
-            const transaksi = document.getElementById('form-jenis').value === "true"; 
-            const harga = parseFloat(document.getElementById('form-harga').value || '0');
-            const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
-            
-            const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah };
-            const editId = document.getElementById('form-transaksi').dataset.editId;
-
-            try {
-                if (editId) {
-                    const { error } = await _supabase
-                        .from('usaha')
-                        .update(dataPayload)
-                        .eq('id', editId);
-                    if (error) throw error;
+            if (laporBarisIni) {
+                if (isBeli) {
+                    totalBeli += totalHarga;
                 } else {
-                    const { error } = await _supabase
-                        .from('usaha')
-                        .insert([dataPayload]);
-                    if (error) throw error;
+                    totalJual += totalHarga;
                 }
-
-                tutupModalTransaksi();
-                await ambilDataUsaha();
-
-            } catch (err) {
-                console.error("Detail Error:", err.message);
-                alert("Gagal menyimpan data: " + err.message);
             }
-        }
-
-        async function hapusTransaksi(id) {
-            if (!_supabase || !confirm("Hapus transaksi ini?")) return;
-            try {
-                const { error } = await _supabase.from('usaha').delete().eq('id', id);
-                if (error) throw error;
-                await ambilDataUsaha();
-            } catch (err) {
-                alert("Gagal menghapus: " + err.message);
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            ambilDataUsaha();
         });
-    </script>
+
+        const pnl = totalJual - totalBeli;
+        // Hitung nilai riil kas usaha saat ini
+        const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
+        
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+
+        document.getElementById('stat-rdn').innerText = formatRupiah(rdnUsahaAkhir);
+        document.getElementById('stat-pemasukan').innerText = formatRupiah(totalBeli);
+        document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalJual);
+        document.getElementById('stat-selisih').innerText = formatRupiah(pnl);
+        
+        const elSelisih = document.getElementById('stat-selisih');
+        if (pnl < 0) {
+            elSelisih.className = "text-base font-bold text-rose-600";
+        } else if (pnl > 0) {
+            elSelisih.className = "text-base font-bold text-emerald-600";
+        } else {
+            elSelisih.className = "text-base font-bold text-stone-900";
+        }
+
+        // Pemicu otomatis sinkronisasi balik ke kolom deskripsi (atau kolom saldo jika diperlukan)
+        // di sini kita asumsikan Anda ingin memperbarui nilai kas real-time tersebut ke tabel utama agar dashboard tersinkronisasi.
+    }
+
+    function toggleAksiMode() {
+        modeAksiAktif = !modeAksiAktif;
+        updateVisibilitasKolomAksi();
+    }
+
+    function updateVisibilitasKolomAksi() {
+        const thAksi = document.getElementById('th-aksi');
+        const tdAksi = document.querySelectorAll('.kol-aksi');
+        
+        if (modeAksiAktif) {
+            thAksi.classList.remove('hidden');
+            tdAksi.forEach(el => el.classList.remove('hidden'));
+        } else {
+            thAksi.classList.add('hidden');
+            tdAksi.forEach(el => el.classList.add('hidden'));
+        }
+    }
+
+    async function bukaModalRdnUsaha() {
+        let nilaiSekarang = "0";
+        if (_supabase) {
+            try {
+                const { data } = await _supabase
+                    .from('catatan_keuangan')
+                    .select('deskripsi')
+                    .eq('judul', 'usaha')
+                    .single();
+                if (data) nilaiSekarang = data.deskripsi || "0";
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        document.getElementById('input-nominal-rdn').value = nilaiSekarang;
+        document.getElementById('modal-rdn-usaha').classList.remove('hidden');
+    }
+
+    function tutupModalRdnUsaha() {
+        document.getElementById('modal-rdn-usaha').classList.add('hidden');
+    }
+
+    async function simpanRdnUsahaManual() {
+        const nilaiRdn = document.getElementById('input-nominal-rdn').value || '0';
+        
+        if (_supabase) {
+            try {
+                const { error } = await _supabase
+                    .from('catatan_keuangan')
+                    .update({ deskripsi: nilaiRdn })
+                    .eq('judul', 'usaha');
+                    
+                if (error) throw error;
+            } catch (err) {
+                alert("Gagal memperbarui RDN di Supabase: " + err.message);
+                return;
+            }
+        }
+        
+        tutupModalRdnUsaha();
+        await ambilDataUsaha();
+    }
+
+    function resetFilter() {
+        document.getElementById('cari-barang').value = '';
+        document.getElementById('cari-tanggal').value = '';
+        tampilkanTabelUsaha();
+    }
+
+    function bukaModalTransaksi() {
+        document.getElementById('modal-title').innerText = "Catat Transaksi Baru";
+        delete document.getElementById('form-transaksi').dataset.editId;
+        document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('modal-transaksi').classList.remove('hidden');
+    }
+
+    function bukaModalEditTransaksi(id) {
+        const item = dataLokalUsaha.find(d => d.id == id);
+        if (!item) return;
+
+        document.getElementById('modal-title').innerText = "Edit Transaksi";
+        document.getElementById('form-transaksi').dataset.editId = id;
+        
+        document.getElementById('form-date').value = item.date || '';
+        document.getElementById('form-nama').value = item.nama_barang || '';
+        document.getElementById('form-kategori').value = item.kategori === false || item.kategori === "false" ? "false" : "true";
+        document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
+        document.getElementById('form-harga').value = item.harga || 0;
+        document.getElementById('form-jumlah').value = item.jumlah || 0;
+
+        document.getElementById('modal-transaksi').classList.remove('hidden');
+    }
+
+    function tutupModalTransaksi() {
+        document.getElementById('modal-transaksi').classList.add('hidden');
+        document.getElementById('form-transaksi').reset();
+        delete document.getElementById('form-transaksi').dataset.editId;
+    }
+
+    async function simpanTransaksi(e) {
+        e.preventDefault();
+        if (!_supabase) return;
+
+        const date = document.getElementById('form-date').value;
+        const nama_barang = document.getElementById('form-nama').value;
+        const kategori = document.getElementById('form-kategori').value === "true"; 
+        const transaksi = document.getElementById('form-jenis').value === "true"; 
+        const harga = parseFloat(document.getElementById('form-harga').value || '0');
+        const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
+        
+        const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah };
+        const editId = document.getElementById('form-transaksi').dataset.editId;
+
+        try {
+            if (editId) {
+                const { error } = await _supabase
+                    .from('usaha')
+                    .update(dataPayload)
+                    .eq('id', editId);
+                if (error) throw error;
+            } else {
+                const { error } = await _supabase
+                    .from('usaha')
+                    .insert([dataPayload]);
+                if (error) throw error;
+            }
+
+            tutupModalTransaksi();
+            await ambilDataUsaha();
+
+        } catch (err) {
+            console.error("Detail Error:", err.message);
+            alert("Gagal menyimpan data: " + err.message);
+        }
+    }
+
+    async function hapusTransaksi(id) {
+        if (!_supabase || !confirm("Hapus transaksi ini?")) return;
+        try {
+            const { error } = await _supabase.from('usaha').delete().eq('id', id);
+            if (error) throw error;
+            await ambilDataUsaha();
+        } catch (err) {
+            alert("Gagal menghapus: " + err.message);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        ambilDataUsaha();
+    });
+</script>
 </body>
 </html>
