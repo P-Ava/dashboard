@@ -11,7 +11,7 @@
         async function ambilData() {
             if (!_supabase) return;
             try {
-                // Mengubah 'date' menjadi 'tanggal' sesuai kolom asli di database Anda
+                // Menggunakan nama kolom 'tanggal' sesuai database Anda
                 const { data, error } = await _supabase
                     .from('catatan_keuangan')
                     .select('*')
@@ -32,9 +32,10 @@
             }
         }
 
-        // GENERATE DROP-DOWN BULAN SECARA OTOMATIS
+        // GENERATE DROP-DOWN BULAN SECARA UTOMATIS
         function buatOpsiPilihanBulan() {
             const selectBulan = document.getElementById('filter-bulan-stat');
+            if (!selectBulan) return;
             const nilaiTerpilihSebelumnya = selectBulan.value;
 
             selectBulan.innerHTML = '<option value="semua">Semua Waktu</option>';
@@ -73,7 +74,8 @@
         // HITUNG STATISTIK METRIK & TOTAL SALDO AKHIR REALTIME
         function hitungDanTampilkanStatistik() {
             const saldoAwalSistem = parseFloat(localStorage.getItem('base_personal_balance') || '0');
-            const filterBulanStat = document.getElementById('filter-bulan-stat').value;
+            const elFilter = document.getElementById('filter-bulan-stat');
+            const filterBulanStat = elFilter ? elFilter.value : 'semua';
 
             let totalPemasukanBulanan = 0;
             let totalPengeluaranBulanan = 0;
@@ -85,19 +87,17 @@
                 const nilaiNominal = parseFloat(row.harga || 0) * parseInt(row.jumlah || 1);
                 const isPemasukan = row.transaksi === true || row.transaksi === "true";
 
-                // Akumulasi Semua Waktu untuk Saldo Akhir Dompet
                 if (isPemasukan) {
                     akumulasiPemasukanSemuaWaktu += nilaiNominal;
                 } else {
                     akumulasiPengeluaranSemuaWaktu += nilaiNominal;
                 }
 
-                // Filter Periodik untuk Blok Statistik Atas
                 let laporBarisIni = false;
                 if (filterBulanStat === "semua") {
                     laporBarisIni = true;
                 } else if (row.tanggal) {
-                    const bagianTanggal = row.tanggal.substring(0, 7); // Mengambil format YYYY-MM
+                    const bagianTanggal = row.tanggal.substring(0, 7); 
                     if (bagianTanggal === filterBulanStat) {
                         laporBarisIni = true;
                     }
@@ -117,27 +117,29 @@
 
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
-            // Tampilkan ke Elemen HTML
-            document.getElementById('total-saldo-display').innerText = formatRupiah(saldoDompetAkhirReal);
-            document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
-            document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
-            document.getElementById('stat-selisih').innerText = formatRupiah(selisihNetto);
+            if(document.getElementById('total-saldo-display')) document.getElementById('total-saldo-display').innerText = formatRupiah(saldoDompetAkhirReal);
+            if(document.getElementById('stat-pemasukan')) document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
+            if(document.getElementById('stat-pengeluaran')) document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
+            if(document.getElementById('stat-selisih')) document.getElementById('stat-selisih').innerText = formatRupiah(selisihNetto);
             
-            // Set Warna Teks Selisih Netto
             const elSelisih = document.getElementById('stat-selisih');
-            if (selisihNetto < 0) {
-                elSelisih.className = "text-base font-bold text-rose-600";
-            } else if (selisihNetto > 0) {
-                elSelisih.className = "text-base font-bold text-emerald-600";
-            } else {
-                elSelisih.className = "text-base font-bold text-stone-900";
+            if (elSelisih) {
+                if (selisihNetto < 0) {
+                    elSelisih.className = "text-base font-bold text-rose-600";
+                } else if (selisihNetto > 0) {
+                    elSelisih.className = "text-base font-bold text-emerald-600";
+                } else {
+                    elSelisih.className = "text-base font-bold text-stone-900";
+                }
             }
         }
 
         // TAMPILKAN TABEL MULTI-FILTER PENCARIAN
         function tampilkanTabel() {
             const tbody = document.getElementById('tabel-body');
-            const kataKunci = document.getElementById('cari-input').value.toLowerCase().trim();
+            if (!tbody) return;
+            
+            const kataKunci = document.getElementById('cari-input') ? document.getElementById('cari-input').value.toLowerCase().trim() : '';
 
             const dataTerfilter = dataLokalRemot.filter(row => {
                 const cocokNama = (row.nama_barang || '').toLowerCase().includes(kataKunci);
@@ -145,7 +147,9 @@
                 return cocokNama || cocokTgl;
             });
 
-            document.getElementById('info-baris').innerText = `Menampilkan ${dataTerfilter.length} dari ${dataLokalRemot.length} catatan terdaftar`;
+            if(document.getElementById('info-baris')) {
+                document.getElementById('info-baris').innerText = `Menampilkan ${dataTerfilter.length} dari ${dataLokalRemot.length} catatan terdaftar`;
+            }
 
             if (dataTerfilter.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-stone-400">Tidak ada data transaksi yang cocok.</td></tr>`;
@@ -157,7 +161,6 @@
                 const total = parseFloat(row.harga || 0) * parseInt(row.jumlah || 1);
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
-                // true = PEMASUKAN, false = PENGELUARAN
                 const isPemasukan = row.transaksi === true || row.transaksi === "true";
 
                 html += `
@@ -194,7 +197,6 @@
             updateVisibilitasKolomAksi();
         }
 
-        // TOGGLE SWITCH UNTUK MENGAKTIFKAN MODAL EDIT/HAPUS
         function toggleAksiMode() {
             modeAksiAktif = !modeAksiAktif;
             updateVisibilitasKolomAksi();
@@ -204,74 +206,80 @@
             const thAksi = document.getElementById('th-aksi');
             const tdAksi = document.querySelectorAll('.kol-aksi');
             
-            if (modeAksiAktif) {
-                thAksi.classList.remove('hidden');
-                tdAksi.forEach(el => el.classList.remove('hidden'));
-            } else {
-                thAksi.classList.add('hidden');
-                tdAksi.forEach(el => el.classList.add('hidden'));
+            if (thAksi) {
+                if (modeAksiAktif) {
+                    thAksi.classList.remove('hidden');
+                    tdAksi.forEach(el => el.classList.remove('hidden'));
+                } else {
+                    thAksi.classList.add('hidden');
+                    tdAksi.forEach(el => el.classList.add('hidden'));
+                }
             }
         }
 
-        // FUNGSI MODAL SALDO AWAL (PENSIL)
         function bukaModalSaldoDasar() {
-            document.getElementById('input-nominal-saldo').value = localStorage.getItem('base_personal_balance') || '0';
-            document.getElementById('modal-saldo-dasar').classList.remove('hidden');
+            if(document.getElementById('input-nominal-saldo')) {
+                document.getElementById('input-nominal-saldo').value = localStorage.getItem('base_personal_balance') || '0';
+            }
+            if(document.getElementById('modal-saldo-dasar')) {
+                document.getElementById('modal-saldo-dasar').classList.remove('hidden');
+            }
         }
 
         function tutupModalSaldoDasar() {
-            document.getElementById('modal-saldo-dasar').classList.add('hidden');
+            if(document.getElementById('modal-saldo-dasar')) {
+                document.getElementById('modal-saldo-dasar').classList.add('hidden');
+            }
         }
 
         function simpanSaldoDasarManual() {
-            const nilaiSaldo = document.getElementById('input-nominal-saldo').value || '0';
-            localStorage.setItem('base_personal_balance', nilaiSaldo);
+            const nilaiSaldo = document.getElementById('input-nominal-saldo') ? document.getElementById('input-nominal-saldo').value : '0';
+            localStorage.setItem('base_personal_balance', nilaiSaldo || '0');
             tutupModalSaldoDasar();
             hitungDanTampilkanStatistik();
         }
 
-        // MODAL FORM TRANSAKSI
         function bukaModalTransaksi() {
-            document.getElementById('modal-title').innerText = "Catat Mutasi Baru";
-            delete document.getElementById('form-transaksi').dataset.editId;
-            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-transaksi').classList.remove('hidden');
+            if(document.getElementById('modal-title')) document.getElementById('modal-title').innerText = "Catat Mutasi Baru";
+            if(document.getElementById('form-transaksi')) delete document.getElementById('form-transaksi').dataset.editId;
+            if(document.getElementById('form-date')) document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            if(document.getElementById('modal-transaksi')) document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
         function bukaModalEdit(id) {
             const item = dataLokalRemot.find(d => d.id == id);
             if (!item) return;
 
-            document.getElementById('modal-title').innerText = "Edit Catatan Keuangan";
-            document.getElementById('form-transaksi').dataset.editId = id;
+            if(document.getElementById('modal-title')) document.getElementById('modal-title').innerText = "Edit Catatan Keuangan";
+            if(document.getElementById('form-transaksi')) document.getElementById('form-transaksi').dataset.editId = id;
             
-            document.getElementById('form-date').value = item.tanggal || '';
-            document.getElementById('form-nama').value = item.nama_barang || '';
-            document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
-            document.getElementById('form-harga').value = item.harga || 0;
-            document.getElementById('form-jumlah').value = item.jumlah || 1;
+            if(document.getElementById('form-date')) document.getElementById('form-date').value = item.tanggal || ''; 
+            if(document.getElementById('form-nama')) document.getElementById('form-nama').value = item.nama_barang || '';
+            if(document.getElementById('form-jenis')) document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
+            if(document.getElementById('form-harga')) document.getElementById('form-harga').value = item.harga || 0;
+            if(document.getElementById('form-jumlah')) document.getElementById('form-jumlah').value = item.jumlah || 1;
 
-            document.getElementById('modal-transaksi').classList.remove('hidden');
+            if(document.getElementById('modal-transaksi')) document.getElementById('modal-transaksi').classList.remove('hidden');
         }
 
         function tutupModalTransaksi() {
-            document.getElementById('modal-transaksi').classList.add('hidden');
-            document.getElementById('form-transaksi').reset();
-            delete document.getElementById('form-transaksi').dataset.editId;
+            if(document.getElementById('modal-transaksi')) document.getElementById('modal-transaksi').classList.add('hidden');
+            if(document.getElementById('form-transaksi')) {
+                document.getElementById('form-transaksi').reset();
+                delete document.getElementById('form-transaksi').dataset.editId;
+            }
         }
 
-        // SIMPAN DATA (INSERT ATAU UPDATE) KE SUPABASE
         async function simpanTransaksi(e) {
             e.preventDefault();
             if (!_supabase) return;
 
-            const tanggal = document.getElementById('form-date').value;
+            const tanggal = document.getElementById('form-date').value; 
             const nama_barang = document.getElementById('form-nama').value;
-            const transaksi = document.getElementById('form-jenis').value === "true"; // true=pemasukan, false=pengeluaran
+            const transaksi = document.getElementById('form-jenis').value === "true";
             const harga = parseFloat(document.getElementById('form-harga').value || '0');
             const jumlah = parseInt(document.getElementById('form-jumlah').value || '1');
             
-            // Mengirim payload dengan key 'tanggal' ke Supabase
             const dataPayload = { tanggal, nama_barang, transaksi, harga, jumlah };
             const editId = document.getElementById('form-transaksi').dataset.editId;
 
@@ -297,7 +305,6 @@
             }
         }
 
-        // HAPUS DATA DARI SUPABASE
         async function hapusTransaksi(id) {
             if (!_supabase || !confirm("Apakah Anda yakin ingin menghapus catatan keuangan ini?")) return;
             try {
@@ -313,7 +320,6 @@
             }
         }
 
-        // RUN AWAL
         window.addEventListener('DOMContentLoaded', () => {
             ambilData();
         });
