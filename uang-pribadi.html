@@ -11,7 +11,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: '#4A3728', // Warna tema uang pribadi (Cokelat hangat)
+                        brand: '#4A3728',
                     }
                 }
             }
@@ -225,7 +225,7 @@
                 const { data, error } = await _supabase
                     .from('catatan_keuangan')
                     .select('*')
-                    .order('tanggal', { ascending: false });
+                    .order('date', { ascending: false }); // Menyesuaikan nama kolom 'date'
 
                 if (error) throw error;
                 dataLokalRemot = data || [];
@@ -237,7 +237,7 @@
             } catch (err) {
                 console.error("Gagal sinkronisasi data:", err.message);
                 document.getElementById('tabel-body').innerHTML = `
-                    <tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Gagal terhubung ke database Supabase.</td></tr>
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Gagal terhubung ke database Supabase. Kolom data tidak sesuai.</td></tr>
                 `;
             }
         }
@@ -253,8 +253,8 @@
             const namaBulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
             dataLokalRemot.forEach(row => {
-                if (row.tanggal) {
-                    const objekTanggal = new Date(row.tanggal);
+                if (row.date) { // Menggunakan row.date
+                    const objekTanggal = new Date(row.date);
                     if (!isNaN(objekTanggal)) {
                         const yyyy = objekTanggal.getFullYear();
                         const mm = String(objekTanggal.getMonth() + 1).padStart(2, '0');
@@ -295,19 +295,19 @@
                 const nilaiNominal = parseFloat(row.harga || 0) * parseInt(row.jumlah || 1);
                 const isPemasukan = row.transaksi === true || row.transaksi === "true";
 
-                // Akumulasi Semua Waktu untuk Saldo Akhir Dompet
+                // Akumulasi Semua Waktu
                 if (isPemasukan) {
                     akumulasiPemasukanSemuaWaktu += nilaiNominal;
                 } else {
                     akumulasiPengeluaranSemuaWaktu += nilaiNominal;
                 }
 
-                // Filter Periodik untuk Blok Statistik Atas
+                // Filter Periodik
                 let laporBarisIni = false;
                 if (filterBulanStat === "semua") {
                     laporBarisIni = true;
-                } else if (row.tanggal) {
-                    const bagianTanggal = row.tanggal.substring(0, 7); // Mengambil format YYYY-MM
+                } else if (row.date) { // Menggunakan row.date
+                    const bagianTanggal = row.date.substring(0, 7); 
                     if (bagianTanggal === filterBulanStat) {
                         laporBarisIni = true;
                     }
@@ -323,18 +323,15 @@
             });
 
             const selisihNetto = totalPemasukanBulanan - totalPengeluaranBulanan;
-            // Rumus Saldo Akhir: Saldo Awal + Total Semua Pemasukan - Total Semua Pengeluaran
             const saldoDompetAkhirReal = saldoAwalSistem + akumulasiPemasukanSemuaWaktu - akumulasiPengeluaranSemuaWaktu;
 
             const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
-            // Tampilkan ke Elemen HTML
             document.getElementById('total-saldo-display').innerText = formatRupiah(saldoDompetAkhirReal);
             document.getElementById('stat-pemasukan').innerText = formatRupiah(totalPemasukanBulanan);
             document.getElementById('stat-pengeluaran').innerText = formatRupiah(totalPengeluaranBulanan);
             document.getElementById('stat-selisih').innerText = formatRupiah(selisihNetto);
             
-            // Set Warna Teks Selisih Netto
             const elSelisih = document.getElementById('stat-selisih');
             if (selisihNetto < 0) {
                 elSelisih.className = "text-base font-bold text-rose-600";
@@ -352,7 +349,7 @@
 
             const dataTerfilter = dataLokalRemot.filter(row => {
                 const cocokNama = (row.nama_barang || '').toLowerCase().includes(kataKunci);
-                const cocokTgl = (row.tanggal || '').toLowerCase().includes(kataKunci);
+                const cocokTgl = (row.date || '').toLowerCase().includes(kataKunci); // Menggunakan row.date
                 return cocokNama || cocokTgl;
             });
 
@@ -368,7 +365,6 @@
                 const total = parseFloat(row.harga || 0) * parseInt(row.jumlah || 1);
                 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
                 
-                // true = PEMASUKAN, false = PENGELUARAN
                 const isPemasukan = row.transaksi === true || row.transaksi === "true";
 
                 html += `
@@ -383,7 +379,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right font-mono font-bold ${isPemasukan ? 'text-emerald-600' : 'text-rose-600'}">
                             ${isPemasukan ? '+' : '-'}${formatRupiah(total)}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-stone-400">${row.tanggal || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-stone-400">${row.date || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-center kol-aksi ${modeAksiAktif ? '' : 'hidden'}">
                             <div class="flex items-center justify-center gap-3">
                                 <button onclick="bukaModalEdit('${row.id}')" class="text-stone-400 hover:text-amber-600 transition" title="Edit">
@@ -405,7 +401,6 @@
             updateVisibilitasKolomAksi();
         }
 
-        // TOGGLE SWITCH UNTUK MENGAKTIFKAN MODAL EDIT/HAPUS
         function toggleAksiMode() {
             modeAksiAktif = !modeAksiAktif;
             updateVisibilitasKolomAksi();
@@ -430,6 +425,7 @@
             document.getElementById('modal-saldo-dasar').classList.remove('hidden');
         }
 
+        // ... [Sisa fungsi pembantu tetap sama] ...
         function tutupModalSaldoDasar() {
             document.getElementById('modal-saldo-dasar').classList.add('hidden');
         }
@@ -441,7 +437,6 @@
             hitungDanTampilkanStatistik();
         }
 
-        // MODAL FORM TRANSAKSI
         function bukaModalTransaksi() {
             document.getElementById('modal-title').innerText = "Catat Mutasi Baru";
             delete document.getElementById('form-transaksi').dataset.editId;
@@ -456,7 +451,7 @@
             document.getElementById('modal-title').innerText = "Edit Catatan Keuangan";
             document.getElementById('form-transaksi').dataset.editId = id;
             
-            document.getElementById('form-date').value = item.tanggal || '';
+            document.getElementById('form-date').value = item.date || ''; // Menggunakan item.date
             document.getElementById('form-nama').value = item.nama_barang || '';
             document.getElementById('form-jenis').value = item.transaksi === false || item.transaksi === "false" ? "false" : "true";
             document.getElementById('form-harga').value = item.harga || 0;
@@ -471,18 +466,18 @@
             delete document.getElementById('form-transaksi').dataset.editId;
         }
 
-        // SIMPAN DATA (INSERT ATAU UPDATE) KE SUPABASE
+        // SIMPAN DATA KE SUPABASE (MENYESUAIKAN KOLOM 'date')
         async function simpanTransaksi(e) {
             e.preventDefault();
             if (!_supabase) return;
 
-            const tanggal = document.getElementById('form-date').value;
+            const date = document.getElementById('form-date').value; // Menggunakan variabel 'date'
             const nama_barang = document.getElementById('form-nama').value;
-            const transaksi = document.getElementById('form-jenis').value === "true"; // true=pemasukan, false=pengeluaran
+            const transaksi = document.getElementById('form-jenis').value === "true";
             const harga = parseFloat(document.getElementById('form-harga').value || '0');
             const jumlah = parseInt(document.getElementById('form-jumlah').value || '1');
             
-            const dataPayload = { tanggal, nama_barang, transaksi, harga, jumlah };
+            const dataPayload = { date, nama_barang, transaksi, harga, jumlah }; // Payload menggunakan 'date'
             const editId = document.getElementById('form-transaksi').dataset.editId;
 
             try {
@@ -507,7 +502,6 @@
             }
         }
 
-        // HAPUS DATA DARI SUPABASE
         async function hapusTransaksi(id) {
             if (!_supabase || !confirm("Apakah Anda yakin ingin menghapus catatan keuangan ini?")) return;
             try {
@@ -523,7 +517,6 @@
             }
         }
 
-        // RUN AWAL
         window.addEventListener('DOMContentLoaded', () => {
             ambilData();
         });
