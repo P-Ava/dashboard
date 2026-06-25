@@ -518,6 +518,8 @@
         const pnl = totalJual - totalBeli;
         // Hitung nilai riil kas usaha saat ini
         const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
+
+        await sinkronisasiRdnUsahaKeCatatanKeuangan(rdnUsahaAkhir);
         
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
