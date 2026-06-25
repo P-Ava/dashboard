@@ -233,7 +233,7 @@
                     data.forEach(row => {
                         const namaJudul = row.judul ? row.judul.toLowerCase().trim() : '';
                         
-                        if (namaJudul === 'uang pribadi') {
+                        if (namaJudul === 'uang_pribadi') {
                             document.getElementById('judul-row-1').innerText = row.judul;
                             document.getElementById('nominal-row-1').innerText = row.deskripsi;
                         } else if (namaJudul === 'saham') {
