@@ -120,18 +120,25 @@
         window.addEventListener('DOMContentLoaded', muatRiwayatTransaksi);
     </script>
     <script>
-         async function updateFinancialNotes() {
+       async function muatCatatanKeuangan() {
     try {
-        // Ambil data dari tabel catatan_keuangan
-        const { data, error } = await supaClient.from('catatan_keuangan').select('*');
+        const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
         if (error) throw error;
-
-        // Asumsikan data memiliki struktur { judul: '...', deskripsi: '...' }
-        // Sesuaikan dengan data yang Anda miliki di Supabase
-        data.forEach(item => {
-            if (item.judul === 'uang_pribadi') {
-                document.getElementById('nominal-pribadi').innerText = itemBerdasarkan data yang ada di database **catatan_keuangan** Anda, saya telah memperbarui kode agar bagian **Financial Notes** menjadi *clickable* (tautan) dan mengambil data nominal langsung dari Supabase.
-                    }
+        if (data) {
+            data.forEach(item => {
+                if (item.judul.toLowerCase().includes('uang_pribadi')) {
+                    document.getElementById('nominal-pribadi').innerText = item.deskripsi;
+                } else if (item.judul.toLowerCase().includes('saham')) {
+                    document.getElementById('nominal-saham').innerText = item.deskripsi;
+                } else if (item.judul.toLowerCase().includes('usaha')) {
+                    document.getElementById('nominal-usaha').innerText = item.deskripsi;
+                }
+            });
+        }
+    } catch (err) {
+        console.error("Gagal memuat catatan:", err);
+    }
+}
 Berikut adalah kode yang sudah diperbarui:
 
 ```html
