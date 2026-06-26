@@ -1,147 +1,227 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta charset="utf-8">
-  <title>Three.js Cube Joystick</title>
-  <style>
-    body { margin:0; overflow:hidden; }
-    #joystick {
-      position: fixed;
-      left: 30px;
-      bottom: 30px;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      touch-action: none;
-    }
-    #stick {
-      position: absolute;
-      left: 40px;
-      top: 40px;
-      width: 20px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: rgba(255,255,255,0.8);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>P-AVA World</title>
+
+<style>
+html,body{
+margin:0;
+overflow:hidden;
+font-family:Arial;
+background:#202124;
+}
+
+#ui{
+position:absolute;
+left:20px;
+top:20px;
+width:240px;
+background:rgba(20,20,20,.75);
+backdrop-filter:blur(12px);
+border-radius:15px;
+padding:15px;
+color:white;
+z-index:100;
+}
+
+.bar{
+height:10px;
+background:#444;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:10px;
+}
+
+.fill{
+height:100%;
+background:#55dd88;
+width:75%;
+}
+
+#chat{
+position:absolute;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+width:420px;
+background:rgba(30,30,30,.75);
+padding:10px;
+border-radius:15px;
+display:flex;
+gap:10px;
+}
+
+#chat input{
+flex:1;
+padding:12px;
+border:none;
+border-radius:10px;
+}
+
+#chat button{
+padding:12px 20px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+canvas{
+display:block;
+}
+</style>
 </head>
 <body>
 
-<div id="joystick">
-  <div id="stick"></div>
+<div id="ui">
+
+<h2>Stickman</h2>
+
+HP
+
+<div class="bar">
+<div class="fill"></div>
+</div>
+
+Energi
+
+<div class="bar">
+<div class="fill" style="width:60%"></div>
+</div>
+
+Rp 25.000.000
+
+</div>
+
+<div id="chat">
+
+<input placeholder="Chat AI...">
+
+<button>Kirim</button>
+
 </div>
 
 <script type="module">
-import * as THREE from 'https://unpkg.com/three@0.179.1/build/three.module.js';
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165/build/three.module.js';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xcfd8dc);
+
+const camera=new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
 );
 
-const renderer = new THREE.WebGLRenderer({antialias: true});
-renderer.setSize(window.innerWidth, window.innerHeight);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
-let cube;
+const light=new THREE.HemisphereLight(0xffffff,0x666666,2);
+scene.add(light);
 
-function init() {
-  // Create the cube and plane
-  const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshNormalMaterial();
+const dir=new THREE.DirectionalLight(0xffffff,2);
+dir.position.set(5,10,7);
+scene.add(dir);
 
-  cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
+const floor=new THREE.Mesh(
+new THREE.PlaneGeometry(20,20),
+new THREE.MeshStandardMaterial({
+color:0xb0bec5
+})
+);
 
-  const planeGeometry = new THREE.PlaneGeometry(50, 50);
-  const planeMaterial = new THREE.MeshBasicMaterial({color:0x444444});
-  plane = new THREE.Mesh(planeGeometry, planeMaterial);
-  plane.rotation.x = -Math.PI/2;
-  plane.position.y = -1;
-  scene.add(plane);
+floor.rotation.x=-Math.PI/2;
+scene.add(floor);
 
-  // Add event listeners
-  window.addEventListener('keydown', e => {
-    cube.position.x += (e.key.toLowerCase() === 'w') ? 0.05 : 0;
-    cube.position.z += (e.key.toLowerCase() === 's') ? 0.05 : 0;
-  });
+const wallMat=new THREE.MeshStandardMaterial({
+color:0xeeeeee
+});
 
-  window.addEventListener('keyup', e => {
-    cube.position.x -= (e.key.toLowerCase() === 'w') ? 0.05 : 0;
-    cube.position.z -= (e.key.toLowerCase() === 's') ? 0.05 : 0;
-  });
+function wall(x,z,rx){
 
-  document.getElementById('joystick').addEventListener('pointerdown', () => {
-    dragging = true;
-  });
+const w=new THREE.Mesh(
+new THREE.BoxGeometry(20,4,.2),
+wallMat
+);
 
-  window.addEventListener('pointerup', () => {
-    dragging = false;
-    moveX = 0;
-    moveZ = 0;
-    stick.style.left='40px';
-    stick.style.top='40px';
-  });
+w.position.set(x,2,z);
+w.rotation.y=rx;
+scene.add(w);
 
-  window.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-
-    const rect = document.getElementById('joystick').getBoundingClientRect();
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-
-    let x = e.clientX - rect.left - cx;
-    let y = e.clientY - rect.top - cy;
-
-    const max = 20;
-    const len = Math.hypot(x, y);
-
-    if (len > max) {
-      x = x / len * max;
-      y = y / len * max;
-    }
-
-    document.getElementById('stick').style.left = `${x}px`;
-    document.getElementById('stick').style.top = `${y}px`;
-
-    moveX = x / max;
-    moveZ = y / max;
-  });
-
-  // Set initial camera position
-  camera.position.x = cube.position.x;
-  camera.position.z = cube.position.z + 8;
-  camera.lookAt(cube.position);
-
-  animate();
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
 }
 
-init();
+wall(0,-10,0);
+wall(0,10,0);
+wall(-10,0,Math.PI/2);
+wall(10,0,Math.PI/2);
 
-function animate() {
-  requestAnimationFrame(animate);
+const player=new THREE.Group();
 
-  if (keys['a']) cube.position.x -= 0.01;
-  if (keys['d']) cube.position.x += 0.01;
-  if (keys['w']) cube.position.z -= 0.01;
-  if (keys['s']) cube.position.z += 0.01;
+const body=new THREE.Mesh(
+new THREE.CylinderGeometry(.3,.3,1.2),
+new THREE.MeshStandardMaterial({
+color:0x3f51b5
+})
+);
 
-  camera.position.x = cube.position.x;
-  camera.position.z = cube.position.z + 8;
-  camera.lookAt(cube.position);
+body.position.y=1;
+player.add(body);
 
-  renderer.render(scene, camera);
+const head=new THREE.Mesh(
+new THREE.SphereGeometry(.35),
+new THREE.MeshStandardMaterial({
+color:0xffddb0
+})
+);
+
+head.position.y=2;
+player.add(head);
+
+scene.add(player);
+
+const keys={};
+
+window.onkeydown=e=>keys[e.key.toLowerCase()]=true;
+window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
+
+function update(){
+
+let speed=.08;
+
+if(keys["w"]) player.position.z-=speed;
+if(keys["s"]) player.position.z+=speed;
+if(keys["a"]) player.position.x-=speed;
+if(keys["d"]) player.position.x+=speed;
+
+camera.position.lerp(
+
+new THREE.Vector3(
+
+player.position.x,
+
+3,
+
+player.position.z+5
+
+),
+
+0.1
+
+);
+
+camera.lookAt(player.position);
+
+renderer.render(scene,camera);
+
+requestAnimationFrame(update);
+
 }
+
+update();
 
 </script>
 
