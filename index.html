@@ -26,45 +26,27 @@
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <div class="max-w-4xl w-full flex flex-col gap-6">
-        <!-- BARIS ATAS: Tetap sama -->
+        <!-- BARIS ATAS -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
-            <div class="flex items-center gap-2">
-                <h1 class="font-serif text-xl font-bold text-brand">My Finance Hub</h1>
-            </div>
-            <button id="btn-login" class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl">⚡ Supabase Active</button>
+            <h1 class="font-serif text-xl font-bold text-brand">My Finance Hub</h1>
+            <button class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl">⚡ Supabase Active</button>
         </div>
 
-        <!-- AREA AI: Tetap sama -->
-        <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-3">
-            <div class="flex items-center gap-2 text-brand">
-                <span class="text-xl">✨</span>
-                <h3 class="font-serif font-semibold text-lg">AI Assistant Input</h3>
-            </div>
-            <div class="flex gap-2 mt-1">
-                <input id="ai-input" type="text" placeholder="Ketik perintah di sini..." class="flex-1 text-sm bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5">
-                <button onclick="kirimAI()" class="bg-brand text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Kirim</button>  
-            </div>
-            <div id="ai-response" class="mt-3 p-3 rounded-xl bg-stone-50 border border-stone-200 text-sm">AI siap...</div>
-        </div>
-
-        <!-- AREA: Riwayat Transaksi (Dinamis dari Supa) -->
+        <!-- AREA: Riwayat Transaksi -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-serif font-semibold text-lg text-brand">Riwayat Transaksi</h3>
-                <span class="text-xs text-stone-400 font-medium">Data Terupdate</span>
+                <span class="text-xs text-stone-400 font-medium">3 Transaksi Terakhir</span>
             </div>
             <div id="riwayat-transaksi-container" class="flex flex-col gap-3">
-                <p class="text-stone-400 text-sm italic">Memuat data dari database...</p>
+                <p class="text-stone-400 text-sm italic">Memuat data...</p>
             </div>
         </div>
 
-        <!-- TATA LETAK 2 KOLOM (Financial Overview & Notes TIDAK DIUBAH) -->
+        <!-- TATA LETAK 2 KOLOM -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
-                <div>
-                    <h2 class="font-serif text-2xl font-semibold text-brand mb-6">Financial Overview</h2>
-                    <div class="relative w-full h-40 mb-6 bg-stone-50 rounded-xl"></div>
-                </div>
+            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100">
+                <h2 class="font-serif text-2xl font-semibold text-brand mb-6">Financial Overview</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
                         <div class="text-xs text-stone-500 mb-1">● Income</div>
@@ -77,23 +59,21 @@
                 </div>
             </div>
 
-            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
-                <div>
-                    <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
-                    <div class="flex flex-col gap-1.5">
-                        <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
-                            <span class="text-sm font-semibold text-stone-800">💼 Pribadi</span>
-                            <span id="nominal-row-1" class="text-sm font-bold text-stone-800">Rp--</span>
-                        </a>
-                        <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
-                            <span class="text-sm font-semibold text-stone-800">📈 Saham</span>
-                            <span id="nominal-row-2" class="text-sm font-bold text-stone-800">Rp--</span>
-                        </a>
-                        <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
-                            <span class="text-sm font-semibold text-stone-800">🏪 Usaha</span>
-                            <span id="nominal-row-3" class="text-sm font-bold text-stone-800">Rp--</span>
-                        </a>
-                    </div>
+            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100">
+                <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
+                <div class="flex flex-col gap-1.5">
+                    <a href="#" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
+                        <span class="text-sm font-semibold text-stone-800">💼 Pribadi (Bank)</span>
+                        <span id="nominal-row-1" class="text-sm font-bold text-stone-800">Rp--</span>
+                    </a>
+                    <a href="#" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
+                        <span class="text-sm font-semibold text-stone-800">📈 Saham (RDN)</span>
+                        <span id="nominal-row-2" class="text-sm font-bold text-stone-800">Rp--</span>
+                    </a>
+                    <a href="#" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
+                        <span class="text-sm font-semibold text-stone-800">🏪 Usaha (RDN)</span>
+                        <span id="nominal-row-3" class="text-sm font-bold text-stone-800">Rp--</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -108,24 +88,22 @@
         async function muatRiwayatTransaksi() {
             const container = document.getElementById('riwayat-transaksi-container');
             try {
-                // Mengambil dari 3 tabel
                 const [p1, p2, p3] = await Promise.all([
                     supaClient.from('uang_pribadi').select('date, nama, total_harga, transaksi'),
                     supaClient.from('saham').select('date, nama_saham, total_harga, transaksi'),
                     supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi')
                 ]);
 
-                // Normalisasi data ke format seragam
                 let semuaData = [
                     ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama, total: d.total_harga, source: 'Pribadi' })),
                     ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, source: 'Saham' })),
                     ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, source: 'Usaha' }))
                 ];
 
-                // Urutkan terbaru (date)
                 semuaData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                container.innerHTML = semuaData.map(item => `
+                // Tampilkan hanya 3 data terbaru
+                container.innerHTML = semuaData.slice(0, 3).map(item => `
                     <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                         <div>
                             <h4 class="text-sm font-semibold text-stone-800">${item.nama}</h4>
@@ -135,17 +113,11 @@
                     </div>
                 `).join('');
             } catch (e) {
-                container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat: ${e.message}</p>`;
+                container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
             }
         }
 
-        // Jalankan saat load
-        window.addEventListener('DOMContentLoaded', () => {
-            muatRiwayatTransaksi();
-            // Panggil juga fungsi data murni Anda di sini jika ada
-        });
-
-        async function kirimAI() { /* Logika AI Anda */ }
+        window.addEventListener('DOMContentLoaded', muatRiwayatTransaksi);
     </script>
 </body>
 </html>
