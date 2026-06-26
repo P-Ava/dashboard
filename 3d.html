@@ -187,37 +187,30 @@ const keys={};
 
 window.onkeydown=e=>keys[e.key.toLowerCase()]=true;
 window.onkeyup=e=>keys[e.key.toLowerCase()]=false;
-
+//berjalan//
 function update(){
 
-let speed=.08;
+let speed = 0.08;
 
-if(keys["w"]) player.position.z-=speed;
-if(keys["s"]) player.position.z+=speed;
-if(keys["a"]) player.position.x-=speed;
-if(keys["d"]) player.position.x+=speed;
-
-camera.position.lerp(
-
-new THREE.Vector3(
-
-player.position.x,
-
-3,
-
-player.position.z+5
-
-),
-
-0.1
-
-);
-
-camera.lookAt(player.position);
-
-renderer.render(scene,camera);
-
-requestAnimationFrame(update);
+if(keys["w"]){
+    player.translateZ(-speed);}
+if(keys["s"]){
+    player.translateZ(speed);}
+if(keys["a"]){
+    player.rotation.y += 0.05;}
+if(keys["d"]){
+    player.rotation.y -= 0.05;}
+//kamera//
+const cameraOffset = new THREE.Vector3(0,2.5,4);
+  cameraOffset.applyQuaternion(player.quaternion);
+const desiredCameraPosition =
+  player.position.clone().add(cameraOffset);
+  camera.position.lerp(desiredCameraPosition,0.08);
+  const target = player.position.clone();
+  target.y += 1.5;
+  camera.lookAt(target);
+  renderer.render(scene,camera);
+  requestAnimationFrame(update);
 
 }
 
