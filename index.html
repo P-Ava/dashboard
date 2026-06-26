@@ -121,23 +121,35 @@
         }
 
         // Fungsi Catatan Keuangan
-        async function muatCatatanKeuangan() {
-            try {
-                const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
-                if (error) throw error;
-                if (data) {
-                    data.forEach(item => {
-                        const j = item.judul.toLowerCase();
-                        if (j.includes('uang_pribadi')) document.getElementById('nominal-pribadi').innerText = item.deskripsi;
-                        else if (j.includes('saham')) document.getElementById('nominal-saham').innerText = item.deskripsi;
-                        else if (j.includes('usaha')) document.getElementById('nominal-usaha').innerText = item.deskripsi;
-                    });
-                }
-            } catch (err) {
-                console.error("Gagal memuat catatan:", err);
-            }
-        }
+        // Ganti bagian isi fungsi muatCatatanKeuangan dengan kode ini:
 
+    async function muatCatatanKeuangan() {
+        try {
+            const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
+            if (error) throw error;
+        
+            if (data) {
+                data.forEach(item => {
+                    // Pastikan deskripsi diubah menjadi angka sebelum diformat
+                    const nominal = parseInt(item.deskripsi.replace(/[^0-9]/g, ''));
+                    const formattedNominal = !isNaN(nominal) 
+                        ? "Rp" + nominal.toLocaleString('id-ID') 
+                        : item.deskripsi; // Fallback jika bukan angka
+
+                    const j = item.judul.toLowerCase();
+                    if (j.includes('uang_pribadi')) {
+                        document.getElementById('nominal-pribadi').innerText = formattedNominal;
+                    } else if (j.includes('saham')) {
+                        document.getElementById('nominal-saham').innerText = formattedNominal;
+                    } else if (j.includes('usaha')) {
+                        document.getElementById('nominal-usaha').innerText = formattedNominal;
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Gagal memuat catatan:", err);
+        }
+    }
         window.addEventListener('DOMContentLoaded', () => {
             muatRiwayatTransaksi();
             muatCatatanKeuangan();
