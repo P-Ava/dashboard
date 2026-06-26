@@ -93,7 +93,7 @@
             const container = document.getElementById('riwayat-transaksi-container');
             try {
                 const [p1, p2, p3] = await Promise.all([
-                    supaClient.from('uang_pribadi').select('date, nama, total_harga, transaksi'),
+                    supaClient.from('uang_pribadi').select('date, nama_barang, total_harga, transaksi'),
                     supaClient.from('saham').select('date, nama_saham, total_harga, transaksi'),
                     supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi')
                 ]);
