@@ -31,6 +31,22 @@
             <h1 class="font-serif text-xl font-bold text-brand">My Finance Hub</h1>
             <button class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl">⚡ Supabase Active</button>
         </div>
+        <!-- AREA: AI Financial Assistant (Dipindah ke atas) -->
+<div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
+    <h3 class="font-serif font-semibold text-lg text-brand">AI Financial Assistant</h3>
+    
+    <div id="ai-response-container" class="p-4 bg-stone-50 rounded-2xl border border-stone-100 min-h-[100px] text-sm text-stone-600 italic">
+        Tanyakan sesuatu tentang keuangan Anda...
+    </div>
+
+    <div class="flex gap-2">
+        <input type="text" id="ai-input" placeholder="Tanya soal saldo atau transaksi..." 
+               class="flex-1 p-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand">
+        <button onclick="kirimKeAI()" class="bg-brand text-white px-6 py-2 rounded-xl text-sm font-semibold hover:bg-stone-800 transition">
+            Tanya
+        </button>
+    </div>
+</div>
 
         <!-- AREA: Riwayat Transaksi -->
         <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col gap-4">
@@ -155,5 +171,35 @@
             muatCatatanKeuangan();
         });
     </script>
+    <script>
+    // Tempat menaruh API Key Anda
+async function kirimKeAI() {
+    const input = document.getElementById('ai-input').value;
+    const container = document.getElementById('ai-response-container');
+
+    if (!input) return;
+
+    container.innerText = "Memproses melalui Ollama...";
+
+    try {
+        // Mengirim request ke server Ollama lokal Anda
+        const response = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: "llama3.2:1b", // Pastikan nama model sesuai dengan yang Anda download di Ollama
+                prompt: input,
+                stream: false
+            })
+        });
+
+        const result = await response.json();
+        container.innerText = result.response; // Ollama menggunakan properti .response
+    } catch (error) {
+        container.innerText = "Gagal menghubungi Ollama. Pastikan Ollama sudah berjalan.";
+        console.error("AI Error:", error);
+    }
+}
+         </script>
 </body>
 </html>
