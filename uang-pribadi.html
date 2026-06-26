@@ -573,36 +573,47 @@ async function sinkronisasiKeCatatanKeuangan(totalSaldo) {
 
         document.getElementById('form-tambah-supa').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const id = document.getElementById('form-id').value;
-            const nama_barang = document.getElementById('form-nama').value.trim();
-            const jumlah = parseInt(document.getElementById('form-jumlah').value);
-            const transaksi = document.getElementById('form-transaksi').value === 'true';
-            const harga = parseFloat(document.getElementById('form-harga').value);
-            const date = document.getElementById('form-date').value;
+    
+        const id = document.getElementById('form-id').value;
+        const nama_barang = document.getElementById('form-nama').value.trim();
+        const jumlah = parseInt(document.getElementById('form-jumlah').value) || 0;
+        const transaksi = document.getElementById('form-transaksi').value === 'true';
+        const harga = parseFloat(document.getElementById('form-harga').value) || 0;
+        const date = document.getElementById('form-date').value;
 
-            const payload = { nama_barang, jumlah, transaksi, harga, date: date };
+        // Hitung total harga
+        const total_harga = jumlah * harga;
 
-            try {
-                if (id) {
-                    const { error } = await supaClient
-                        .from('uang_pribadi')
-                        .update(payload)
-                        .eq('id', id);
-                    if (error) throw error;
-                } else {
-                    const { error } = await supaClient
-                        .from('uang_pribadi')
-                        .insert([payload]);
-                    if (error) throw error;
-                }
+        // Masukkan total_harga ke dalam payload agar tersimpan di Supabase
+        const payload = { 
+            nama_barang, 
+            jumlah, 
+            transaksi, 
+            harga, 
+            total_harga, // <--- Data ini sekarang akan dikirim ke Supabase
+            date: date 
+        };
 
-                tutupModal();
-                ambilDataUangPribadi();
-            } catch (err) {
-                alert('Gagal memproses data ke Supabase: ' + err.message);
+        try {
+            if (id) {
+                const { error } = await supaClient
+                    .from('uang_pribadi')
+                    .update(payload)
+                    .eq('id', id);
+                if (error) throw error;
+            } else {
+                const { error } = await supaClient
+                    .from('uang_pribadi')
+                    .insert([payload]);
+                if (error) throw error;
             }
-        });
+    
+            tutupModal();
+            ambilDataUangPribadi();
+        } catch (err) {
+            alert('Gagal memproses data ke Supabase: ' + err.message);
+        }
+    });
 
         // Event listener saat kolom pencarian diketik
         document.getElementById('input-cari-gabungan').addEventListener('input', hitungStatistikDanFilter);
