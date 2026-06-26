@@ -147,6 +147,7 @@ async function updateFinancialNotes() {
 
 
 <!-- Bagian Financial Notes (Ganti bagian lama Anda dengan ini) -->
+<!-- 1. BAGIAN HTML (Di dalam body, di luar script) -->
 <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
     <div>
         <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
@@ -167,14 +168,14 @@ async function updateFinancialNotes() {
     </div>
 </div>
 
-<!-- Tambahkan fungsi ini ke dalam tag <script> Anda -->
+<!-- 2. BAGIAN SCRIPT (Di bawah HTML) -->
 <script>
     async function muatCatatanKeuangan() {
         try {
             const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
+            if (error) throw error;
             if (data) {
                 data.forEach(item => {
-                    // Menyesuaikan judul dengan ID elemen
                     if (item.judul.toLowerCase().includes('uang_pribadi')) {
                         document.getElementById('nominal-pribadi').innerText = item.deskripsi;
                     } else if (item.judul.toLowerCase().includes('saham')) {
@@ -188,12 +189,9 @@ async function updateFinancialNotes() {
             console.error("Gagal memuat catatan:", err);
         }
     }
-
-    // Panggil fungsi ini saat halaman dimuat
-    window.addEventListener('DOMContentLoaded', () => {
-        muatRiwayatTransaksi();
-        muatCatatanKeuangan(); // Tambahkan ini
-    });
+    
+    // Panggil fungsi saat halaman siap
+    window.addEventListener('DOMContentLoaded', muatCatatanKeuangan);
 </script>
 </body>
 </html>
