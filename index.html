@@ -109,22 +109,22 @@
             const container = document.getElementById('riwayat-transaksi-container');
             try {
                 const [p1, p2, p3] = await Promise.all([
-                    supaClient.from('uang_pribadi').select('date, nama_barang, total_harga, transaksi, updated_at'),
-                    supaClient.from('saham').select('date, nama_saham, total_harga, transaksi, updated_at'),
-                    supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi, updated_at')
+                    supaClient.from('uang_pribadi').select('date, nama_barang, total_harga, transaksi, created_at'),
+                    supaClient.from('saham').select('date, nama_saham, total_harga, transaksi, created_at'),
+                    supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi, created_at')
                 ]);
 
                 let semuaData = [
-                    ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, source: 'Pribadi' })),
-                    ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, source: 'Saham' })),
-                    ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, source: 'Usaha' }))
+                    ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Pribadi' })),
+                    ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, created_at: d.created_at, source:  'Saham' })),
+                    ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Usaha' }))
                 ];
                     console.log(p1.data, p1.error);
                     console.log(p2.data, p2.error);
                     console.log(JSON.stringify(p3.data, null, 2));
                 //
                 semuaData.sort(
-                    (a, b) => new Date(b.updated_at) - new Date(a.updated_at) );
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at) );
 
                 container.innerHTML = semuaData.slice(0, 3).map(item => `
                     <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
