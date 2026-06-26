@@ -135,6 +135,7 @@
                             <th class="p-4 w-32 text-center">Transaksi</th>
                             <th class="p-4 text-right w-36">Harga</th>
                             <th class="p-4 w-32 text-center">Tanggal</th>
+                            <th class="p-4 w-32 text-center">Total Harga</th>
                             <th id="th-aksi" class="p-4 text-center hidden w-20">Aksi</th>
                         </tr>
                     </thead>
@@ -437,6 +438,15 @@ async function sinkronisasiKeCatatanKeuangan(totalSaldo) {
                 const harga = row.harga || 0;
                 const tanggal = row.date || row.tanggal || '-';
                 const apakahPemasukan = row.transaksi === true || row.transaksi === "true";
+
+                // Hitung total di sini:
+                const totalHarga = jumlah * harga;
+                // Gunakan totalHarga ini untuk ditampilkan di kolom "TOTAL"
+                const formatTotal = new Intl.NumberFormat('id-ID', {
+                    style: 'currency', 
+                    currency: 'IDR', 
+                    maximumFractionDigits: 0 
+                    }).format(totalHarga);
 
                 const formatHarga = new Intl.NumberFormat('id-ID', { 
                     style: 'currency', 
