@@ -69,7 +69,57 @@
             }
         }
     </script>
-    
+    <!-- ambil 3 data supa-->
+     <script>
+    async function muatRiwayatTransaksi() {
+    if (!_supabase) return;
+
+    try {
+        // 1. Ambil data dari 3 tabel
+        const [resPribadi, resSaham, resUsaha] = await Promise.all([
+            _supabase.from('uang_pribadi').select('date, nama, total_harga, transaksi'),
+            _supabase.from('saham').select('date, nama_saham, total_harga, transaksi'),
+            _supabase.from('usaha').select('date, nama_barang, total_harga, transaksi')
+        ]);
+
+        // 2. Normalisasi format data menjadi array tunggal
+        const semuaData = [
+            ...(resPribadi.data || []).map(d => ({ date: d.date, nama: d.nama, total: d.total_harga, tipe: d.transaksi ? 'keluar' : 'masuk', source: 'Pribadi' })),
+            ...(resSaham.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, tipe: d.transaksi ? 'jual' : 'beli', source: 'Saham' })),
+            ...(resUsaha.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, tipe: d.transaksi ? 'beli' : 'jual', source: 'Usaha' }))
+        ];
+
+        // 3. Urutkan berdasarkan tanggal terbaru
+        semuaData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // 4. Ambil 3 data teratas
+        const terbaru = semuaData.slice(0, 3);
+
+        // 5. Render ke HTML
+        const container = document.getElementById('riwayat-transaksi-container');
+        container.innerHTML = terbaru.map(item => `
+            <div class="flex items-center justify-between p-4 border-b border-stone-100 last:border-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center">
+                        <!-- Tambahkan icon sesuai source jika perlu -->
+                        <span class="text-xs font-bold text-stone-500">${item.source[0]}</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-stone-800">${item.nama}</p>
+                        <p class="text-[10px] text-stone-400">${item.date} • ${item.source}</p>
+                    </div>
+                </div>
+                <p class="text-sm font-bold ${item.tipe === 'keluar' || item.tipe === 'beli' ? 'text-rose-600' : 'text-emerald-600'}">
+                    ${item.tipe === 'keluar' || item.tipe === 'beli' ? '-' : '+'}Rp${item.total.toLocaleString()}
+                </p>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error("Gagal memuat riwayat:", err);
+    }
+}
+          </script>
 <body class="bg-brandBg min-h-screen flex flex-col items-center p-4 md:p-8 font-sans text-stone-700">
 
     <!-- WRAPPER UTAMA -->
@@ -169,7 +219,9 @@
                 </div>
             </div>
         </div>
-
+<div id="riwayat-transaksi-container" class="bg-white rounded-2xl shadow-sm border border-stone-200/60">
+    <!-- Konten akan dimuat oleh JS di atas -->
+</div>
         <!-- TATA LETAK 2 KOLOM -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             
