@@ -119,5 +119,66 @@
 
         window.addEventListener('DOMContentLoaded', muatRiwayatTransaksi);
     </script>
+    <script>
+         async function updateFinancialNotes() {
+    try {
+        // Ambil data dari tabel catatan_keuangan
+        const { data, error } = await supaClient.from('catatan_keuangan').select('*');
+        if (error) throw error;
+
+        // Asumsikan data memiliki struktur { judul: '...', deskripsi: '...' }
+        // Sesuaikan dengan data yang Anda miliki di Supabase
+        data.forEach(item => {
+            if (item.judul === 'uang_pribadi') {
+                document.getElementById('nominal-pribadi').innerText = itemBerdasarkan data yang ada di database **catatan_keuangan** Anda, saya telah memperbarui kode agar bagian **Financial Notes** menjadi *clickable* (tautan) dan mengambil data nominal langsung dari Supabase.
+
+Berikut adalah kode yang sudah diperbarui:
+
+```html
+<!-- Bagian Financial Notes (Ganti bagian lama Anda dengan ini) -->
+<div class="flex flex-col gap-1.5">
+    <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
+        <span class="text-sm font-semibold text-stone-800">💼 Pribadi (Bank)</span>
+        <span id="nominal-pribadi" class="text-sm font-bold text-stone-800">Memuat...</span>
+    </a>
+    <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
+        <span class="text-sm font-semibold text-stone-800">📈 Saham (RDN)</span>
+        <span id="nominal-saham" class="text-sm font-bold text-stone-800">Memuat...</span>
+    </a>
+    <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
+        <span class="text-sm font-semibold text-stone-800">🏪 Usaha (RDN)</span>
+        <span id="nominal-usaha" class="text-sm font-bold text-stone-800">Memuat...</span>
+    </a>
+</div>
+
+<!-- Tambahkan fungsi ini ke dalam tag <script> Anda -->
+<script>
+    async function muatCatatanKeuangan() {
+        try {
+            const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
+            if (data) {
+                data.forEach(item => {
+                    // Menyesuaikan judul dengan ID elemen
+                    if (item.judul.toLowerCase().includes('uang_pribadi')) {
+                        document.getElementById('nominal-pribadi').innerText = item.deskripsi;
+                    } else if (item.judul.toLowerCase().includes('saham')) {
+                        document.getElementById('nominal-saham').innerText = item.deskripsi;
+                    } else if (item.judul.toLowerCase().includes('usaha')) {
+                        document.getElementById('nominal-usaha').innerText = item.deskripsi;
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Gagal memuat catatan:", err);
+        }
+    }
+
+    // Panggil fungsi ini saat halaman dimuat
+    window.addEventListener('DOMContentLoaded', () => {
+        muatRiwayatTransaksi();
+        muatCatatanKeuangan(); // Tambahkan ini
+    });
+</script>
+</script>
 </body>
 </html>
