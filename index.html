@@ -134,6 +134,9 @@
             } catch (e) {
                 container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
             }
+                                console.log(p1.data, p1.error);
+                    console.log(p2.data, p2.error);
+                    console.log(p3.data, p3.error);
         }
 
         // Fungsi Catatan Keuangan
@@ -169,9 +172,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             muatRiwayatTransaksi();
             muatCatatanKeuangan();
-                    console.log(p1.data, p1.error);
-                    console.log(p2.data, p2.error);
-                    console.log(p3.data, p3.error);
+
         });
 
     </script>
