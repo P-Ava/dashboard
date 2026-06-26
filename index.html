@@ -59,32 +59,36 @@
                 </div>
             </div>
 
-            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100">
-                <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
-                <div class="flex flex-col gap-1.5">
-                    <a href="#" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
-                        <span class="text-sm font-semibold text-stone-800">💼 Pribadi (Bank)</span>
-                        <span id="nominal-row-1" class="text-sm font-bold text-stone-800">Rp--</span>
-                    </a>
-                    <a href="#" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
-                        <span class="text-sm font-semibold text-stone-800">📈 Saham (RDN)</span>
-                        <span id="nominal-row-2" class="text-sm font-bold text-stone-800">Rp--</span>
-                    </a>
-                    <a href="#" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60">
-                        <span class="text-sm font-semibold text-stone-800">🏪 Usaha (RDN)</span>
-                        <span id="nominal-row-3" class="text-sm font-bold text-stone-800">Rp--</span>
-                    </a>
+            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
+                <div>
+                    <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
+                    <div class="flex flex-col gap-1.5">
+                        <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
+                            <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">💼 Pribadi (Bank)</span>
+                            <span id="nominal-pribadi" class="text-sm font-bold text-stone-800">Memuat...</span>
+                        </a>
+                        <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
+                            <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">📈 Saham (RDN)</span>
+                            <span id="nominal-saham" class="text-sm font-bold text-stone-800">Memuat...</span>
+                        </a>
+                        <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
+                            <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">🏪 Usaha (RDN)</span>
+                            <span id="nominal-usaha" class="text-sm font-bold text-stone-800">Memuat...</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     <script>
         const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
         const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Fungsi Riwayat Transaksi
         async function muatRiwayatTransaksi() {
             const container = document.getElementById('riwayat-transaksi-container');
             try {
@@ -102,7 +106,6 @@
 
                 semuaData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                // Tampilkan hanya 3 data terbaru
                 container.innerHTML = semuaData.slice(0, 3).map(item => `
                     <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
                         <div>
@@ -117,81 +120,28 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', muatRiwayatTransaksi);
-    </script>
-    <script>
-async function updateFinancialNotes() {
-    try {
-        // Ambil data dari tabel catatan_keuangan
-        const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
-        if (error) throw error;
-
-        if (data) {
-            data.forEach(item => {
-                // Memastikan case-insensitive pencarian
-                const judul = item.judul ? item.judul.toLowerCase() : '';
-                
-                if (judul.includes('uang_pribadi')) {
-                    document.getElementById('nominal-pribadi').innerText = item.deskripsi;
-                } else if (judul.includes('saham')) {
-                    document.getElementById('nominal-saham').innerText = item.deskripsi;
-                } else if (judul.includes('usaha')) {
-                    document.getElementById('nominal-usaha').innerText = item.deskripsi;
+        // Fungsi Catatan Keuangan
+        async function muatCatatanKeuangan() {
+            try {
+                const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
+                if (error) throw error;
+                if (data) {
+                    data.forEach(item => {
+                        const j = item.judul.toLowerCase();
+                        if (j.includes('uang_pribadi')) document.getElementById('nominal-pribadi').innerText = item.deskripsi;
+                        else if (j.includes('saham')) document.getElementById('nominal-saham').innerText = item.deskripsi;
+                        else if (j.includes('usaha')) document.getElementById('nominal-usaha').innerText = item.deskripsi;
+                    });
                 }
-            });
-        }
-    } catch (err) {
-        console.error("Gagal memuat catatan keuangan:", err);
-    }
-}
-
-
-<!-- Bagian Financial Notes (Ganti bagian lama Anda dengan ini) -->
-<!-- 1. BAGIAN HTML (Di dalam body, di luar script) -->
-<div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
-    <div>
-        <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
-        <div class="flex flex-col gap-1.5">
-            <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
-                <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">💼 Pribadi (Bank)</span>
-                <span id="nominal-pribadi" class="text-sm font-bold text-stone-800">Memuat...</span>
-            </a>
-            <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
-                <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">📈 Saham (RDN)</span>
-                <span id="nominal-saham" class="text-sm font-bold text-stone-800">Memuat...</span>
-            </a>
-            <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
-                <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">🏪 Usaha (RDN)</span>
-                <span id="nominal-usaha" class="text-sm font-bold text-stone-800">Memuat...</span>
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- 2. BAGIAN SCRIPT (Di bawah HTML) -->
-<script>
-    async function muatCatatanKeuangan() {
-        try {
-            const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
-            if (error) throw error;
-            if (data) {
-                data.forEach(item => {
-                    if (item.judul.toLowerCase().includes('uang_pribadi')) {
-                        document.getElementById('nominal-pribadi').innerText = item.deskripsi;
-                    } else if (item.judul.toLowerCase().includes('saham')) {
-                        document.getElementById('nominal-saham').innerText = item.deskripsi;
-                    } else if (item.judul.toLowerCase().includes('usaha')) {
-                        document.getElementById('nominal-usaha').innerText = item.deskripsi;
-                    }
-                });
+            } catch (err) {
+                console.error("Gagal memuat catatan:", err);
             }
-        } catch (err) {
-            console.error("Gagal memuat catatan:", err);
         }
-    }
-    
-    // Panggil fungsi saat halaman siap
-    window.addEventListener('DOMContentLoaded', muatCatatanKeuangan);
-</script>
+
+        window.addEventListener('DOMContentLoaded', () => {
+            muatRiwayatTransaksi();
+            muatCatatanKeuangan();
+        });
+    </script>
 </body>
 </html>
