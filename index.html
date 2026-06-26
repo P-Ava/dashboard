@@ -99,7 +99,7 @@
                 ]);
 
                 let semuaData = [
-                    ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama, total: d.total_harga, source: 'Pribadi' })),
+                    ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, source: 'Pribadi' })),
                     ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, source: 'Saham' })),
                     ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, source: 'Usaha' }))
                 ];
