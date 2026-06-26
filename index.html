@@ -119,7 +119,10 @@
                     ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, source: 'Saham' })),
                     ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, source: 'Usaha' }))
                 ];
-
+                    console.log(p1.data, p1.error);
+                    console.log(p2.data, p2.error);
+                    console.log(p3.data, p3.error);
+                ///
                 semuaData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 container.innerHTML = semuaData.slice(0, 3).map(item => `
@@ -134,9 +137,7 @@
             } catch (e) {
                 container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
             }
-                                console.log(p1.data, p1.error);
-                    console.log(p2.data, p2.error);
-                    console.log(p3.data, p3.error);
+                            
         }
 
         // Fungsi Catatan Keuangan
