@@ -183,19 +183,23 @@ async function kirimKeAI() {
 
     try {
         // Mengirim request ke server Ollama lokal Anda
-        const response = await fetch('http://localhost:11434/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: "llama3.2:1b", // Pastikan nama model sesuai dengan yang Anda download di Ollama
-                prompt: input,
-                stream: false
-            })
-        });
+       const response = await fetch(
+    "http://127.0.0.1:8000/chat",
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            prompt: input
+        })
+    }
+);
 
-        const result = await response.json();
-        container.innerText = result.response; // Ollama menggunakan properti .response
-    } catch (error) {
+const result = await response.json();
+
+container.innerText = result.response;
+        catch (error) {
         container.innerText = "Gagal menghubungi Ollama. Pastikan Ollama sudah berjalan.";
         console.error("AI Error:", error);
     }
