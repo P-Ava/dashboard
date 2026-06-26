@@ -648,8 +648,9 @@
         const transaksi = document.getElementById('form-jenis').value === "true"; 
         const harga = parseFloat(document.getElementById('form-harga').value || '0');
         const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
+        const total_harga = harga * jumlah;
         
-        const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah };
+        const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah, total_harga };
         const editId = document.getElementById('form-transaksi').dataset.editId;
 
         try {
