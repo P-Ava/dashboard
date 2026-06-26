@@ -70,53 +70,53 @@
         } 
         <!-- ambil 3 data supa -->
     <script>
-    async function muatRiwayatTransaksi() {
-        // Cek apakah supaClient sudah tersedia dari script di bawah
-        if (typeof supaClient === 'undefined') {
-            setTimeout(muatRiwayatTransaksi, 500); // Tunggu 0.5 detik jika belum siap
-            return;
-        }
-
-        try {
-            const container = document.getElementById('riwayat-transaksi-container');
-            if (!container) return;
-
-            const [resPribadi, resSaham, resUsaha] = await Promise.all([
-                supaClient.from('uang_pribadi').select('date, nama, total_harga, transaksi'),
-                supaClient.from('saham').select('date, nama_saham, total_harga, transaksi'),
-                supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi')
-            ]);
-
-            const semuaData = [
-                ...(resPribadi.data || []).map(d => ({ date: d.date, nama: d.nama, total: d.total_harga, tipe: d.transaksi ? 'keluar' : 'masuk', source: 'Pribadi' })),
-                ...(resSaham.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, tipe: d.transaksi ? 'jual' : 'beli', source: 'Saham' })),
-                ...(resUsaha.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, tipe: d.transaksi ? 'beli' : 'jual', source: 'Usaha' }))
-            ];
-
-            semuaData.sort((a, b) => new Date(b.date) - new Date(a.date));
-            const terbaru = semuaData.slice(0, 3);
-
-            container.innerHTML = terbaru.map(item => {
-                const isKeluar = item.tipe === 'keluar' || item.tipe === 'beli';
-                return `
-                    <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center font-bold text-sm text-stone-600">${item.source[0]}</div>
-                            <div>
-                                <h4 class="text-sm font-semibold text-stone-800">${item.nama}</h4>
-                                <p class="text-[10px] text-stone-400">${item.date} • ${item.source}</p>
-                            </div>
-                        </div>
-                        <span class="text-sm font-bold ${isKeluar ? 'text-red-600' : 'text-emerald-600'}">
-                            ${isKeluar ? '-' : '+'}Rp${(item.total || 0).toLocaleString()}
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        } catch (err) {
-            console.error("Gagal memuat riwayat:", err);
-        }
+  async function muatRiwayatTransaksi() {
+    if (typeof supaClient === 'undefined') {
+        setTimeout(muatRiwayatTransaksi, 500);
+        return;
     }
+    try {
+        const container = document.getElementById('riwayat-transaksi-container');
+        if (!container) return;
+
+        // Mengambil data dari ketiga tabel
+        const [resPribadi, resSaham, resUsaha] = await Promise.all([
+            supaClient.from('uang_pribadi').select('date, nama, total_harga, transaksi'),
+            supaClient.from('saham').select('date, nama_saham, total_harga, transaksi'),
+            supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi')
+        ]);
+
+        const semuaData = [
+            ...(resPribadi.data || []).map(d => ({ date: d.date, nama: d.nama, total: d.total_harga, tipe: d.transaksi ? 'keluar' : 'masuk', source: 'Pribadi' })),
+            ...(resSaham.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, tipe: d.transaksi ? 'jual' : 'beli', source: 'Saham' })),
+            ...(resUsaha.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, tipe: d.transaksi ? 'beli' : 'jual', source: 'Usaha' }))
+        ];
+
+        // Mengurutkan berdasarkan tanggal terbaru
+        semuaData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // HAPUS .slice(0, 3) agar semua data ditampilkan
+        container.innerHTML = semuaData.map(item => {
+            const isKeluar = item.tipe === 'keluar' || item.tipe === 'beli';
+            return `
+                <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center font-bold text-sm text-stone-600">${item.source[0]}</div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-stone-800">${item.nama}</h4>
+                            <p class="text-[10px] text-stone-400">${item.date} • ${item.source}</p>
+                        </div>
+                    </div>
+                    <span class="text-sm font-bold ${isKeluar ? 'text-red-600' : 'text-emerald-600'}">
+                        ${isKeluar ? '-' : '+'}Rp${(item.total || 0).toLocaleString()}
+                    </span>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error("Gagal memuat riwayat:", err);
+    }
+}
 
     // Panggil fungsi setelah semua elemen dimuat
     window.addEventListener('DOMContentLoaded', muatRiwayatTransaksi);
