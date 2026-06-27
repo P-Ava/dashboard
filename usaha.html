@@ -253,7 +253,7 @@
     const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
     let dataLokalUsaha = [];
     let modeAksiAktif = false;
-    let saldoAwalRdn = 0;
+    saldoAwalRdn = 0;
 
     async function ambilDataUsaha() {
         if (!_supabase) return;
@@ -426,7 +426,7 @@
             if (isBeli) {
                 gudang[nama].stok += qty;
                 gudang[nama].totalBiaya += (qty * hargaUnit);
-            else {
+            }else {
 
                 const avgHarga =
                     gudang[nama].stok > 0
@@ -710,28 +710,6 @@ function hitungSaldoRdnInternal() {
         + akumulasiJual;
 
     return rdnUsahaAkhir;
-}
-    // FUNGSI UNTUK SINKRONISASI BANK RDN KE TABEL CATATAN_KEUANGAN (BARIS SAHAM)
-async function sinkronisasiRdnUsahaKeCatatanKeuangan(totalRdn)  {
-    try {
-        const rdnStr = String(totalRdn); 
-
-        const { data, error } = await _supabase
-            .from('catatan_keuangan')
-            .update({ deskripsi: rdnStr })
-            .eq('judul', 'usaha') // Mencari baris dengan judul 'usaha'
-            .select();
-
-        if (error) throw error;
-        
-        if (data && data.length === 0) {
-            console.warn('Peringatan: Berhasil terhubung ke Supabase, tetapi tidak ada baris dengan judul "saham" yang terupdate.');
-        } else {
-            console.log('Berhasil sinkronisasi RDN Saham! Data terupdate:', data);
-        }
-    } catch (err) {
-        console.error('Gagal sinkronisasi RDN ke catatan_keuangan:', err.message);
-    }
 }
 
     async function hapusTransaksi(id) {
