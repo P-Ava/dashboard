@@ -28,7 +28,7 @@
     <div class="max-w-4xl w-full flex flex-col gap-6">
         <!-- BARIS ATAS -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-cardBg p-4 rounded-2xl shadow-sm border border-stone-100">
-            <h1 class="font-serif text-xl font-bold text-brand">My Finance Hub</h1>
+            <h1 class="font-serif text-xl font-bold text-brand">Finance Hub</h1>
             <button class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl">⚡ Supabase Active</button>
         </div>
         <!-- AREA: AI Financial Assistant (Dipindah ke atas) -->
@@ -61,32 +61,30 @@
 
   <!-- Kalender -->
 <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="font-serif text-xl font-semibold text-brand" id="kalender-bulan-tahun">Juni 2026</h2>
-        <div class="flex gap-2">
-            <button onclick="ubahBulan(-1)" class="p-2 hover:bg-stone-100 rounded-lg">◀</button>
-            <button onclick="ubahBulan(1)" class="p-2 hover:bg-stone-100 rounded-lg">▶</button>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-serif text-xl font-semibold text-brand" id="kalender-bulan-tahun">Juni 2026</h2>
+            <div class="flex gap-2">
+                <button onclick="ubahBulan(-1)" class="p-2 hover:bg-stone-100 rounded-lg">◀</button>
+                <button onclick="ubahBulan(1)" class="p-2 hover:bg-stone-100 rounded-lg">▶</button>
+            </div>
+        </div>
+        <div id="grid-kalender" class="grid grid-cols-7 gap-2 text-center text-sm">
+            <div class="font-bold text-stone-400">Min</div><div class="font-bold text-stone-400">Sen</div>
+            <div class="font-bold text-stone-400">Sel</div><div class="font-bold text-stone-400">Rab</div>
+            <div class="font-bold text-stone-400">Kam</div><div class="font-bold text-stone-400">Jum</div>
+            <div class="font-bold text-stone-400">Sab</div>
         </div>
     </div>
-    <div id="grid-kalender" class="grid grid-cols-7 gap-2 text-center text-sm">
-        <!-- Header Hari -->
-        <div class="font-bold text-stone-400">Min</div>
-        <div class="font-bold text-stone-400">Sen</div>
-        <div class="font-bold text-stone-400">Sel</div>
-        <div class="font-bold text-stone-400">Rab</div>
-        <div class="font-bold text-stone-400">Kam</div>
-        <div class="font-bold text-stone-400">Jum</div>
-        <div class="font-bold text-stone-400">Sab</div>
-        <!-- Tanggal akan diisi JS -->
-    </div>
-</div>
 
 <!-- Modal Popup Jadwal -->
 <div id="modal-jadwal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-2xl w-80 shadow-xl">
-        <h3 id="modal-tanggal" class="font-bold text-lg mb-4"></h3>
-        <p class="text-sm text-stone-600 mb-6">Tidak ada jadwal untuk hari ini.</p>
-        <button onclick="tutupModal()" class="w-full bg-brand text-white p-2 rounded-xl">Tutup</button>
+    <div class="bg-white p-6 rounded-2xl w-96 shadow-xl">
+        <h3 id="modal-tanggal" class="font-bold text-lg mb-4">Edit Jadwal</h3>
+        <textarea id="input-jadwal" class="w-full p-3 border rounded-xl mb-4 text-sm" placeholder="Masukkan detail jadwal..."></textarea>
+        <div class="flex gap-2">
+            <button onclick="tutupModal()" class="flex-1 bg-stone-100 p-2 rounded-xl">Batal</button>
+            <button onclick="simpanJadwal()" class="flex-1 bg-brand text-white p-2 rounded-xl">Simpan</button>
+        </div>
     </div>
 </div>
 
@@ -140,7 +138,7 @@
     async function muatCatatanKeuangan() {
         try {
             const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
-            if (error) throw error;
+            if (error) throw error;5 rounded-xl border border-transparent hover:
         
             if (data) {
                 data.forEach(item => {
@@ -202,9 +200,10 @@ async function kirimKeAI() {
     }
 }
          </script>
-        //java kalender
+       
          <script>
-             let tanggalSekarang = new Date();
+             // java kalender
+let tanggalSekarang = new Date();
 
 function renderKalender() {
     const grid = document.getElementById('grid-kalender');
@@ -249,6 +248,30 @@ function tutupModal() {
 
 // Jalankan saat load
 renderKalender();
+// popup edit
+let selectedDate = "";
+
+function bukaModal(d, m, y) {
+    selectedDate = `${d}-${m}-${y}`;
+    document.getElementById('modal-tanggal').innerText = `Jadwal: ${d}/${m}/${y}`;
+    
+    // Load jadwal lama jika ada
+    const existing = localStorage.getItem(`jadwal_${selectedDate}`) || "";
+    document.getElementById('input-jadwal').value = existing;
+    
+    document.getElementById('modal-jadwal').classList.remove('hidden');
+}
+
+function simpanJadwal() {
+    const teks = document.getElementById('input-jadwal').value;
+    localStorage.setItem(`jadwal_${selectedDate}`, teks);
+    alert("Jadwal disimpan!");
+    tutupModal();
+}
+
+function tutupModal() {
+    document.getElementById('modal-jadwal').classList.add('hidden');
+}
              </script>
 </body>
 </html>
