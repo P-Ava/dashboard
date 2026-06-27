@@ -59,43 +59,36 @@
             </div>
         </div>
 
-        <!-- TATA LETAK 2 KOLOM -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100">
-                <h2 class="font-serif text-2xl font-semibold text-brand mb-6">Financial Overview</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
-                        <div class="text-xs text-stone-500 mb-1">● Income</div>
-                        <div class="font-serif text-xl font-bold text-brand">$45,200</div>
-                    </div>
-                    <div class="bg-stone-50 rounded-2xl p-4 text-center border border-stone-100">
-                        <div class="text-xs text-stone-500 mb-1">● Expenses</div>
-                        <div class="font-serif text-xl font-bold text-brand">$12,300</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100 flex flex-col justify-between">
-                <div>
-                    <h2 class="font-serif text-2xl font-semibold text-brand mb-4">Financial Notes</h2>
-                    <div class="flex flex-col gap-1.5">
-                        <a href="uang-pribadi.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
-                            <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">💼 Pribadi (Bank)</span>
-                            <span id="nominal-pribadi" class="text-sm font-bold text-stone-800">Memuat...</span>
-                        </a>
-                        <a href="saham.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
-                            <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">📈 Saham (RDN)</span>
-                            <span id="nominal-saham" class="text-sm font-bold text-stone-800">Memuat...</span>
-                        </a>
-                        <a href="usaha.html" class="flex items-center justify-between p-2.5 rounded-xl border border-transparent hover:bg-stone-100/60 transition group">
-                            <span class="text-sm font-semibold text-stone-800 group-hover:text-brand">🏪 Usaha (RDN)</span>
-                            <span id="nominal-usaha" class="text-sm font-bold text-stone-800">Memuat...</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
+  <!-- Kalender -->
+<div class="bg-cardBg rounded-3xl p-6 shadow-sm border border-stone-100">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="font-serif text-xl font-semibold text-brand" id="kalender-bulan-tahun">Juni 2026</h2>
+        <div class="flex gap-2">
+            <button onclick="ubahBulan(-1)" class="p-2 hover:bg-stone-100 rounded-lg">◀</button>
+            <button onclick="ubahBulan(1)" class="p-2 hover:bg-stone-100 rounded-lg">▶</button>
         </div>
     </div>
+    <div id="grid-kalender" class="grid grid-cols-7 gap-2 text-center text-sm">
+        <!-- Header Hari -->
+        <div class="font-bold text-stone-400">Min</div>
+        <div class="font-bold text-stone-400">Sen</div>
+        <div class="font-bold text-stone-400">Sel</div>
+        <div class="font-bold text-stone-400">Rab</div>
+        <div class="font-bold text-stone-400">Kam</div>
+        <div class="font-bold text-stone-400">Jum</div>
+        <div class="font-bold text-stone-400">Sab</div>
+        <!-- Tanggal akan diisi JS -->
+    </div>
+</div>
+
+<!-- Modal Popup Jadwal -->
+<div id="modal-jadwal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl w-80 shadow-xl">
+        <h3 id="modal-tanggal" class="font-bold text-lg mb-4"></h3>
+        <p class="text-sm text-stone-600 mb-6">Tidak ada jadwal untuk hari ini.</p>
+        <button onclick="tutupModal()" class="w-full bg-brand text-white p-2 rounded-xl">Tutup</button>
+    </div>
+</div>
 
     <!-- SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
@@ -209,5 +202,53 @@ async function kirimKeAI() {
     }
 }
          </script>
+        //java kalender
+         <script>
+             let tanggalSekarang = new Date();
+
+function renderKalender() {
+    const grid = document.getElementById('grid-kalender');
+    const label = document.getElementById('kalender-bulan-tahun');
+    
+    // Reset grid (sisakan header hari)
+    grid.innerHTML = '<div class="text-stone-400 font-bold">Min</div><div class="text-stone-400 font-bold">Sen</div><div class="text-stone-400 font-bold">Sel</div><div class="text-stone-400 font-bold">Rab</div><div class="text-stone-400 font-bold">Kam</div><div class="text-stone-400 font-bold">Jum</div><div class="text-stone-400 font-bold">Sab</div>';
+    
+    const bulan = tanggalSekarang.getMonth();
+    const tahun = tanggalSekarang.getFullYear();
+    label.innerText = tanggalSekarang.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
+    const hariPertama = new Date(tahun, bulan, 1).getDay();
+    const jumlahHari = new Date(tahun, bulan + 1, 0).getDate();
+
+    // Isi hari kosong sebelum tanggal 1
+    for (let i = 0; i < hariPertama; i++) grid.appendChild(document.createElement('div'));
+
+    // Isi tanggal
+    for (let d = 1; d <= jumlahHari; d++) {
+        const div = document.createElement('div');
+        div.className = "p-2 rounded-lg hover:bg-stone-100 cursor-pointer text-stone-700";
+        div.innerText = d;
+        div.onclick = () => bukaModal(d, bulan + 1, tahun);
+        grid.appendChild(div);
+    }
+}
+
+function ubahBulan(n) {
+    tanggalSekarang.setMonth(tanggalSekarang.getMonth() + n);
+    renderKalender();
+}
+
+function bukaModal(d, m, y) {
+    document.getElementById('modal-tanggal').innerText = `${d}/${m}/${y}`;
+    document.getElementById('modal-jadwal').classList.remove('hidden');
+}
+
+function tutupModal() {
+    document.getElementById('modal-jadwal').classList.add('hidden');
+}
+
+// Jalankan saat load
+renderKalender();
+             </script>
 </body>
 </html>
