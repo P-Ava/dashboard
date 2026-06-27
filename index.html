@@ -106,135 +106,103 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
-    <script>
-        const supaClient = supabase.createClient('https://hjexgyqmyskgtgwpnufg.supabase.co', 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ');
-        let tglAktif = new Date();
-        let tglDipilih = "";
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
+<script>
+    const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
+    const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Kalender Logic
-        function renderKalender() {
-            const grid = document.getElementById('grid-kalender');
-            const label = document.getElementById('kalender-bulan-tahun');
-            grid.innerHTML = '<div class="font-bold text-stone-400">Min</div><div class="font-bold text-stone-400">Sen</div><div class="font-bold text-stone-400">Sel</div><div class="font-bold text-stone-400">Rab</div><div class="font-bold text-stone-400">Kam</div><div class="font-bold text-stone-400">Jum</div><div class="font-bold text-stone-400">Sab</div>';
-            
-            const bln = tglAktif.getMonth(), thn = tglAktif.getFullYear();
-            label.innerText = tglAktif.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-            
-            const firstDay = new Date(thn, bln, 1).getDay();
-            const daysInMonth = new Date(thn, bln + 1, 0).getDate();
-            
-            for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
-            for(let d=1; d<=daysInMonth; d++) {
-                const div = document.createElement('div');
-                div.className = "p-2 rounded-lg hover:bg-brand hover:text-white cursor-pointer";
-                div.innerText = d;
-                div.onclick = () => bukaModal(d, bln + 1, thn);
-                grid.appendChild(div);
-            }
-        }
+    let tglAktif = new Date();
+    let tglDipilih = "";
 
-        function ubahBulan(n) { tglAktif.setMonth(tglAktif.getMonth() + n); renderKalender(); }
-        function bukaModal(d, m, y) {
-            tglDipilih = `${d}-${m}-${y}`;
-            document.getElementById('modal-tanggal').innerText = `Jadwal: ${d}/${m}/${y}`;
-            document.getElementById('input-jadwal').value = localStorage.getItem(tglDipilih) || "";
-            document.getElementById('modal-jadwal').classList.remove('hidden');
-        }
-        function simpanJadwal() { localStorage.setItem(tglDipilih, document.getElementById('input-jadwal').value); tutupModal(); }
-        function tutupModal() { document.getElementById('modal-jadwal').classList.add('hidden'); }
-
-        // Fetch Data
-        async function muatData() {
-            // Gabungan fungsi muatRiwayat dan muatCatatan
-            renderKalender();
-            // ... (tambahkan fungsi fetch Supabase Anda di sini)
-        }
+    // --- 1. Logika Kalender ---
+    function renderKalender() {
+        const grid = document.getElementById('grid-kalender');
+        const label = document.getElementById('kalender-bulan-tahun');
+        grid.innerHTML = '<div class="font-bold text-stone-400">Min</div><div class="font-bold text-stone-400">Sen</div><div class="font-bold text-stone-400">Sel</div><div class="font-bold text-stone-400">Rab</div><div class="font-bold text-stone-400">Kam</div><div class="font-bold text-stone-400">Jum</div><div class="font-bold text-stone-400">Sab</div>';
         
-        window.onload = muatData;
+        const bln = tglAktif.getMonth(), thn = tglAktif.getFullYear();
+        label.innerText = tglAktif.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
         
-    </script>
-        <!-- SCRIPT -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
-    <script>
-        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
-        const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const firstDay = new Date(thn, bln, 1).getDay();
+        const daysInMonth = new Date(thn, bln + 1, 0).getDate();
+        
+        for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
+        for(let d=1; d<=daysInMonth; d++) {
+            const div = document.createElement('div');
+            div.className = "p-2 rounded-lg hover:bg-brand hover:text-white cursor-pointer";
+            div.innerText = d;
+            div.onclick = () => bukaModal(d, bln + 1, thn);
+            grid.appendChild(div);
+        }
+    }
 
-        // Fungsi Riwayat Transaksi
-        async function muatRiwayatTransaksi() {
-            const container = document.getElementById('riwayat-transaksi-container');
-            try {
-                const [p1, p2, p3] = await Promise.all([
-                    supaClient.from('uang_pribadi').select('date, nama_barang, total_harga, transaksi, created_at'),
-                    supaClient.from('saham').select('date, nama_saham, total_harga, transaksi, created_at'),
-                    supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi, created_at')
-                ]);
+    function ubahBulan(n) { tglAktif.setMonth(tglAktif.getMonth() + n); renderKalender(); }
+    function bukaModal(d, m, y) {
+        tglDipilih = `${d}-${m}-${y}`;
+        document.getElementById('modal-tanggal').innerText = `Jadwal: ${d}/${m}/${y}`;
+        document.getElementById('input-jadwal').value = localStorage.getItem(tglDipilih) || "";
+        document.getElementById('modal-jadwal').classList.remove('hidden');
+    }
+    function simpanJadwal() { localStorage.setItem(tglDipilih, document.getElementById('input-jadwal').value); tutupModal(); }
+    function tutupModal() { document.getElementById('modal-jadwal').classList.add('hidden'); }
 
-                let semuaData = [
-                    ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Pribadi' })),
-                    ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, created_at: d.created_at, source:  'Saham' })),
-                    ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Usaha' }))
-                ];
-                    console.log(p1.data, p1.error);
-                    console.log(p2.data, p2.error);
-                    console.log(JSON.stringify(p3.data, null, 2));
-                //
-                semuaData.sort(
-                    (a, b) => new Date(b.created_at) - new Date(a.created_at) );
+    // --- 2. Fetch Riwayat Transaksi ---
+    async function muatRiwayatTransaksi() {
+        const container = document.getElementById('riwayat-transaksi-container');
+        try {
+            const [p1, p2, p3] = await Promise.all([
+                supaClient.from('uang_pribadi').select('date, nama_barang, total_harga, created_at'),
+                supaClient.from('saham').select('date, nama_saham, total_harga, created_at'),
+                supaClient.from('usaha').select('date, nama_barang, total_harga, created_at')
+            ]);
 
-                container.innerHTML = semuaData.slice(0, 3).map(item => `
-                    <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
-                        <div>
-                            <h4 class="text-sm font-semibold text-stone-800">${item.nama}</h4>
-                            <p class="text-[10px] text-stone-400">${item.date} • ${item.source}</p>
-                        </div>
-                        <span class="text-sm font-bold text-stone-800">Rp${(item.total || 0).toLocaleString()}</span>
+            let semuaData = [
+                ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Pribadi' })),
+                ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, created_at: d.created_at, source: 'Saham' })),
+                ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Usaha' }))
+            ];
+
+            semuaData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            container.innerHTML = semuaData.slice(0, 3).map(item => `
+                <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div>
+                        <h4 class="text-sm font-semibold text-stone-800">${item.nama}</h4>
+                        <p class="text-[10px] text-stone-400">${item.date} • ${item.source}</p>
                     </div>
-                `).join('');
-            } catch (e) {
-                container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
-            }
-                            
+                    <span class="text-sm font-bold text-stone-800">Rp${(item.total || 0).toLocaleString()}</span>
+                </div>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
         }
+    }
 
-        // Fungsi Catatan Keuangan
-        // Ganti bagian isi fungsi muatCatatanKeuangan dengan kode ini:
-
+    // --- 3. Fetch Catatan Keuangan ---
     async function muatCatatanKeuangan() {
         try {
             const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
-            if (error) throw error;
-        
+            if (error) console.error("Error Supabase:", error);
             if (data) {
                 data.forEach(item => {
-                    // Pastikan deskripsi diubah menjadi angka sebelum diformat
-                    const nominal = parseInt(item.deskripsi.replace(/[^0-9]/g, ''));
-                    const formattedNominal = !isNaN(nominal) 
-                        ? "Rp" + nominal.toLocaleString('id-ID') 
-                        : item.deskripsi; // Fallback jika bukan angka
-
                     const j = item.judul.toLowerCase();
-                    if (j.includes('uang_pribadi')) {
-                        document.getElementById('nominal-pribadi').innerText = formattedNominal;
-                    } else if (j.includes('saham')) {
-                        document.getElementById('nominal-saham').innerText = formattedNominal;
-                    } else if (j.includes('usaha')) {
-                        document.getElementById('nominal-usaha').innerText = formattedNominal;
-                    }
+                    const el = j.includes('pribadi') ? 'nominal-pribadi' : 
+                               j.includes('saham') ? 'nominal-saham' : 
+                               j.includes('usaha') ? 'nominal-usaha' : null;
+                    if (el) document.getElementById(el).innerText = item.deskripsi;
                 });
             }
-        } catch (err) {
-            console.error("Gagal memuat catatan:", err);
-        }
+        } catch (err) { console.error("Gagal:", err); }
     }
-        window.addEventListener('DOMContentLoaded', () => {
-            muatRiwayatTransaksi();
-            muatCatatanKeuangan();
 
-        });
-
-    </script>
+    // --- 4. Inisialisasi ---
+    window.addEventListener('DOMContentLoaded', () => {
+        renderKalender();
+        muatRiwayatTransaksi();
+        muatCatatanKeuangan();
+    });
+</script>
     <script>
     // Tempat menaruh API Key Anda
 async function kirimKeAI() {
