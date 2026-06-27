@@ -253,7 +253,7 @@
     const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
     let dataLokalUsaha = [];
     let modeAksiAktif = false;
-    saldoAwalRdn = 0;
+    let saldoRdn = 0;
 
     async function ambilDataUsaha() {
         if (!_supabase) return;
@@ -475,7 +475,7 @@
     }
 
     async function hitungDanTampilkanStatistik() {
-        let saldoAwalRdn = 0;
+        let saldoRdn = 0;
         
         if (_supabase) {
             try {
@@ -487,7 +487,7 @@
                     .single();
                 
                 if (!error && data) {
-                    saldoAwalRdn = parseFloat(data.deskripsi || '0');
+                    saldoRdn = parseFloat(data.deskripsi || '0');
                 }
             } catch (err) {
                 console.error("Gagal mengambil RDN awal dari Supabase:", err.message);
@@ -530,7 +530,7 @@
 
         const pnl = totalJual - totalBeli;
         // Hitung nilai riil kas usaha saat ini
-        const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
+        const rdnUsahaAkhir = saldoRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
 
         
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
@@ -661,6 +661,14 @@
         const harga = parseFloat(document.getElementById('form-harga').value || '0');
         const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
         const total_harga = harga * jumlah;
+
+        if (transaksi) {
+        saldoRdn -= total_harga;   // BELI
+        } else {
+       saldoRdn += total_harga;   // JUAL
+        }
+
+        await sinkronisasiRdnUsahaKeCatatanKeuangan(saldoRdn);
         
         const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah, total_harga };
         const editId = document.getElementById('form-transaksi').dataset.editId;
@@ -689,25 +697,8 @@
             alert("Gagal menyimpan data: " + err.message);
         }
     }
-function hitungSaldoRdnInternal() {
 
-    let akumulasiBeli = 0;
-    let akumulasiJual = 0;
-
-    dataLokalUsaha.forEach(row => {
-        const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
-        const isBeli = row.transaksi === true || row.transaksi === "true";
-
-        if (isBeli)
-            akumulasiBeli += totalHarga;
-        else
-            akumulasiJual += totalHarga;
-    });
-
-    const rdnUsahaAkhir =
-        saldoAwalRdn
-        - akumulasiBeli
-        + akumulasiJual;
+ const rdnUsahaAkhir = saldoRdn;
 
     return rdnUsahaAkhir;
 }
@@ -734,6 +725,7 @@ function hitungSaldoRdnInternal() {
             alert("Gagal menghapus: " + err.message);
         }
     }
+    
 
     window.addEventListener('DOMContentLoaded', () => {
         ambilDataUsaha();
