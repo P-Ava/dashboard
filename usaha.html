@@ -519,7 +519,6 @@
         // Hitung nilai riil kas usaha saat ini
         const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
 
-        await sinkronisasiRdnUsahaKeCatatanKeuangan(rdnUsahaAkhir);
         
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
@@ -669,12 +668,35 @@
 
             tutupModalTransaksi();
             await ambilDataUsaha();
+            const saldoBaru = hitungSaldoRdnInternal(); 
+            await sinkronisasiRdnUsahaKeCatatanKeuangan(saldoBaru);
 
         } catch (err) {
             console.error("Detail Error:", err.message);
             alert("Gagal menyimpan data: " + err.message);
         }
     }
+    function hitungSaldoRdnInternal() {
+// 1. Ambil semua akumulasi beli dan jual dari dataLokalUsaha
+    let akumulasiBeli = 0;
+    let akumulasiJual = 0;
+
+    dataLokalUsaha.forEach(row => {
+        const totalHarga = row.total_harga || ((row.jumlah || 0) * (row.harga || 0));
+        const isBeli = row.transaksi === true || row.transaksi === "true";
+        
+        if (isBeli) akumulasiBeli += totalHarga;
+        else akumulasiJual += totalHarga;
+    });
+
+    // 2. Ambil nilai saldo awal RDN (Anda perlu menyimpan ini di variabel global saat pertama load)
+    // Jika tidak ada variabel global, Anda bisa mengambil dari elemen DOM yang sudah ada:
+    const saldoAwalRdn = parseFloat(document.getElementById('input-nominal-rdn').value || 0);
+
+    // 3. Hitung saldo akhir
+    const rdnUsahaAkhir = saldoAwalRdn - akumulasiBeli + akumulasiJual;
+        return rdnUsahaAkhir; 
+}
     // FUNGSI UNTUK SINKRONISASI BANK RDN KE TABEL CATATAN_KEUANGAN (BARIS SAHAM)
 async function sinkronisasiRdnUsahaKeCatatanKeuangan(totalRdn)  {
     try {
