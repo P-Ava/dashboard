@@ -180,21 +180,35 @@
     }
 
     // --- 3. Fetch Catatan Keuangan ---
-    async function muatCatatanKeuangan() {
-        try {
-            const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
-            if (error) console.error("Error Supabase:", error);
-            if (data) {
-                data.forEach(item => {
-                    const j = item.judul.toLowerCase();
-                    const el = j.includes('pribadi') ? 'nominal-pribadi' : 
-                               j.includes('saham') ? 'nominal-saham' : 
-                               j.includes('usaha') ? 'nominal-usaha' : null;
-                    if (el) document.getElementById(el).innerText = item.deskripsi;
-                });
-            }
-        } catch (err) { console.error("Gagal:", err); }
+async function muatCatatanKeuangan() {
+    try {
+        const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
+        if (error) console.error("Error Supabase:", error);
+        
+        if (data) {
+            data.forEach(item => {
+                const j = item.judul.toLowerCase();
+                const elId = j.includes('pribadi') ? 'nominal-pribadi' : 
+                             j.includes('saham') ? 'nominal-saham' : 
+                             j.includes('usaha') ? 'nominal-usaha' : null;
+                
+                if (elId) {
+                    // Ambil angka dari string (menghapus karakter non-angka)
+                    const angka = parseInt(item.deskripsi.replace(/[^0-9]/g, ''));
+                    
+                    // Format ke Rupiah jika valid, jika tidak gunakan teks asli
+                    const formatted = !isNaN(angka) 
+                        ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka)
+                        : item.deskripsi;
+                    
+                    document.getElementById(elId).innerText = formatted;
+                }
+            });
+        }
+    } catch (err) { 
+        console.error("Gagal memuat catatan:", err); 
     }
+}
 
     // --- 4. Inisialisasi ---
     window.addEventListener('DOMContentLoaded', () => {
