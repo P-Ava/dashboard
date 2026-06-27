@@ -253,7 +253,7 @@
     const _supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
     let dataLokalUsaha = [];
     let modeAksiAktif = false;
-    saldoAwalRdn = 0;
+    let saldoRdn = 0;
 
     async function ambilDataUsaha() {
         if (!_supabase) return;
@@ -475,7 +475,8 @@
     }
 
     async function hitungDanTampilkanStatistik() {
-        let saldoRdn = 0;  
+        let saldoRdn = 0;
+        
         if (_supabase) {
             try {
                 // Ambil nilai dasar 'deskripsi' dari catatan_keuangan untuk judul 'usaha'
@@ -486,7 +487,7 @@
                     .single();
                 
                 if (!error && data) {
-                    saldoRdn = parseFloat(data.deskripsi || "0");
+                    saldoRdn = parseFloat(data.deskripsi || '0');
                 }
             } catch (err) {
                 console.error("Gagal mengambil RDN awal dari Supabase:", err.message);
@@ -529,7 +530,7 @@
 
         const pnl = totalJual - totalBeli;
         // Hitung nilai riil kas usaha saat ini
-        document.getElementById("stat-rdn").innerText = formatRupiah(saldoRdn);
+        const rdnUsahaAkhir = saldoRdn - akumulasiBeliSemuaWaktu + akumulasiJualSemuaWaktu; 
 
         
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
@@ -660,6 +661,14 @@
         const harga = parseFloat(document.getElementById('form-harga').value || '0');
         const jumlah = parseInt(document.getElementById('form-jumlah').value || '0');
         const total_harga = harga * jumlah;
+
+        if (transaksi) {
+        saldoRdn -= total_harga;   // BELI
+        } else {
+       saldoRdn += total_harga;   // JUAL
+        }
+
+        await sinkronisasiRdnUsahaKeCatatanKeuangan(saldoRdn);
         
         const dataPayload = { date, nama_barang, kategori, transaksi, harga, jumlah, total_harga };
         const editId = document.getElementById('form-transaksi').dataset.editId;
@@ -689,6 +698,22 @@
         }
     }
 
+ const rdnUsahaAkhir = saldoRdn;
+
+    return rdnUsahaAkhir;
+}
+    async function sinkronisasiRdnUsahaKeCatatanKeuangan(saldoBaru) {
+    const { error } = await _supabase
+        .from("catatan_keuangan")
+        .update({
+            deskripsi: String(saldoBaru)
+        })
+        .eq("judul", "usaha");
+
+    if (error) {
+        console.error("Gagal update RDN:", error);
+    }
+}
 
     async function hapusTransaksi(id) {
         if (!_supabase || !confirm("Hapus transaksi ini?")) return;
@@ -700,6 +725,7 @@
             alert("Gagal menghapus: " + err.message);
         }
     }
+    
 
     window.addEventListener('DOMContentLoaded', () => {
         ambilDataUsaha();
