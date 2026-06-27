@@ -711,6 +711,18 @@ function hitungSaldoRdnInternal() {
 
     return rdnUsahaAkhir;
 }
+    async function sinkronisasiRdnUsahaKeCatatanKeuangan(saldoBaru) {
+    const { error } = await _supabase
+        .from("catatan_keuangan")
+        .update({
+            deskripsi: String(saldoBaru)
+        })
+        .eq("judul", "usaha");
+
+    if (error) {
+        console.error("Gagal update RDN:", error);
+    }
+}
 
     async function hapusTransaksi(id) {
         if (!_supabase || !confirm("Hapus transaksi ini?")) return;
