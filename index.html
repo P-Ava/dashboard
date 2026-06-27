@@ -152,6 +152,119 @@
         }
         
         window.onload = muatData;
+        
     </script>
+        <!-- SCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://hjexgyqmyskgtgwpnufg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NejqNnFYxIhUSanm4yd09A_CWFbPXkJ';
+        const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Fungsi Riwayat Transaksi
+        async function muatRiwayatTransaksi() {
+            const container = document.getElementById('riwayat-transaksi-container');
+            try {
+                const [p1, p2, p3] = await Promise.all([
+                    supaClient.from('uang_pribadi').select('date, nama_barang, total_harga, transaksi, created_at'),
+                    supaClient.from('saham').select('date, nama_saham, total_harga, transaksi, created_at'),
+                    supaClient.from('usaha').select('date, nama_barang, total_harga, transaksi, created_at')
+                ]);
+
+                let semuaData = [
+                    ...(p1.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Pribadi' })),
+                    ...(p2.data || []).map(d => ({ date: d.date, nama: d.nama_saham, total: d.total_harga, created_at: d.created_at, source:  'Saham' })),
+                    ...(p3.data || []).map(d => ({ date: d.date, nama: d.nama_barang, total: d.total_harga, created_at: d.created_at, source: 'Usaha' }))
+                ];
+                    console.log(p1.data, p1.error);
+                    console.log(p2.data, p2.error);
+                    console.log(JSON.stringify(p3.data, null, 2));
+                //
+                semuaData.sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at) );
+
+                container.innerHTML = semuaData.slice(0, 3).map(item => `
+                    <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                        <div>
+                            <h4 class="text-sm font-semibold text-stone-800">${item.nama}</h4>
+                            <p class="text-[10px] text-stone-400">${item.date} • ${item.source}</p>
+                        </div>
+                        <span class="text-sm font-bold text-stone-800">Rp${(item.total || 0).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
+            }
+                            
+        }
+
+        // Fungsi Catatan Keuangan
+        // Ganti bagian isi fungsi muatCatatanKeuangan dengan kode ini:
+
+    async function muatCatatanKeuangan() {
+        try {
+            const { data, error } = await supaClient.from('catatan_keuangan').select('judul, deskripsi');
+            if (error) throw error;
+        
+            if (data) {
+                data.forEach(item => {
+                    // Pastikan deskripsi diubah menjadi angka sebelum diformat
+                    const nominal = parseInt(item.deskripsi.replace(/[^0-9]/g, ''));
+                    const formattedNominal = !isNaN(nominal) 
+                        ? "Rp" + nominal.toLocaleString('id-ID') 
+                        : item.deskripsi; // Fallback jika bukan angka
+
+                    const j = item.judul.toLowerCase();
+                    if (j.includes('uang_pribadi')) {
+                        document.getElementById('nominal-pribadi').innerText = formattedNominal;
+                    } else if (j.includes('saham')) {
+                        document.getElementById('nominal-saham').innerText = formattedNominal;
+                    } else if (j.includes('usaha')) {
+                        document.getElementById('nominal-usaha').innerText = formattedNominal;
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Gagal memuat catatan:", err);
+        }
+    }
+        window.addEventListener('DOMContentLoaded', () => {
+            muatRiwayatTransaksi();
+            muatCatatanKeuangan();
+
+        });
+
+    </script>
+    <script>
+    // Tempat menaruh API Key Anda
+async function kirimKeAI() {
+    const input = document.getElementById("ai-input").value;
+    const container = document.getElementById("ai-response-container");
+
+    if (!input) return;
+
+    container.innerText = "Memproses melalui Ollama...";
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: input
+            })
+        });
+
+        const result = await response.json();
+
+        container.innerText = result.response;
+
+    } catch (error) {
+        container.innerText = "Gagal menghubungi AI.";
+        console.error("AI Error:", error);
+    }
+}
+         </script>
 </body>
 </html>
